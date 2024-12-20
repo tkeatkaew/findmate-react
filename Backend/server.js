@@ -42,46 +42,98 @@ app.use(
 
 // Register Route
 app.post("/register", (req, res) => {
-  const { name, email, password } = req.body;
-
+  const { name, email, password, role } = req.body;
   const checkEmailQuery = "SELECT * FROM users WHERE email = ?";
   db.query(checkEmailQuery, [email], (err, result) => {
     if (err) return res.status(500).json({ error: "Database error" });
-
     if (result.length > 0) {
       return res.status(400).json({ error: "Email already registered" });
     }
-
     const hashedPassword = bcrypt.hashSync(password, 10);
     const insertUserQuery =
-      "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
-    db.query(insertUserQuery, [name, email, hashedPassword], (err, result) => {
-      if (err) return res.status(500).json({ error: "Error inserting user" });
-
-      res.status(200).json({ message: "User registered successfully!" });
-    });
+      "INSERT INTO users (name, email, password,role) VALUES (?, ?, ?, ?)";
+    db.query(
+      insertUserQuery,
+      [name, email, hashedPassword, role],
+      (err, result) => {
+        if (err) return res.status(500).json({ error: "Error inserting user" });
+        res.status(200).json({ message: "User registered successfully!" });
+      }
+    );
+    console.log(name, email, hashedPassword, role);
   });
 });
 
 // Login Route
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-
   const getUserQuery = "SELECT * FROM users WHERE email = ?";
   db.query(getUserQuery, [email], (err, result) => {
     if (err) return res.status(500).json({ error: "Database error" });
-
     if (result.length === 0) {
       return res.status(404).json({ error: "User not found" });
     }
-
     const user = result[0];
     if (!bcrypt.compareSync(password, user.password)) {
       return res.status(401).json({ error: "Invalid password" });
     }
-
     req.session.user = { id: user.id, name: user.name, email: user.email };
     res.status(200).json({ user: req.session.user });
+  });
+});
+
+// Update Personal Information Route
+app.post("/personalinfo", (req, res) => {
+  const {
+    email,
+    firstname,
+    lastname,
+    nickname,
+    age,
+    maritalstatus,
+    gender,
+    lgbt,
+  } = req.body;
+
+  // Check if the user exists in the `users` table
+  const checkEmailQuery = "SELECT id FROM users WHERE email = ?";
+  db.query(checkEmailQuery, [email], (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: "Database error" });
+    }
+
+    if (result.length > 0) {
+      // User exists, insert data into the `findmate` table
+      const userId = result[0].id;
+      const insertPersonalInfoQuery =
+        "INSERT INTO personalinfomation (user_id, firstname, lastname, nickname, age, maritalstatus, gender, lgbt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+      db.query(
+        insertPersonalInfoQuery,
+        [
+          userId,
+          firstname,
+          lastname,
+          nickname,
+          age,
+          maritalstatus,
+          gender,
+          lgbt,
+        ],
+        (err, result) => {
+          if (err) {
+            console.log(err);
+            return res
+              .status(500)
+              .json({ error: "Error inserting user information" });
+          }
+          return res
+            .status(200)
+            .json({ message: "User information updated successfully!" });
+        }
+      );
+    } else {
+      return res.status(400).json({ error: "User not found" });
+    }
   });
 });
 
@@ -89,7 +141,6 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
   req.session.destroy((err) => {
     if (err) return res.status(500).json({ error: "Logout failed" });
-
     res.status(200).json({ message: "Logged out successfully" });
   });
 });
@@ -99,7 +150,6 @@ app.get("/home", (req, res) => {
   if (!req.session.user) {
     return res.status(401).json({ error: "Unauthorized access" });
   }
-
   res.status(200).json({ user: req.session.user });
 });
 
