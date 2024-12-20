@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../services/api";
 
@@ -31,17 +31,12 @@ const PersonalInfo = () => {
 
   const { user_id, email } = location.state || {};
 
-  console.log(
-    email,
-    user_id,
-    firstname,
-    lastname,
-    nickname,
-    age,
-    maritalstatus,
-    gender,
-    lgbt
-  );
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      navigate("/dashboard"); // Redirect to Dashboard if logged in
+    }
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,17 +57,6 @@ const PersonalInfo = () => {
     } catch (err) {
       alert("Error updating personal info.");
     }
-    console.log(
-      email,
-      user_id,
-      firstname,
-      lastname,
-      nickname,
-      age,
-      maritalstatus,
-      gender,
-      lgbt
-    );
   };
 
   return (

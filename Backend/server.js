@@ -87,7 +87,7 @@ app.post("/login", (req, res) => {
   });
 });
 
-// Update Personal Information Route
+// Add Personal Information Route
 app.post("/personalinfo", (req, res) => {
   const {
     user_id,
