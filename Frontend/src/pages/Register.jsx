@@ -11,7 +11,6 @@ import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 import SvgIcon from "@mui/material/SvgIcon";
 import Divider from "@mui/material/Divider";
-import NavigateBeforeRoundedIcon from "@mui/icons-material/NavigateBeforeRounded";
 
 import AppTheme from "../AppTheme";
 
@@ -26,7 +25,7 @@ const Register = () => {
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (user) {
-      navigate("/dashboard"); // Redirect to Dashboard if logged in
+      navigate("/dashboard");
     }
   }, [navigate]);
 
@@ -39,8 +38,11 @@ const Register = () => {
         password,
         role,
       });
-      console.log(data);
+      console.log(name, email, password, role);
       setMessage("Registration successful!");
+      navigate("/personalinfo", {
+        state: { user_id: data.id, email },
+      });
     } catch (err) {
       setMessage("Error registering user.");
     }
@@ -53,40 +55,26 @@ const Register = () => {
         sx={{
           padding: "2rem",
           maxWidth: "400px",
-          minWidth: "400px",
           margin: "auto",
           marginTop: "10vh",
           border: "1px solid #eee",
-          boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
           borderRadius: "20px",
+          boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
         }}
       >
-        <Stack spacing={2} useFlexGap>
-          <Typography component="div" variant="body2">
-            <span>
-              <Link href="/" variant="body2">
-                {/* <NavigateBeforeRoundedIcon /> */}
-                Back
-              </Link>
-            </span>
-          </Typography>
+        <Stack spacing={2}>
           <Typography variant="h1" sx={{ fontSize: "2rem", fontWeight: 500 }}>
-            Sign up
+            Sign Up
           </Typography>
           {message && <p>{message}</p>}
           <form onSubmit={handleSubmit}>
-            <Stack spacing={2} useFlexGap>
+            <Stack spacing={2}>
               <TextField
                 required
                 type="text"
                 label="Name"
-                placeholder="Enter your name"
                 variant="outlined"
                 fullWidth
-                autoFocus
-                id="name"
-                name="name"
-                autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -94,26 +82,17 @@ const Register = () => {
                 required
                 type="email"
                 label="Email"
-                placeholder="your@email.com"
                 variant="outlined"
                 fullWidth
-                autoFocus
-                id="email"
-                name="email"
-                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
               <TextField
                 required
-                name="password"
-                label="Password"
-                placeholder="••••••••"
                 type="password"
-                id="password"
-                autoComplete="current-password"
-                fullWidth
+                label="Password"
                 variant="outlined"
+                fullWidth
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -123,7 +102,7 @@ const Register = () => {
                 fullWidth
                 sx={{ textTransform: "none" }}
               >
-                Sign up
+                Sign Up
               </Button>
               <Typography
                 component="div"
@@ -149,7 +128,7 @@ const Register = () => {
                   textTransform: "none",
                 }}
               >
-                Sign up with Google
+                Sign in with Google
               </Button>
             </Stack>
           </form>
@@ -158,7 +137,6 @@ const Register = () => {
     </AppTheme>
   );
 };
-
 function GoogleIcon() {
   return (
     <SvgIcon>
@@ -187,5 +165,4 @@ function GoogleIcon() {
     </SvgIcon>
   );
 }
-
 export default Register;

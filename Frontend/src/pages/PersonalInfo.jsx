@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../services/api";
 
 import Button from "@mui/material/Button";
@@ -8,19 +8,16 @@ import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
 import Typography from "@mui/material/Typography";
-import Link from "@mui/material/Link";
-import SvgIcon from "@mui/material/SvgIcon";
-import Divider from "@mui/material/Divider";
+
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
 import Checkbox from "@mui/material/Checkbox";
-import NavigateBeforeRoundedIcon from "@mui/icons-material/NavigateBeforeRounded";
 
 import AppTheme from "../AppTheme";
 
-const Register = () => {
+const PersonalInfo = () => {
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [nickname, setNickname] = useState("");
@@ -28,36 +25,54 @@ const Register = () => {
   const [maritalstatus, setMaritalstatus] = useState("");
   const [gender, setGender] = useState("");
   const [lgbt, setLGBT] = useState("");
-  const [message, setMessage] = useState("");
-
-  const handleChange = (event) => {
-    setAge(event.target.value);
-  };
-
+  const [message] = useState("");
+  const location = useLocation();
   const navigate = useNavigate();
-  const role = "user";
 
-  useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (user) {
-      navigate("/dashboard"); // Redirect to Dashboard if logged in
-    }
-  }, [navigate]);
+  const { user_id, email } = location.state || {};
+
+  console.log(
+    email,
+    user_id,
+    firstname,
+    lastname,
+    nickname,
+    age,
+    maritalstatus,
+    gender,
+    lgbt
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const { data } = await axios.post("/personalinfo", {
+        email,
+        user_id,
         firstname,
         lastname,
         nickname,
         age,
+        maritalstatus,
+        gender,
+        lgbt: lgbt ? 1 : 0,
       });
-      console.log(data);
-      setMessage("Registration successful!");
+      alert(data.message);
+      navigate("/dashboard");
     } catch (err) {
-      setMessage("Error registering user.");
+      alert("Error updating personal info.");
     }
+    console.log(
+      email,
+      user_id,
+      firstname,
+      lastname,
+      nickname,
+      age,
+      maritalstatus,
+      gender,
+      lgbt
+    );
   };
 
   return (
@@ -172,11 +187,13 @@ const Register = () => {
                   <MenuItem value={"female"}>Female</MenuItem>
                 </Select>
               </FormControl>
-              <Checkbox
-                checked={lgbt}
-                onChange={(e) => setLGBT(e.target.value)}
-                inputProps={{ "aria-label": "controlled" }}
-              />
+              <span>
+                <Checkbox
+                  checked={lgbt}
+                  onChange={(e) => setLGBT(e.target.checked)}
+                />
+                <Typography variant="p">LGBT</Typography>
+              </span>
               <Button
                 type="submit"
                 variant="contained"
@@ -193,4 +210,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default PersonalInfo;

@@ -11,7 +11,6 @@ import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 import SvgIcon from "@mui/material/SvgIcon";
 import Divider from "@mui/material/Divider";
-import NavigateBeforeRoundedIcon from "@mui/icons-material/NavigateBeforeRounded";
 
 import AppTheme from "../AppTheme";
 

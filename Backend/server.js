@@ -57,7 +57,12 @@ app.post("/register", (req, res) => {
       [name, email, hashedPassword, role],
       (err, result) => {
         if (err) return res.status(500).json({ error: "Error inserting user" });
-        res.status(200).json({ message: "User registered successfully!" });
+        console.log(result);
+        res.status(200).json({
+          id: result.insertId,
+          email: checkEmailQuery,
+          message: "User registered successfully!",
+        });
       }
     );
     console.log(name, email, hashedPassword, role);
@@ -85,6 +90,7 @@ app.post("/login", (req, res) => {
 // Update Personal Information Route
 app.post("/personalinfo", (req, res) => {
   const {
+    user_id,
     email,
     firstname,
     lastname,
@@ -97,6 +103,19 @@ app.post("/personalinfo", (req, res) => {
 
   // Check if the user exists in the `users` table
   const checkEmailQuery = "SELECT id FROM users WHERE email = ?";
+
+  console.log(
+    email,
+    user_id,
+    firstname,
+    lastname,
+    nickname,
+    age,
+    maritalstatus,
+    gender,
+    lgbt
+  );
+
   db.query(checkEmailQuery, [email], (err, result) => {
     if (err) {
       return res.status(500).json({ error: "Database error" });
@@ -110,7 +129,7 @@ app.post("/personalinfo", (req, res) => {
       db.query(
         insertPersonalInfoQuery,
         [
-          userId,
+          user_id,
           firstname,
           lastname,
           nickname,
