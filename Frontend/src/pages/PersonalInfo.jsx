@@ -34,7 +34,7 @@ const PersonalInfo = () => {
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (user) {
-      navigate("/dashboard"); // Redirect to Dashboard if logged in
+      navigate("/discovery"); // Redirect to discovery if logged in
     }
   }, [navigate]);
 
@@ -53,7 +53,7 @@ const PersonalInfo = () => {
         lgbt: lgbt ? 1 : 0,
       });
       alert(data.message);
-      navigate("/dashboard");
+      navigate("/discovery");
     } catch (err) {
       alert("Error updating personal info.");
     }

@@ -7,7 +7,7 @@ const Home = () => {
 
   useEffect(() => {
     if (user) {
-      navigate("/dashboard"); // Redirect logged-in user to Dashboard
+      navigate("/discovery"); // Redirect logged-in user to Dashboard
     }
   }, [user, navigate]);
 

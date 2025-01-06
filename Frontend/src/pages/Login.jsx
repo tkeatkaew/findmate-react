@@ -23,7 +23,7 @@ const Login = () => {
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (user) {
-      navigate("/dashboard"); // Redirect to Dashboard if logged in
+      navigate("/discovery"); // Redirect to discovery if logged in
     }
   }, [navigate]);
 
@@ -32,7 +32,7 @@ const Login = () => {
     try {
       const { data } = await axios.post("/login", { email, password });
       localStorage.setItem("user", JSON.stringify(data.user));
-      navigate("/dashboard");
+      navigate("/discovery");
     } catch (err) {
       setError("Invalid email or password");
     }
