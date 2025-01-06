@@ -5,6 +5,8 @@ const session = require("express-session");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
+const knn = require("ml-knn");
+
 const app = express();
 
 // MySQL Connection
@@ -156,6 +158,40 @@ app.post("/personalinfo", (req, res) => {
   });
 });
 
+// Add Personal personalitytraits Route
+app.post("/personalitytraits", (req, res) => {
+  const { user_id, sleeping, cleanliness, voice_use, nightlife, other_traits } =
+    req.body;
+
+  const insertTraitsQuery = `
+    INSERT INTO personality_traits (user_id, sleeping, cleanliness, voice_use, nightlife, other_traits)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
+  db.query(
+    insertTraitsQuery,
+    [
+      user_id,
+      sleeping,
+      cleanliness,
+      voice_use,
+      nightlife,
+      JSON.stringify(other_traits),
+    ],
+    (err, result) => {
+      if (err) {
+        console.error(err);
+        return res
+          .status(500)
+          .json({ error: "Error saving personality traits" });
+      }
+      res
+        .status(200)
+        .json({ message: "Personality traits saved successfully!" });
+    }
+  );
+});
+
 // Logout Route
 app.post("/logout", (req, res) => {
   req.session.destroy((err) => {
@@ -177,3 +213,86 @@ const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+//KNN
+app.post("/knn", (req, res) => {
+  const { user_id } = req.body;
+
+  const getAllTraitsQuery = "SELECT * FROM personality_traits";
+  db.query(getAllTraitsQuery, (err, results) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+
+    // Find the current user's traits
+    const currentUser = results.find((user) => user.user_id === user_id);
+    if (!currentUser) return res.status(404).json({ error: "User not found" });
+
+    // Prepare dataset and labels
+    const dataset = results.map((user) => ({
+      id: user.user_id,
+      traits: [
+        encodeTrait(user.sleeping),
+        encodeTrait(user.cleanliness),
+        encodeTrait(user.voice_use),
+        encodeTrait(user.nightlife),
+      ],
+    }));
+
+    const currentUserTraits = [
+      encodeTrait(currentUser.sleeping),
+      encodeTrait(currentUser.cleanliness),
+      encodeTrait(currentUser.voice_use),
+      encodeTrait(currentUser.nightlife),
+    ];
+
+    // Calculate similarity percentage
+    const calculateSimilarity = (targetTraits) => {
+      const distance = Math.sqrt(
+        targetTraits.reduce(
+          (acc, trait, index) =>
+            acc + Math.pow(trait - currentUserTraits[index], 2),
+          0
+        )
+      );
+      const maxDistance = Math.sqrt(
+        currentUserTraits.length * Math.pow(3 - 1, 2)
+      ); // Assuming trait values range from 1 to 3
+      return Math.round(((maxDistance - distance) / maxDistance) * 100);
+    };
+
+    const neighbors = dataset
+      .filter((user) => user.id !== user_id) // Exclude the current user
+      .map((user) => {
+        const userTraits = results.find((u) => u.user_id === user.id);
+        return {
+          user_id: user.id,
+          similarity: calculateSimilarity(user.traits),
+          traits: {
+            ...userTraits,
+            nickname: userTraits?.nickname || "No nickname available", // Ensure nickname is included
+          },
+        };
+      })
+      .sort((a, b) => b.similarity - a.similarity); // Sort by similarity
+
+    res.status(200).json({ neighbors });
+  });
+});
+
+// Helper function to encode traits into numerical values
+function encodeTrait(trait) {
+  const traitMap = {
+    early: 1,
+    night: 2,
+    flexible: 3,
+    very_clean: 1,
+    average: 2,
+    messy: 3,
+    talkative: 1,
+    moderate: 2,
+    quiet: 3,
+    party: 1,
+    homebody: 2,
+    occasional: 3,
+  };
+  return traitMap[trait] || 0; // Default to 0 for unknown traits
+}

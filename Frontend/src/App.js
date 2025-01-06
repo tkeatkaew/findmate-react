@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
 import PersonalInfo from "./pages/PersonalInfo";
+import PersonalityProfile from "./pages/PersonalityProfile";
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/personalInfo" element={<PersonalInfo />} />
+        <Route path="/personalityprofile" element={<PersonalityProfile />} />
       </Routes>
     </Router>
   );

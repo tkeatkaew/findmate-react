@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../services/api";
 
@@ -24,26 +24,17 @@ const PersonalInfo = () => {
   const [age, setAge] = useState("");
   const [maritalstatus, setMaritalstatus] = useState("");
   const [gender, setGender] = useState("");
-  const [lgbt, setLGBT] = useState("");
-  const [message] = useState("");
-  const location = useLocation();
+  const [lgbt, setLGBT] = useState(false);
   const navigate = useNavigate();
-
+  const location = useLocation();
   const { user_id, email } = location.state || {};
-
-  useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (user) {
-      navigate("/discovery"); // Redirect to discovery if logged in
-    }
-  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.post("/personalinfo", {
-        email,
+      await axios.post("/personalinfo", {
         user_id,
+        email,
         firstname,
         lastname,
         nickname,
@@ -52,8 +43,8 @@ const PersonalInfo = () => {
         gender,
         lgbt: lgbt ? 1 : 0,
       });
-      alert(data.message);
-      navigate("/discovery");
+      alert("Personal information saved successfully!");
+      navigate("/personalityprofile", { state: { user_id } }); // Redirect to PersonalityProfile with user_id
     } catch (err) {
       alert("Error updating personal info.");
     }
@@ -75,11 +66,7 @@ const PersonalInfo = () => {
         }}
       >
         <Stack spacing={1} useFlexGap>
-          <Typography component="div" variant="body2"></Typography>
-          <Typography variant="h1" sx={{ fontSize: "2rem", fontWeight: 500 }}>
-            Personal Infomation
-          </Typography>
-          {message && <p>{message}</p>}
+          <Typography variant="h4">Personal Information</Typography>
           <form onSubmit={handleSubmit}>
             <Stack spacing={2} useFlexGap>
               <TextField
@@ -89,9 +76,6 @@ const PersonalInfo = () => {
                 placeholder="Enter your Firstname"
                 variant="outlined"
                 fullWidth
-                autoFocus
-                id="firstname"
-                name="firstname"
                 value={firstname}
                 onChange={(e) => setFirstname(e.target.value)}
               />
@@ -102,9 +86,6 @@ const PersonalInfo = () => {
                 placeholder="Enter your Lastname"
                 variant="outlined"
                 fullWidth
-                autoFocus
-                id="lastname"
-                name="lastname"
                 value={lastname}
                 onChange={(e) => setLastname(e.target.value)}
               />
@@ -115,9 +96,6 @@ const PersonalInfo = () => {
                 placeholder="Enter your Nickname"
                 variant="outlined"
                 fullWidth
-                autoFocus
-                id="nickname"
-                name="nickname"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
               />
@@ -128,9 +106,6 @@ const PersonalInfo = () => {
                 placeholder="Enter your Age"
                 variant="outlined"
                 fullWidth
-                autoFocus
-                id="age"
-                name="age"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
               />
@@ -138,37 +113,23 @@ const PersonalInfo = () => {
                 <InputLabel id="maritalstatus">Marital Status</InputLabel>
                 <Select
                   required
-                  label="Marital Status"
-                  placeholder="Enter your Marital Status"
-                  variant="outlined"
-                  labelId="maritalstatus"
-                  fullWidth
-                  autoFocus
-                  id="maritalstatus"
                   value={maritalstatus}
                   onChange={(e) => setMaritalstatus(e.target.value)}
                 >
-                  <MenuItem value={"single"}>Single</MenuItem>
-                  <MenuItem value={"inrelationship"}>In Relationship</MenuItem>
-                  <MenuItem value={"married"}>Married</MenuItem>
+                  <MenuItem value="single">Single</MenuItem>
+                  <MenuItem value="inrelationship">In Relationship</MenuItem>
+                  <MenuItem value="married">Married</MenuItem>
                 </Select>
               </FormControl>
               <FormControl fullWidth>
                 <InputLabel id="gender">Gender</InputLabel>
                 <Select
                   required
-                  label="Gender"
-                  placeholder="Gender"
-                  variant="outlined"
-                  labelId="gender"
-                  fullWidth
-                  autoFocus
-                  id="gender"
                   value={gender}
                   onChange={(e) => setGender(e.target.value)}
                 >
-                  <MenuItem value={"male"}>Male</MenuItem>
-                  <MenuItem value={"female"}>Female</MenuItem>
+                  <MenuItem value="male">Male</MenuItem>
+                  <MenuItem value="female">Female</MenuItem>
                 </Select>
               </FormControl>
               <span>
@@ -176,15 +137,10 @@ const PersonalInfo = () => {
                   checked={lgbt}
                   onChange={(e) => setLGBT(e.target.checked)}
                 />
-                <Typography variant="p">LGBT</Typography>
+                <Typography variant="body2">LGBT</Typography>
               </span>
-              <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                sx={{ textTransform: "none" }}
-              >
-                Next
+              <Button type="submit" variant="contained" fullWidth>
+                Save & Continue
               </Button>
             </Stack>
           </form>
