@@ -14,7 +14,7 @@ const db = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "root",
-  database: "findmate",
+  database: "findmatev3",
 });
 
 db.connect((err) => {
@@ -160,23 +160,46 @@ app.post("/personalinfo", (req, res) => {
 
 // Add Personal personalitytraits Route
 app.post("/personalitytraits", (req, res) => {
-  const { user_id, sleeping, cleanliness, voice_use, nightlife, other_traits } =
-    req.body;
+  const {
+    user_id,
+    type,
+    sleep,
+    wake,
+    clean,
+    air_conditioner,
+    drink,
+    smoke,
+    money,
+    expense,
+    pet,
+    cook,
+    loud,
+    friend,
+    religion,
+    period,
+  } = req.body;
 
-  const insertTraitsQuery = `
-    INSERT INTO personality_traits (user_id, sleeping, cleanliness, voice_use, nightlife, other_traits)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `;
+  const insertTraitsQuery = `INSERT INTO personality_traits (user_id, type, sleep, wake, clean, air_conditioner, drink, smoke, money, expense, pet, cook, loud, friend, religion, period) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   db.query(
     insertTraitsQuery,
     [
       user_id,
-      sleeping,
-      cleanliness,
-      voice_use,
-      nightlife,
-      JSON.stringify(other_traits),
+      type,
+      sleep,
+      wake,
+      clean,
+      air_conditioner,
+      drink,
+      smoke,
+      money,
+      expense,
+      pet,
+      cook,
+      loud,
+      friend,
+      religion,
+      period,
     ],
     (err, result) => {
       if (err) {
@@ -218,30 +241,112 @@ app.listen(PORT, () => {
 app.post("/knn", (req, res) => {
   const { user_id } = req.body;
 
-  const getAllTraitsQuery = "SELECT * FROM personality_traits";
+  // Join `personality_traits` with `personality_information` to get nicknames
+  const getAllTraitsQuery = `
+    SELECT pt.*, pi.nickname 
+    FROM personality_traits pt 
+    JOIN personality_infomation pi ON pt.user_id = pi.user_id
+  `;
+
   db.query(getAllTraitsQuery, (err, results) => {
-    if (err) return res.status(500).json({ error: "Database error" });
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
 
     // Find the current user's traits
     const currentUser = results.find((user) => user.user_id === user_id);
     if (!currentUser) return res.status(404).json({ error: "User not found" });
 
+    // Helper function to encode traits
+    const encodeTrait = (trait) => {
+      const traitMap = {
+        type_introvert: 1,
+        type_extrovert: 2,
+        type_ambivert: 3,
+        sleep_before_midnight: 1,
+        sleep_after_midnight: 2,
+        wake_morning: 1,
+        wake_noon: 2,
+        wake_evening: 3,
+        clean_every_day: 1,
+        clean_every_other_day: 2,
+        clean_once_a_week: 3,
+        clean_dont_really: 4,
+        ac_never: 1,
+        ac_only_sleep: 2,
+        ac_only_hot: 3,
+        ac_all_day: 4,
+        drink_never: 1,
+        drink_spacial: 2,
+        drink_weekend: 3,
+        drink_always: 4,
+        smoke_never: 1,
+        smoke_spacial: 2,
+        smoke_always: 3,
+        money_on_time: 1,
+        money_late: 2,
+        money_half: 1,
+        money_ratio: 2,
+        pet_dont_have: 1,
+        pet_have: 2,
+        cook_ok: 1,
+        cook_tell_first: 2,
+        cook_no: 3,
+        loud_low: 1,
+        loud_medium: 2,
+        loud_high: 3,
+        friend_ok: 1,
+        friend_tell_first: 2,
+        friend_no: 3,
+        religion_ok: 1,
+        religion_no_affect: 2,
+        religion_no: 3,
+        period_long: 1,
+        period_sometime: 2,
+        period_no_need: 3,
+      };
+      return traitMap[trait] || 0; // Default to 0 for unknown traits
+    };
+
     // Prepare dataset and labels
     const dataset = results.map((user) => ({
       id: user.user_id,
       traits: [
-        encodeTrait(user.sleeping),
-        encodeTrait(user.cleanliness),
-        encodeTrait(user.voice_use),
-        encodeTrait(user.nightlife),
+        encodeTrait(user.type),
+        encodeTrait(user.sleep),
+        encodeTrait(user.wake),
+        encodeTrait(user.clean),
+        encodeTrait(user.air_conditioner),
+        encodeTrait(user.drink),
+        encodeTrait(user.smoke),
+        encodeTrait(user.money),
+        encodeTrait(user.expense),
+        encodeTrait(user.pet),
+        encodeTrait(user.cook),
+        encodeTrait(user.loud),
+        encodeTrait(user.friend),
+        encodeTrait(user.religion),
+        encodeTrait(user.period),
       ],
     }));
 
     const currentUserTraits = [
-      encodeTrait(currentUser.sleeping),
-      encodeTrait(currentUser.cleanliness),
-      encodeTrait(currentUser.voice_use),
-      encodeTrait(currentUser.nightlife),
+      encodeTrait(currentUser.type),
+      encodeTrait(currentUser.sleep),
+      encodeTrait(currentUser.wake),
+      encodeTrait(currentUser.clean),
+      encodeTrait(currentUser.air_conditioner),
+      encodeTrait(currentUser.drink),
+      encodeTrait(currentUser.smoke),
+      encodeTrait(currentUser.money),
+      encodeTrait(currentUser.expense),
+      encodeTrait(currentUser.pet),
+      encodeTrait(currentUser.cook),
+      encodeTrait(currentUser.loud),
+      encodeTrait(currentUser.friend),
+      encodeTrait(currentUser.religion),
+      encodeTrait(currentUser.period),
     ];
 
     // Calculate similarity percentage
@@ -254,8 +359,8 @@ app.post("/knn", (req, res) => {
         )
       );
       const maxDistance = Math.sqrt(
-        currentUserTraits.length * Math.pow(3 - 1, 2)
-      ); // Assuming trait values range from 1 to 3
+        currentUserTraits.length * Math.pow(4 - 1, 2)
+      ); // Assuming trait values range from 1 to 4
       return Math.round(((maxDistance - distance) / maxDistance) * 100);
     };
 
@@ -266,10 +371,7 @@ app.post("/knn", (req, res) => {
         return {
           user_id: user.id,
           similarity: calculateSimilarity(user.traits),
-          traits: {
-            ...userTraits,
-            nickname: userTraits?.nickname || "No nickname available", // Ensure nickname is included
-          },
+          traits: userTraits,
         };
       })
       .sort((a, b) => b.similarity - a.similarity); // Sort by similarity
@@ -277,22 +379,3 @@ app.post("/knn", (req, res) => {
     res.status(200).json({ neighbors });
   });
 });
-
-// Helper function to encode traits into numerical values
-function encodeTrait(trait) {
-  const traitMap = {
-    early: 1,
-    night: 2,
-    flexible: 3,
-    very_clean: 1,
-    average: 2,
-    messy: 3,
-    talkative: 1,
-    moderate: 2,
-    quiet: 3,
-    party: 1,
-    homebody: 2,
-    occasional: 3,
-  };
-  return traitMap[trait] || 0; // Default to 0 for unknown traits
-}

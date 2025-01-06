@@ -72,7 +72,7 @@ const Register = () => {
               <TextField
                 required
                 type="text"
-                label="Name"
+                label="Username"
                 variant="outlined"
                 fullWidth
                 value={name}

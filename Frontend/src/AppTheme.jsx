@@ -13,10 +13,14 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: "'Inter Variable', sans-serif",
+    fontFamily: '"IBM Plex Sans Thai", sans-serif',
+    h1: { fontWeight: 700 },
+    h2: { fontWeight: 600 },
+    body1: { fontWeight: 400 },
+    body2: { fontWeight: 300 },
   },
   shape: {
-    borderRadius: 12,
+    borderRadius: 15,
   },
 });
 

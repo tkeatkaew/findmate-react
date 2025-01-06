@@ -21,7 +21,7 @@ const Matched = () => {
       <Box sx={{ display: "flex", minHeight: "90vh" }}>
         <Box
           sx={{
-            width: "250px",
+            width: "200px",
             padding: "0.5rem",
             border: "1px solid #eee",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
