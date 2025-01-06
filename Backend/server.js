@@ -127,7 +127,7 @@ app.post("/personalinfo", (req, res) => {
       // User exists, insert data into the `findmate` table
       const userId = result[0].id;
       const insertPersonalInfoQuery =
-        "INSERT INTO personalinfomation (user_id, firstname, lastname, nickname, age, maritalstatus, gender, lgbt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        "INSERT INTO personality_infomation (user_id, firstname, lastname, nickname, age, maritalstatus, gender, lgbt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
       db.query(
         insertPersonalInfoQuery,
         [

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Jan 05, 2025 at 09:28 AM
+-- Generation Time: Jan 06, 2025 at 03:28 PM
 -- Server version: 8.0.35
 -- PHP Version: 8.3.9
 
@@ -24,10 +24,10 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `personalinfomation`
+-- Table structure for table `personality_infomation`
 --
 
-CREATE TABLE `personalinfomation` (
+CREATE TABLE `personality_infomation` (
   `id` int NOT NULL,
   `user_id` int NOT NULL,
   `firstname` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -40,17 +40,42 @@ CREATE TABLE `personalinfomation` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `personalinfomation`
+-- Dumping data for table `personality_infomation`
 --
 
-INSERT INTO `personalinfomation` (`id`, `user_id`, `firstname`, `lastname`, `nickname`, `age`, `maritalstatus`, `gender`, `lgbt`) VALUES
-(1, 1, 'Teerapat', 'Chomchoey', 'James', 23, 'single', 'male', 0),
-(3, 23, 'za', 'za', 'za', 67, 'inrelationship', 'female', 1),
-(4, 24, 'hb', 'hb', 'hb', 9, 'married', 'male', 1),
-(5, 25, 'nnb', 'nnb', 'nnb', 50, 'single', 'female', 1),
-(6, 26, 'jg', 'jg', 'jg', 43, 'single', 'female', 0),
-(7, 26, 'jg', 'jg', 'jg', 43, 'single', 'female', 0),
-(8, 27, 'df', 'df', 'df', 3, 'single', 'female', 1);
+INSERT INTO `personality_infomation` (`id`, `user_id`, `firstname`, `lastname`, `nickname`, `age`, `maritalstatus`, `gender`, `lgbt`) VALUES
+(14, 33, 'Teerapat', 'Chomchoey', 'James', 23, 'single', 'male', 0),
+(15, 34, 'a', 'a', 'a', 21, 'inrelationship', 'female', 1),
+(16, 35, 'b', 'b', 'b', 34, 'inrelationship', 'male', 0),
+(17, 36, 'JamesCompare', 'JamesCompare', 'JamesCompare', 23, 'single', 'male', 0),
+(18, 37, 'c', 'c', 'c', 23, 'inrelationship', 'male', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `personality_traits`
+--
+
+CREATE TABLE `personality_traits` (
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `sleeping` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cleanliness` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `voice_use` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nightlife` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `other_traits` json DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `personality_traits`
+--
+
+INSERT INTO `personality_traits` (`id`, `user_id`, `sleeping`, `cleanliness`, `voice_use`, `nightlife`, `other_traits`) VALUES
+(3, 33, 'night', 'very_clean', 'moderate', 'party', NULL),
+(4, 34, 'flexible', 'average', 'talkative', 'homebody', NULL),
+(5, 35, 'night', 'average', 'moderate', 'homebody', NULL),
+(6, 36, 'night', 'very_clean', 'moderate', 'party', NULL),
+(7, 37, 'flexible', 'average', 'talkative', 'homebody', NULL);
 
 -- --------------------------------------------------------
 
@@ -71,40 +96,29 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`) VALUES
-(1, 'James', 'tpcc.general@gmail.com', '$2a$10$auqMu6JMnG6iGJaLDmsOpuxvpaWgVlQl6vvDSkCN01Y9VSm9WsZIq', 'user'),
-(2, 'admin', 'admin@gmail.com', '$2a$10$QGV9Gg2KNjEbSpdAnWhPi.3wVwQWE43HN.8MwSWAWy9iS5sjturTW', 'admin'),
-(7, 'qwe', 'qwe@gmail.com', '$2a$10$hFN0X/YMrHoC5GvDT4aQCeMSnQpYDEqsHom8czBa0OqobbB52/jS2', 'user'),
-(8, '1912', '1231@gmail.com', '$2a$10$YScbunTwY3vQ2w37z5vBW.xIY3YLpRAARDDzDU7tO8cX4EmdkgO4C', 'user'),
-(9, '121', '121@gmail.com', '$2a$10$TgdF/1Tip.b.cG.xFZEyu.auHoOju0skymiWa.LB/t2hCl2pJpGoC', 'user'),
-(10, 'qa', 'qa@gmail.com', '$2a$10$HUOCJGbsAMjkKilJ8dePRel34wjo1q2MzCl6bA61f1SXz/XuG6N9K', 'user'),
-(11, 'zx', 'zx@gmail.com', '$2a$10$5AqLRi1dnd1TKBrfsdZJY.LlziDyuXSGWe/O0SZxRcZTQDzv18Z3S', 'user'),
-(12, 'cd', 'cd@gmail.com', '$2a$10$/SBS4VX9Bsj8JgED/MGmBuyNGSXoApSTmwz5Rzu.Z1y7YlK7fDG.S', 'user'),
-(13, 'bb', 'bb@gmail.com', '$2a$10$/8l8F6h.5GjGw35QFR0aM.bAqGCOZNp.Tb2JoA5t7zG5g1OpW.h8C', 'user'),
-(14, 'df', 'df@gmail.com', '$2a$10$dXX7zuZcL8IHivIf7vgtPexj.TQOvmI/16MW5k2QD9pu000xDa5Ey', 'user'),
-(15, 'gf', 'gf@gmail.com', '$2a$10$ffgdmFJY5SNqCwJwiTOMxuEk2hQV85nKE7lZ9vqmx18Jbaq5E.jfG', 'user'),
-(16, 'bn', 'bn@gmail.com', '$2a$10$/ZOt6nVeTVQtldPXAW4PK.934uAALrVkE1slwITqv8hqSsq/raroS', 'user'),
-(17, 'gb', 'gb@gmail.com', '$2a$10$4rPZlyjDhnzRJP5A/rAOJ.9Uda8RY.J1zrR4aPGBSQ28dbuphCKCu', 'user'),
-(18, 'vb', 'vb@gmail.com', '$2a$10$aolN0sOjciyKte1ryOOcbe9NM3G4nVhfxGUsfmK4tqJxfNrPH5VOq', 'user'),
-(19, 'nn', 'nn@gmail.com', '$2a$10$RiQ1I6i.pAu3DTKdDxa.AuSc/xB0vl2snz8RKbabKCzWB0E97jxOS', 'user'),
-(20, 'vv', 'vv@gmail.com', '$2a$10$ft0LoZBW/Kibm7o1kZEWTuxQT46Er9uInEWz0aJEYDbXikhWjamSC', 'user'),
-(21, 'mm', 'mm@gmail.com', '$2a$10$9RxAf7rgWbVBFhpMO1fuXeac3.P04znvM5rysNAB5emuVfXiXJVle', 'user'),
-(22, 'm', 'm@gmail.com', '$2a$10$o2NE4wdraB4KmGXUugxkJeDeHaNIUNAqFCN2GDpGXhIW9JvF2Eb4u', 'user'),
-(23, 'za', 'za@gmail.com', '$2a$10$POGcj/2f5lDsh4i.Ws5SB.UJT/UiZavSh.BqUpil4bE55H9/ClavS', 'user'),
-(24, 'hb', 'hb@gmail.com', '$2a$10$l90ngvWj1jvFF1jCN7YcTe5wQRmc9q.FYZgRdLjqCo3EweMFz.B3y', 'user'),
-(25, 'nnb', 'nnb@gmail.com', '$2a$10$3Vlft9wG9zbDwmKwjA0Fpea1gK3wWhpwt3RXIF1z52ElbwUjyGTai', 'user'),
-(26, 'jg', 'jg@gmail.com', '$2a$10$MiwqYEXPJtJRE.4/v04xP.DBhkyDD2kXWTXkQ4p6hRtbA06530R0y', 'user'),
-(27, 'kj', 'kj@gmail.com', '$2a$10$yD2rrpbb/5AG.8PeCsJd4.aXVJBFfOOlZawbrhsfUx8jfBajU5etW', 'user');
+(33, 'James', 'tpcc.general@gmail.com', '$2a$10$RK3oHfJSmiKfTfcgZAfNo.tEnAYBRjWv9gCDicKRvPDSK/z2Ou96a', 'user'),
+(34, 'a', 'a@gmail.com', '$2a$10$HnClqd0Divf8KncFzWO1webOabshVRjsS1mtdfLvFNR1Y8K8nCcF2', 'user'),
+(35, 'b', 'b@gmail.com', '$2a$10$19xOoFvBFrmImL88o9QEdu7FPWCASNHdD4UZdIYG1cW69QLC1ddkS', 'user'),
+(36, 'James Compare', 'JamesCompare@gmail', '$2a$10$7/bJH/x8MrtsUMbr5bl8g.Pa9bW3OgmnpGZXVQQcRLG0OCWoSbCxi', 'user'),
+(37, 'c', 'c@gmail.com', '$2a$10$P2cIxfkqh0FyX7HWaQEUyOCj0MhFe/xEIpJjUjVwMoFkEFKRZ/qwS', 'user');
 
 --
 -- Indexes for dumped tables
 --
 
 --
--- Indexes for table `personalinfomation`
+-- Indexes for table `personality_infomation`
 --
-ALTER TABLE `personalinfomation`
+ALTER TABLE `personality_infomation`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_user_id` (`user_id`);
+
+--
+-- Indexes for table `personality_traits`
+--
+ALTER TABLE `personality_traits`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
 
 --
 -- Indexes for table `users`
@@ -117,27 +131,39 @@ ALTER TABLE `users`
 --
 
 --
--- AUTO_INCREMENT for table `personalinfomation`
+-- AUTO_INCREMENT for table `personality_infomation`
 --
-ALTER TABLE `personalinfomation`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+ALTER TABLE `personality_infomation`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+
+--
+-- AUTO_INCREMENT for table `personality_traits`
+--
+ALTER TABLE `personality_traits`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- Constraints for dumped tables
 --
 
 --
--- Constraints for table `personalinfomation`
+-- Constraints for table `personality_infomation`
 --
-ALTER TABLE `personalinfomation`
+ALTER TABLE `personality_infomation`
   ADD CONSTRAINT `fk_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `personalinfomation_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+  ADD CONSTRAINT `personality_infomation_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+--
+-- Constraints for table `personality_traits`
+--
+ALTER TABLE `personality_traits`
+  ADD CONSTRAINT `personality_traits_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
