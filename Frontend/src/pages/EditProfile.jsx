@@ -27,6 +27,11 @@ import IconButton from "@mui/material/IconButton";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import AppTheme from "../AppTheme";
 
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+
 const EditProfile = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
@@ -38,6 +43,47 @@ const EditProfile = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [dataFetched, setDataFetched] = useState(false);
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const handleDeleteAccountClick = () => {
+    setDeletePassword("");
+    setPasswordError("");
+    setDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setDeletePassword("");
+    setPasswordError("");
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      // First verify the password
+      const verifyResponse = await axios.post("/verify-password", {
+        user_id: user.id,
+        password: deletePassword,
+      });
+
+      if (verifyResponse.data.verified) {
+        // If password is verified, proceed with account deletion
+        await axios.delete(`/users/${user.id}`);
+        localStorage.removeItem("user");
+        showAlert("Account deleted successfully", "success");
+        setTimeout(() => {
+          navigate("/");
+        }, 2000);
+      } else {
+        setPasswordError("Incorrect password");
+      }
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      setPasswordError("Error deleting account. Please try again.");
+    }
+  };
 
   // Personal Information State
   const [personalInfo, setPersonalInfo] = useState({
@@ -379,6 +425,20 @@ const EditProfile = () => {
                 }
                 label="LGBT"
               />
+              <Box
+                sx={{
+                  display: "flex",
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={handleDeleteAccountClick}
+                  sx={{ textTransform: "none" }}
+                >
+                  Delete Account
+                </Button>
+              </Box>
             </Stack>
           )}
 
@@ -798,6 +858,44 @@ const EditProfile = () => {
           </Alert>
         </Snackbar>
       </Box>
+      <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
+        <DialogTitle sx={{ color: "error.main" }}>Delete Account</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1, minWidth: "300px" }}>
+            <Typography>
+              This action cannot be undone. Please enter your password to
+              confirm deletion.
+            </Typography>
+            <TextField
+              type="password"
+              label="Password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              error={!!passwordError}
+              helperText={passwordError}
+              fullWidth
+              required
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={handleCloseDeleteDialog}
+            sx={{ textTransform: "none" }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteAccount}
+            color="error"
+            variant="contained"
+            disabled={!deletePassword}
+            sx={{ textTransform: "none" }}
+          >
+            Delete Account
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AppTheme>
   );
 };

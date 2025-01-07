@@ -738,3 +738,118 @@ app.put("/users/:userId", (req, res) => {
     });
   });
 });
+
+// Verify password endpoint
+app.post("/verify-password", (req, res) => {
+  const { user_id, password } = req.body;
+
+  // Get user's stored password hash
+  const query = "SELECT password FROM users WHERE id = ?";
+  db.query(query, [user_id], (err, result) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Compare provided password with stored hash
+    const isValid = bcrypt.compareSync(password, result[0].password);
+    res.json({ verified: isValid });
+  });
+});
+
+// Delete account endpoint
+app.delete("/users/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    // Start a transaction
+    await new Promise((resolve, reject) => {
+      db.beginTransaction((err) => {
+        if (err) reject(err);
+        resolve();
+      });
+    });
+
+    // Delete from personality_traits
+    await new Promise((resolve, reject) => {
+      db.query(
+        "DELETE FROM personality_traits WHERE user_id = ?",
+        [userId],
+        (err) => {
+          if (err) reject(err);
+          resolve();
+        }
+      );
+    });
+
+    // Delete from personality_infomation
+    await new Promise((resolve, reject) => {
+      db.query(
+        "DELETE FROM personality_infomation WHERE user_id = ?",
+        [userId],
+        (err) => {
+          if (err) reject(err);
+          resolve();
+        }
+      );
+    });
+
+    // Delete from likes
+    await new Promise((resolve, reject) => {
+      db.query(
+        "DELETE FROM likes WHERE user_id = ? OR liked_user_id = ?",
+        [userId, userId],
+        (err) => {
+          if (err) reject(err);
+          resolve();
+        }
+      );
+    });
+
+    // Delete from matches
+    await new Promise((resolve, reject) => {
+      db.query(
+        "DELETE FROM matches WHERE user1_id = ? OR user2_id = ?",
+        [userId, userId],
+        (err) => {
+          if (err) reject(err);
+          resolve();
+        }
+      );
+    });
+
+    // Finally, delete the user
+    await new Promise((resolve, reject) => {
+      db.query("DELETE FROM users WHERE id = ?", [userId], (err) => {
+        if (err) reject(err);
+        resolve();
+      });
+    });
+
+    // Commit the transaction
+    await new Promise((resolve, reject) => {
+      db.commit((err) => {
+        if (err) reject(err);
+        resolve();
+      });
+    });
+
+    // Clear user session if it exists
+    if (req.session.user && req.session.user.id === parseInt(userId)) {
+      req.session.destroy();
+    }
+
+    res.json({ message: "Account deleted successfully" });
+  } catch (error) {
+    // Rollback on error
+    await new Promise((resolve) => {
+      db.rollback(() => resolve());
+    });
+    console.error("Error deleting account:", error);
+    res.status(500).json({ error: "Error deleting account" });
+  }
+});
