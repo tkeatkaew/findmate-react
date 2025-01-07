@@ -9,6 +9,7 @@ import Register from "./pages/Register";
 import Home from "./pages/Home";
 import PersonalInfo from "./pages/PersonalInfo";
 import PersonalityProfile from "./pages/PersonalityProfile";
+import EditProfile from "./pages/EditProfile";
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/personalInfo" element={<PersonalInfo />} />
         <Route path="/personalityprofile" element={<PersonalityProfile />} />
+        <Route path="/edit-profile" element={<EditProfile />} />
       </Routes>
     </Router>
   );

@@ -416,65 +416,325 @@ app.post(
 // Serve uploaded files statically
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Like Route
-app.post("/like", (req, res) => {
-  const { user_id, liked_user_id } = req.body;
+// Like/Unlike Route
+app.post("/like", async (req, res) => {
+  const { user_id, liked_user_id, action } = req.body;
 
-  const likeQuery = "INSERT INTO likes (user_id, liked_user_id) VALUES (?, ?)";
-  db.query(likeQuery, [user_id, liked_user_id], (err) => {
-    if (err) return res.status(500).json({ error: "Database error" });
-
-    const mutualLikeQuery = `
-          SELECT * FROM likes
-          WHERE user_id = ? AND liked_user_id = ?;
-      `;
-    db.query(mutualLikeQuery, [liked_user_id, user_id], (err, result) => {
-      if (err) return res.status(500).json({ error: "Database error" });
-
-      if (result.length > 0) {
-        const matchQuery = `
-                  INSERT INTO matches (user1_id, user2_id)
-                  VALUES (?, ?);
-              `;
-        db.query(matchQuery, [user_id, liked_user_id], (err) => {
-          if (err) return res.status(500).json({ error: "Database error" });
-          return res.status(200).json({ message: "Match created!" });
+  try {
+    if (action === "unlike") {
+      // Remove like
+      const unlikeQuery =
+        "DELETE FROM likes WHERE user_id = ? AND liked_user_id = ?";
+      await new Promise((resolve, reject) => {
+        db.query(unlikeQuery, [user_id, liked_user_id], (err) => {
+          if (err) reject(err);
+          resolve();
         });
-      } else {
-        return res.status(200).json({ message: "Like added!" });
+      });
+
+      // Remove match if exists
+      const removeMatchQuery = `
+        DELETE FROM matches 
+        WHERE (user1_id = ? AND user2_id = ?) 
+        OR (user1_id = ? AND user2_id = ?)
+      `;
+      await new Promise((resolve, reject) => {
+        db.query(
+          removeMatchQuery,
+          [user_id, liked_user_id, liked_user_id, user_id],
+          (err) => {
+            if (err) reject(err);
+            resolve();
+          }
+        );
+      });
+
+      return res
+        .status(200)
+        .json({ message: "Like and match removed successfully!" });
+    } else {
+      // Add like
+      const likeQuery =
+        "INSERT INTO likes (user_id, liked_user_id) VALUES (?, ?)";
+      await new Promise((resolve, reject) => {
+        db.query(likeQuery, [user_id, liked_user_id], (err) => {
+          if (err) reject(err);
+          resolve();
+        });
+      });
+
+      // Check for mutual like
+      const checkMutualLikeQuery =
+        "SELECT * FROM likes WHERE user_id = ? AND liked_user_id = ?";
+      const mutualLike = await new Promise((resolve, reject) => {
+        db.query(
+          checkMutualLikeQuery,
+          [liked_user_id, user_id],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      });
+
+      if (mutualLike.length > 0) {
+        // Create match
+        const createMatchQuery =
+          "INSERT INTO matches (user1_id, user2_id) VALUES (?, ?)";
+        await new Promise((resolve, reject) => {
+          db.query(createMatchQuery, [user_id, liked_user_id], (err) => {
+            if (err) reject(err);
+            resolve();
+          });
+        });
+        return res.status(200).json({ message: "Match created successfully!" });
       }
-    });
-  });
+
+      return res.status(200).json({ message: "Like added successfully!" });
+    }
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ error: "Database error: " + err.message });
+  }
 });
 
-// Liked Route
+// Get Liked Users Route
 app.get("/liked", (req, res) => {
   const { user_id } = req.query;
 
   const likedUsersQuery = `
-      SELECT u.id, u.name, u.profile_picture
-      FROM likes l
-      JOIN users u ON l.liked_user_id = u.id
-      WHERE l.user_id = ?;
+    SELECT u.id, u.name, u.profile_picture, pi.*, pt.*
+    FROM likes l
+    JOIN users u ON l.liked_user_id = u.id
+    LEFT JOIN personality_infomation pi ON u.id = pi.user_id
+    LEFT JOIN personality_traits pt ON u.id = pt.user_id
+    WHERE l.user_id = ?
   `;
+
   db.query(likedUsersQuery, [user_id], (err, results) => {
     if (err) return res.status(500).json({ error: "Database error" });
     res.status(200).json(results);
   });
 });
 
-// Match Route
+// Get Matches Route
 app.get("/matches", (req, res) => {
   const { user_id } = req.query;
 
   const matchesQuery = `
-      SELECT u.id, u.name, u.profile_picture
-      FROM matches m
-      JOIN users u ON (m.user1_id = u.id OR m.user2_id = u.id)
-      WHERE (m.user1_id = ? OR m.user2_id = ?) AND u.id != ?;
+    SELECT u.id, u.name, u.profile_picture, pi.*, pt.*
+    FROM matches m
+    JOIN users u ON (m.user1_id = u.id OR m.user2_id = u.id)
+    LEFT JOIN personality_infomation pi ON u.id = pi.user_id
+    LEFT JOIN personality_traits pt ON u.id = pt.user_id
+    WHERE (m.user1_id = ? OR m.user2_id = ?) AND u.id != ?
   `;
+
   db.query(matchesQuery, [user_id, user_id, user_id], (err, results) => {
     if (err) return res.status(500).json({ error: "Database error" });
     res.status(200).json(results);
+  });
+});
+
+// Check Like Status Route
+app.get("/check-like", (req, res) => {
+  const { user_id, target_user_id } = req.query;
+
+  const checkLikeQuery =
+    "SELECT * FROM likes WHERE user_id = ? AND liked_user_id = ?";
+  db.query(checkLikeQuery, [user_id, target_user_id], (err, result) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.status(200).json({ isLiked: result.length > 0 });
+  });
+});
+
+// Get user's personal information
+app.get("/personalinfo/:userId", (req, res) => {
+  const userId = req.params.userId;
+  const query = "SELECT * FROM personality_infomation WHERE user_id = ?";
+
+  db.query(query, [userId], (err, result) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    if (result.length === 0) {
+      return res.status(404).json({ error: "User information not found" });
+    }
+    res.status(200).json(result[0]);
+  });
+});
+
+// Get user's personality traits
+app.get("/personalitytraits/:userId", (req, res) => {
+  const userId = req.params.userId;
+  const query = "SELECT * FROM personality_traits WHERE user_id = ?";
+
+  db.query(query, [userId], (err, result) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    if (result.length === 0) {
+      return res.status(404).json({ error: "Personality traits not found" });
+    }
+    res.status(200).json(result[0]);
+  });
+});
+
+// Update user's personal information
+app.put("/personalinfo/:userId", (req, res) => {
+  const userId = req.params.userId;
+  const { firstname, lastname, nickname, age, maritalstatus, gender, lgbt } =
+    req.body;
+
+  const query = `
+    UPDATE personality_infomation 
+    SET firstname = ?, lastname = ?, nickname = ?, age = ?, 
+        maritalstatus = ?, gender = ?, lgbt = ?
+    WHERE user_id = ?
+  `;
+
+  db.query(
+    query,
+    [firstname, lastname, nickname, age, maritalstatus, gender, lgbt, userId],
+    (err, result) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res
+          .status(500)
+          .json({ error: "Error updating personal information" });
+      }
+      res
+        .status(200)
+        .json({ message: "Personal information updated successfully" });
+    }
+  );
+});
+
+// Update user's personality traits
+app.put("/personalitytraits/:userId", (req, res) => {
+  const userId = req.params.userId;
+  const {
+    type,
+    sleep,
+    wake,
+    clean,
+    air_conditioner,
+    drink,
+    smoke,
+    money,
+    expense,
+    pet,
+    cook,
+    loud,
+    friend,
+    religion,
+    period,
+  } = req.body;
+
+  const query = `
+    UPDATE personality_traits 
+    SET type = ?, sleep = ?, wake = ?, clean = ?, 
+        air_conditioner = ?, drink = ?, smoke = ?, 
+        money = ?, expense = ?, pet = ?, cook = ?, 
+        loud = ?, friend = ?, religion = ?, period = ?
+    WHERE user_id = ?
+  `;
+
+  const values = [
+    type,
+    sleep,
+    wake,
+    clean,
+    air_conditioner,
+    drink,
+    smoke,
+    money,
+    expense,
+    pet,
+    cook,
+    loud,
+    friend,
+    religion,
+    period,
+    userId,
+  ];
+
+  db.query(query, values, (err, result) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res
+        .status(500)
+        .json({ error: "Error updating personality traits" });
+    }
+
+    // Check if any rows were affected
+    if (result.affectedRows === 0) {
+      // If no existing record, insert a new one
+      const insertQuery = `
+        INSERT INTO personality_traits 
+        (user_id, type, sleep, wake, clean, air_conditioner, drink, 
+         smoke, money, expense, pet, cook, loud, friend, religion, period)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+
+      db.query(
+        insertQuery,
+        [userId, ...values.slice(0, -1)],
+        (insertErr, insertResult) => {
+          if (insertErr) {
+            console.error("Database error during insert:", insertErr);
+            return res
+              .status(500)
+              .json({ error: "Error creating personality traits" });
+          }
+          res
+            .status(201)
+            .json({ message: "Personality traits created successfully" });
+        }
+      );
+    } else {
+      res
+        .status(200)
+        .json({ message: "Personality traits updated successfully" });
+    }
+  });
+});
+
+// Update user profile
+app.put("/users/:userId", (req, res) => {
+  const userId = req.params.userId;
+  const { name, email } = req.body;
+
+  const query = `
+    UPDATE users 
+    SET name = ?, email = ?
+    WHERE id = ?
+  `;
+
+  db.query(query, [name, email, userId], (err, result) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Error updating user profile" });
+    }
+
+    // Update the user information in the session if it exists
+    if (req.session.user && req.session.user.id === parseInt(userId)) {
+      req.session.user = {
+        ...req.session.user,
+        name,
+        email,
+      };
+    }
+
+    res.status(200).json({
+      message: "User profile updated successfully",
+      user: {
+        id: userId,
+        name,
+        email,
+      },
+    });
   });
 });

@@ -7,15 +7,23 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import Modal from "@mui/material/Modal";
+import Alert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
 import AppTheme from "../AppTheme";
 
 const Discovery = () => {
-  const [users, setUsers] = useState([]); // State to hold fetched user data
-  const [selectedUser, setSelectedUser] = useState(null); // State to hold the selected user for details
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [likeStatus, setLikeStatus] = useState({});
+  const [alert, setAlert] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
 
-  // Map variable names to labels
+  // Label and value mappings for user traits
   const labelMapping = {
     type: "บุคลิกภาพ",
     sleep: "เวลานอน",
@@ -34,7 +42,6 @@ const Discovery = () => {
     period: "รูมเมทระยะยาว",
   };
 
-  // Map value names to descriptive labels
   const valueMapping = {
     type_introvert: "Introvert",
     type_extrovert: "Extrovert",
@@ -82,48 +89,84 @@ const Discovery = () => {
     period_no_need: "ไม่จำเป็น",
   };
 
-  // Redirect to login if user is not authenticated
   useEffect(() => {
     if (!user) {
       navigate("/login");
+    } else {
+      fetchUsers();
     }
   }, [user, navigate]);
 
-  // Fetch KNN data for the current user
-  useEffect(() => {
-    const fetchKnnData = async () => {
-      try {
-        const { data } = await axios.post("/knn", { user_id: user.id });
-        setUsers(data.neighbors); // Set neighbors data in state
-      } catch (err) {
-        console.error("Error fetching KNN data", err);
-      }
-    };
-
-    if (user) fetchKnnData();
-  }, [user]);
-
-  const handleLike = async (likedUserId) => {
+  // Fetch users and their like status
+  const fetchUsers = async () => {
     try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      await axios.post("/like", {
-        user_id: user.id,
-        liked_user_id: likedUserId,
-      });
-      alert("User liked!");
+      const { data } = await axios.post("/knn", { user_id: user.id });
+      setUsers(data.neighbors);
+
+      // Fetch like status for all users
+      const statuses = {};
+      for (const neighbor of data.neighbors) {
+        try {
+          const likeResponse = await axios.get("/check-like", {
+            params: {
+              user_id: user.id,
+              target_user_id: neighbor.user_id,
+            },
+          });
+          statuses[neighbor.user_id] = likeResponse.data.isLiked;
+        } catch (err) {
+          console.error("Error checking like status:", err);
+        }
+      }
+      setLikeStatus(statuses);
     } catch (err) {
-      alert("Error liking user");
+      console.error("Error fetching users:", err);
     }
   };
 
-  // Handle opening modal
-  const handleOpenDetails = (user) => {
-    setSelectedUser(user);
+  const handleLike = async (targetUserId, event) => {
+    if (event) {
+      event.stopPropagation();
+    }
+    setSelectedUser(null);
+    try {
+      const action = likeStatus[targetUserId] ? "unlike" : "like";
+      await axios.post("/like", {
+        user_id: user.id,
+        liked_user_id: targetUserId,
+        action: action,
+      });
+      setSelectedUser(null);
+
+      // Update local state
+      setLikeStatus((prev) => ({
+        ...prev,
+        [targetUserId]: !prev[targetUserId],
+      }));
+
+      showAlert(
+        action === "like"
+          ? "User liked successfully!"
+          : "User unliked successfully!",
+        "success"
+      );
+    } catch (err) {
+      setSelectedUser(null);
+      console.error("Error handling like:", err);
+      showAlert("Error processing your request", "error");
+    }
   };
 
-  // Handle closing modal
-  const handleCloseDetails = () => {
-    setSelectedUser(null);
+  const showAlert = (message, severity) => {
+    setAlert({
+      open: true,
+      message,
+      severity,
+    });
+  };
+
+  const handleCloseAlert = () => {
+    setAlert({ ...alert, open: false });
   };
 
   return (
@@ -179,8 +222,8 @@ const Discovery = () => {
           {users.length > 0 ? (
             <Box
               sx={{
-                maxHeight: "79vh", // Adjust as needed for desired height
-                overflowY: "auto", // Enable vertical scrolling
+                maxHeight: "79vh",
+                overflowY: "auto",
                 paddingRight: "1rem",
                 borderRadius: "15px",
               }}
@@ -195,36 +238,53 @@ const Discovery = () => {
                       boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
                       borderRadius: "15px",
                       cursor: "pointer",
+                      "&:hover": {
+                        backgroundColor: "rgba(0, 0, 0, 0.04)",
+                      },
                     }}
-                    onClick={() => handleOpenDetails(neighbor)}
+                    onClick={() => setSelectedUser(neighbor)}
                   >
-                    <img
-                      src={
-                        neighbor.traits.profile_picture ||
-                        "http://localhost:3000/uploads/anonymous.jpg"
-                      }
-                      // alt="Profile"
-                      style={{
-                        width: "50px",
-                        height: "50px",
-                        borderRadius: "50%",
-                        marginRight: "1rem",
-                      }}
-                    />
-
-                    <Typography variant="h6">
-                      {neighbor.traits.nickname || "No Nickname"} -{" "}
-                      {neighbor.similarity}% Similar
-                    </Typography>
-                    {["type", "clean", "drink", "smoke", "expense", "loud"].map(
-                      (key) => (
-                        <Typography key={key} variant="body2">
-                          <strong>{labelMapping[key]}:</strong>{" "}
-                          {valueMapping[neighbor.traits[key]] ||
-                            neighbor.traits[key]}
-                        </Typography>
-                      )
-                    )}
+                    <Stack
+                      direction="row"
+                      spacing={2}
+                      alignItems="center"
+                      justifyContent="space-between"
+                    >
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <img
+                          src={
+                            neighbor.traits.profile_picture ||
+                            "http://localhost:3000/uploads/anonymous.jpg"
+                          }
+                          alt="Profile"
+                          style={{
+                            width: "50px",
+                            height: "50px",
+                            borderRadius: "50%",
+                          }}
+                        />
+                        <Box>
+                          <Typography variant="h6">
+                            {neighbor.traits.nickname || "Anonymous"} -{" "}
+                            {neighbor.similarity}% Similar
+                          </Typography>
+                          {[
+                            "type",
+                            "clean",
+                            "drink",
+                            "smoke",
+                            "expense",
+                            "loud",
+                          ].map((key) => (
+                            <Typography key={key} variant="body2">
+                              <strong>{labelMapping[key]}:</strong>{" "}
+                              {valueMapping[neighbor.traits[key]] ||
+                                neighbor.traits[key]}
+                            </Typography>
+                          ))}
+                        </Box>
+                      </Stack>
+                    </Stack>
                   </Paper>
                 ))}
               </Stack>
@@ -239,9 +299,9 @@ const Discovery = () => {
       {selectedUser && (
         <Modal
           open={!!selectedUser}
-          onClose={handleCloseDetails}
+          onClose={() => setSelectedUser(null)}
           aria-labelledby="user-details-modal"
-          aria-describedby="user-details-modal-description"
+          aria-describedby="user-details-description"
         >
           <Box
             sx={{
@@ -255,49 +315,78 @@ const Discovery = () => {
               padding: "2rem",
               boxShadow: 24,
               borderRadius: "15px",
+              maxHeight: "90vh",
+              overflowY: "auto",
             }}
           >
-            <img
-              src={
-                selectedUser.profile_picture ||
-                "http://localhost:3000/uploads/anonymous.jpg"
-              }
-              // alt="Profile"
-              style={{
-                width: "50px",
-                height: "50px",
-                borderRadius: "50%",
-                marginRight: "1rem",
-              }}
-            />
-            <Typography id="user-details-modal" variant="h5" gutterBottom>
-              {selectedUser.traits.nickname} - {selectedUser.similarity}%
-              Similar
-            </Typography>
+            <Stack
+              direction="row"
+              spacing={2}
+              alignItems="center"
+              sx={{ mb: 2 }}
+            >
+              <img
+                src={
+                  selectedUser.traits.profile_picture ||
+                  "http://localhost:3000/uploads/anonymous.jpg"
+                }
+                alt="Profile"
+                style={{
+                  width: "80px",
+                  height: "80px",
+                  borderRadius: "50%",
+                }}
+              />
+              <Typography variant="h5" component="h2">
+                {selectedUser.traits.nickname || "Anonymous"} -{" "}
+                {selectedUser.similarity}% Similar
+              </Typography>
+            </Stack>
 
             <Stack spacing={2}>
               {Object.entries(selectedUser.traits).map(
                 ([key, value]) =>
                   labelMapping[key] && (
-                    <Typography key={key} variant="body2">
+                    <Typography key={key} variant="body1">
                       <strong>{labelMapping[key]}:</strong>{" "}
                       {valueMapping[value] || value}
                     </Typography>
                   )
               )}
             </Stack>
-            <Button
-              onClick={() => handleLike(selectedUser.traits.user_id)}
-              variant="contained"
-            >
-              Like
-            </Button>
-            <Button variant="contained" onClick={handleCloseDetails}>
-              Close
-            </Button>
+
+            <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+              <Button
+                variant="contained"
+                color={likeStatus[selectedUser.user_id] ? "error" : "primary"}
+                onClick={() => handleLike(selectedUser.user_id)}
+              >
+                {likeStatus[selectedUser.user_id] ? "Unlike" : "Like"}
+              </Button>
+              <Button variant="outlined" onClick={() => setSelectedUser(null)}>
+                Close
+              </Button>
+            </Stack>
           </Box>
         </Modal>
       )}
+
+      {/* Alert Snackbar */}
+      <Snackbar
+        open={alert.open}
+        autoHideDuration={6000}
+        onClose={handleCloseAlert}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseAlert}
+          severity={alert.severity}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {alert.message}
+        </Alert>
+      </Snackbar>
     </AppTheme>
   );
 };

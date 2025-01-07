@@ -8,10 +8,18 @@ import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import Modal from "@mui/material/Modal";
 import AppTheme from "../AppTheme";
+import Alert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
 
 const Liked = () => {
   const [likedUsers, setLikedUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [likeStatus, setLikeStatus] = useState({});
+  const [alert, setAlert] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -81,36 +89,69 @@ const Liked = () => {
     period_no_need: "ไม่จำเป็น",
   };
 
-  // Redirect to login if user is not authenticated
   useEffect(() => {
     if (!user) {
       navigate("/login");
+    } else {
+      fetchLikedUsers();
     }
   }, [user, navigate]);
 
-  // Fetch liked users
-  useEffect(() => {
-    const fetchLikedUsers = async () => {
-      try {
-        const { data } = await axios.get("/liked", {
-          params: { user_id: user.id },
-        });
-        setLikedUsers(data);
-      } catch (err) {
-        console.error("Error fetching liked users", err);
-      }
-    };
-    fetchLikedUsers();
-  }, [user]);
-
-  // Handle opening modal
-  const handleOpenDetails = (user) => {
-    setSelectedUser(user);
+  const fetchLikedUsers = async () => {
+    try {
+      const { data } = await axios.get("/liked", {
+        params: { user_id: user.id },
+      });
+      setLikedUsers(data);
+    } catch (err) {
+      console.error("Error fetching liked users:", err);
+      showAlert("Error fetching liked users", "error");
+    }
   };
 
-  // Handle closing modal
-  const handleCloseDetails = () => {
+  const handleLike = async (targetUserId, event) => {
+    if (event) {
+      event.stopPropagation();
+    }
     setSelectedUser(null);
+    try {
+      const action = "unlike";
+      await axios.post("/like", {
+        user_id: user.id,
+        liked_user_id: targetUserId,
+        action: action,
+      });
+      setSelectedUser(null);
+
+      // Update local state
+      setLikeStatus((prev) => ({
+        ...prev,
+        [targetUserId]: !prev[targetUserId],
+      }));
+
+      showAlert(
+        action === "like"
+          ? "User liked successfully!"
+          : "User unliked successfully!",
+        "success"
+      );
+    } catch (err) {
+      setSelectedUser(null);
+      console.error("Error handling like:", err);
+      showAlert("Error processing your request", "error");
+    }
+  };
+
+  const showAlert = (message, severity) => {
+    setAlert({
+      open: true,
+      message,
+      severity,
+    });
+  };
+
+  const handleCloseAlert = () => {
+    setAlert({ ...alert, open: false });
   };
 
   return (
@@ -182,22 +223,51 @@ const Liked = () => {
                       boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
                       borderRadius: "15px",
                       cursor: "pointer",
+                      "&:hover": {
+                        backgroundColor: "rgba(0, 0, 0, 0.04)",
+                      },
                     }}
-                    onClick={() => handleOpenDetails(likedUser)}
+                    onClick={() => setSelectedUser(likedUser)}
                   >
-                    <img
-                      src={likedUser.profile_picture || "/default-profile.png"}
-                      alt="Profile"
-                      style={{
-                        width: "50px",
-                        height: "50px",
-                        borderRadius: "50%",
-                        marginRight: "1rem",
-                      }}
-                    />
-                    <Typography variant="h6">
-                      {likedUser.name || "No Name"}
-                    </Typography>
+                    <Stack
+                      direction="row"
+                      spacing={2}
+                      alignItems="center"
+                      justifyContent="space-between"
+                    >
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <img
+                          src={
+                            likedUser.profile_picture ||
+                            "http://localhost:3000/uploads/anonymous.jpg"
+                          }
+                          alt="Profile"
+                          style={{
+                            width: "50px",
+                            height: "50px",
+                            borderRadius: "50%",
+                          }}
+                        />
+                        <Box>
+                          <Typography variant="h6">
+                            {likedUser.nickname || likedUser.name}
+                          </Typography>
+                          {[
+                            "type",
+                            "clean",
+                            "drink",
+                            "smoke",
+                            "expense",
+                            "loud",
+                          ].map((key) => (
+                            <Typography key={key} variant="body2">
+                              <strong>{labelMapping[key]}:</strong>{" "}
+                              {valueMapping[likedUser[key]] || likedUser[key]}
+                            </Typography>
+                          ))}
+                        </Box>
+                      </Stack>
+                    </Stack>
                   </Paper>
                 ))}
               </Stack>
@@ -208,13 +278,12 @@ const Liked = () => {
         </Box>
       </Box>
 
-      {/* Modal for User Details */}
+      {/* Modal for User Details - Same structure as Discovery page */}
       {selectedUser && (
         <Modal
           open={!!selectedUser}
-          onClose={handleCloseDetails}
+          onClose={() => setSelectedUser(null)}
           aria-labelledby="user-details-modal"
-          aria-describedby="user-details-modal-description"
         >
           <Box
             sx={{
@@ -228,32 +297,76 @@ const Liked = () => {
               padding: "2rem",
               boxShadow: 24,
               borderRadius: "15px",
+              maxHeight: "90vh",
+              overflowY: "auto",
             }}
           >
-            <Typography id="user-details-modal" variant="h5" gutterBottom>
-              {selectedUser.name}
-            </Typography>
+            <Stack
+              direction="row"
+              spacing={2}
+              alignItems="center"
+              sx={{ mb: 2 }}
+            >
+              <img
+                src={
+                  selectedUser.profile_picture ||
+                  "http://localhost:3000/uploads/anonymous.jpg"
+                }
+                alt="Profile"
+                style={{
+                  width: "80px",
+                  height: "80px",
+                  borderRadius: "50%",
+                }}
+              />
+              <Typography variant="h5" component="h2">
+                {selectedUser.nickname || selectedUser.name}
+              </Typography>
+            </Stack>
+
             <Stack spacing={2}>
               {Object.entries(selectedUser).map(
                 ([key, value]) =>
                   labelMapping[key] && (
-                    <Typography key={key} variant="body2">
+                    <Typography key={key} variant="body1">
                       <strong>{labelMapping[key]}:</strong>{" "}
                       {valueMapping[value] || value}
                     </Typography>
                   )
               )}
             </Stack>
-            <Button
-              variant="contained"
-              onClick={handleCloseDetails}
-              sx={{ marginTop: "1rem" }}
-            >
-              Close
-            </Button>
+
+            <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={() => handleLike(selectedUser.user_id)}
+              >
+                Unlike
+              </Button>
+              <Button variant="outlined" onClick={() => setSelectedUser(null)}>
+                Close
+              </Button>
+            </Stack>
           </Box>
         </Modal>
       )}
+
+      {/* Alert Snackbar */}
+      <Snackbar
+        open={alert.open}
+        autoHideDuration={6000}
+        onClose={handleCloseAlert}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseAlert}
+          severity={alert.severity}
+          variant="filled"
+        >
+          {alert.message}
+        </Alert>
+      </Snackbar>
     </AppTheme>
   );
 };

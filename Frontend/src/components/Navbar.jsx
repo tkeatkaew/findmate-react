@@ -1,16 +1,35 @@
-import React from "react";
-import { Link } from "react-router-dom";
-
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
-
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 import AppTheme from "../AppTheme";
 
 const Navbar = () => {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const navigate = useNavigate();
   const isAuthenticated = !!localStorage.getItem("user");
+  const user = isAuthenticated
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem("user");
+    handleClose();
+    navigate("/");
+  };
 
   return (
     <AppTheme>
@@ -73,21 +92,52 @@ const Navbar = () => {
             </Button>
           </Stack>
 
-          {/* Right: Login/Logout */}
+          {/* Right: Profile/Login */}
           {isAuthenticated ? (
-            <Button
-              variant="contained"
-              color="primary"
-              component={Link}
-              to="/"
-              onClick={() => localStorage.removeItem("user")}
-              sx={{
-                flex: "0 1 auto",
-                textTransform: "none",
-              }}
-            >
-              Sign out
-            </Button>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Typography variant="body1">{user.name}</Typography>
+              <Box
+                onClick={handleClick}
+                sx={{
+                  cursor: "pointer",
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                }}
+              >
+                <img
+                  src={
+                    user.profile_picture ||
+                    "http://localhost:3000/uploads/anonymous.jpg"
+                  }
+                  alt="Profile"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              </Box>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "right",
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+              >
+                <MenuItem
+                  component={Link}
+                  to="/edit-profile"
+                  onClick={handleClose}
+                >
+                  Edit Profile
+                </MenuItem>
+                <MenuItem onClick={handleSignOut}>Sign out</MenuItem>
+              </Menu>
+            </Box>
           ) : (
             <Button
               variant="contained"
