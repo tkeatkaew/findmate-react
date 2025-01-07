@@ -322,7 +322,7 @@ const Matched = () => {
               {Object.entries(selectedUser).map(
                 ([key, value]) =>
                   labelMapping[key] && (
-                    <Typography key={key} variant="body2">
+                    <Typography key={key} variant="body1">
                       <strong>{labelMapping[key]}:</strong>{" "}
                       {valueMapping[value] || value}
                     </Typography>

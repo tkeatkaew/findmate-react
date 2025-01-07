@@ -69,7 +69,7 @@ const Register = () => {
           {message && <p>{message}</p>}
           <form onSubmit={handleSubmit}>
             <Stack spacing={2}>
-              <TextField
+              {/* <TextField
                 required
                 type="text"
                 label="Username"
@@ -77,7 +77,7 @@ const Register = () => {
                 fullWidth
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-              />
+              /> */}
               <TextField
                 required
                 type="email"

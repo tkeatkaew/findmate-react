@@ -54,7 +54,7 @@ const PersonalityProfile = () => {
             variant="h4"
             sx={{ textAlign: "center", fontWeight: 500 }}
           >
-            Personality Profile
+            ลักษณะนิสัย
           </Typography>
           <form onSubmit={handleSubmit}>
             <Stack spacing={2}>
@@ -396,7 +396,7 @@ const PersonalityProfile = () => {
                 fullWidth
                 sx={{ textTransform: "none" }}
               >
-                Save & Proceed
+                บันทึก
               </Button>
             </Stack>
           </form>

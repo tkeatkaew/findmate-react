@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Jan 07, 2025 at 01:32 AM
+-- Generation Time: Jan 07, 2025 at 03:23 PM
 -- Server version: 8.0.35
 -- PHP Version: 8.3.9
 
@@ -20,6 +20,47 @@ SET time_zone = "+00:00";
 --
 -- Database: `findmatev3`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `likes`
+--
+
+CREATE TABLE `likes` (
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `liked_user_id` int NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `likes`
+--
+
+INSERT INTO `likes` (`id`, `user_id`, `liked_user_id`, `created_at`) VALUES
+(15, 41, 38, '2025-01-07 11:38:41'),
+(46, 38, 41, '2025-01-07 15:22:46');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `matches`
+--
+
+CREATE TABLE `matches` (
+  `id` int NOT NULL,
+  `user1_id` int NOT NULL,
+  `user2_id` int NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `matches`
+--
+
+INSERT INTO `matches` (`id`, `user1_id`, `user2_id`, `created_at`) VALUES
+(27, 38, 41, '2025-01-07 15:22:46');
 
 -- --------------------------------------------------------
 
@@ -53,12 +94,7 @@ INSERT INTO `personality_infomation` (`id`, `user_id`, `firstname`, `lastname`, 
 (25, 44, 'f', 'f', 'f', 24, 'inrelationship', 'male', 1),
 (26, 45, 'g', 'g', 'g', 45, 'single', 'male', 1),
 (27, 46, 'h', 'h', 'h', 45, 'inrelationship', 'female', 1),
-(28, 47, 'i', 'i', 'i', 41, 'inrelationship', 'female', 1),
-(29, 48, 'j', 'j', 'j', 21, 'inrelationship', 'male', 1),
-(30, 49, 'k', 'k', 'k', 35, 'inrelationship', 'female', 0),
-(31, 50, 'l', 'l', 'l', 11, 'single', 'male', 0),
-(32, 51, 'm', 'm', 'm', 18, 'single', 'male', 0),
-(33, 55, 'q', 'q', 'q', 21, 'inrelationship', 'male', 1);
+(28, 47, 'i', 'i', 'i', 41, 'inrelationship', 'female', 1);
 
 -- --------------------------------------------------------
 
@@ -100,8 +136,7 @@ INSERT INTO `personality_traits` (`id`, `user_id`, `type`, `sleep`, `wake`, `cle
 (7, 44, 'type_introvert', 'sleep_before_midnight', 'wake_morning', 'clean_every_day', 'ac_never', 'drink_spacial', 'smoke_spacial', 'money_on_time', 'money_half', 'pet_dont_have', 'cook_ok', 'loud_low', 'friend_tell_first', 'religion_no_affect', 'period_sometime'),
 (8, 45, 'type_introvert', 'sleep_after_midnight', 'wake_morning', 'clean_every_other_day', 'ac_only_sleep', 'drink_never', 'smoke_never', 'money_late', 'money_half', 'pet_have', 'cook_no', 'loud_medium', 'friend_tell_first', 'religion_ok', 'period_sometime'),
 (9, 46, 'type_extrovert', 'sleep_after_midnight', 'wake_noon', 'clean_every_other_day', 'ac_only_hot', 'drink_never', 'smoke_never', 'money_late', 'money_half', 'pet_have', 'cook_tell_first', 'loud_medium', 'friend_no', 'religion_ok', 'period_no_need'),
-(10, 47, 'type_ambivert', 'sleep_before_midnight', 'wake_noon', 'clean_every_other_day', 'ac_all_day', 'drink_weekend', 'smoke_spacial', 'money_late', 'money_ratio', 'pet_have', 'cook_tell_first', 'loud_medium', 'friend_tell_first', 'religion_no_affect', 'period_no_need'),
-(11, 48, 'type_extrovert', 'sleep_after_midnight', 'wake_evening', 'clean_once_a_week', 'ac_all_day', 'drink_weekend', 'smoke_always', 'money_late', 'money_ratio', 'pet_have', 'cook_no', 'loud_medium', 'friend_no', 'religion_no_affect', 'period_sometime');
+(10, 47, 'type_ambivert', 'sleep_before_midnight', 'wake_noon', 'clean_every_other_day', 'ac_all_day', 'drink_weekend', 'smoke_spacial', 'money_late', 'money_ratio', 'pet_have', 'cook_tell_first', 'loud_medium', 'friend_tell_first', 'religion_no_affect', 'period_no_need');
 
 -- --------------------------------------------------------
 
@@ -132,19 +167,27 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `profile_picture
 (44, 'f', 'f@gmail.com', '$2a$10$kamIl0qNjt88zKiVUuM0K..ZqkK6A8csCtbns1MDssW86c1L0ibO6', 'user', NULL),
 (45, 'g', 'g@gmail.com', '$2a$10$/5wLfKZ3QJlGJ8NsTRYWnuFm0QT854AegdcXg3iUHUGivlCFpg2.O', 'user', NULL),
 (46, 'h', 'h@gmail.com', '$2a$10$uMrV6ZpmUBLUTWtkxLLtfOwhKahe3SMfNDuWk0p/XEYKbt5Wk8jKC', 'user', NULL),
-(47, 'i', 'i@gmail.com', '$2a$10$UJZh0fhHxSjR4vAjei5AQel0Ya1E/.gJjm5WafX/uQX8v4ck0iKq.', 'user', NULL),
-(48, 'j', 'j@gmail.com', '$2a$10$dZfjpNuu7FmLiudQJ/8W1OZGv5xfzZxxWVbqhg6mosuIjfG8b2FD6', 'user', NULL),
-(49, 'k', 'k@gmail.com', '$2a$10$h1MvKFfo1cAElkWi91l/6ewR1C/LBcOjAmX.dNMRPgetg.aM20YZ.', 'user', NULL),
-(50, 'l', 'l@gmail.com', '$2a$10$eoOTlQ3m0qSLCWaEBMvJEeDQi2sXWcHA/AOD8vYVtyR6MwuvveDSS', 'user', NULL),
-(51, 'm', 'm@gmail.com', '$2a$10$tmNDHoAFzePKWscron.OW.ZTVHY79.RXZUsGmf.x5Ti/QN/ntBN22', 'user', NULL),
-(52, 'n', 'n@gmail.com', '$2a$10$abUQHgw/9jsqD9NOVSViNOiu1wwor30VcZF07WcYtihGCtySGGY72', 'user', NULL),
-(53, 'o', 'o@gmail.com', '$2a$10$rxIX1.4VHaE3ZmQ4Xkras.pT/fKaPp1zMekUqVLM/ETTYjfViIQZy', 'user', NULL),
-(54, 'p', 'p@gmail.com', '$2a$10$ubExftsZRGAPxU6m.xva4.zCCXtpbFHtzrOTVJN4TvC5id064XG0y', 'user', NULL),
-(55, 'q', 'q@gmail.com', '$2a$10$275Ra0PU9XF8L82eQ9CXcuU/fEksw6M3V79pNAIziz4jQjh2DlR/e', 'user', '/uploads/1736211272322-James.jpg');
+(47, 'i', 'i@gmail.com', '$2a$10$qVAqdcw5/48OQyPFmevqd.pSNxceA6pkkIS82.qP89o.4xEAZmBGW', 'user', NULL);
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `likes`
+--
+ALTER TABLE `likes`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_like` (`user_id`,`liked_user_id`),
+  ADD KEY `liked_user_id` (`liked_user_id`);
+
+--
+-- Indexes for table `matches`
+--
+ALTER TABLE `matches`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_match` (`user1_id`,`user2_id`),
+  ADD KEY `user2_id` (`user2_id`);
 
 --
 -- Indexes for table `personality_infomation`
@@ -171,6 +214,18 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `likes`
+--
+ALTER TABLE `likes`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+
+--
+-- AUTO_INCREMENT for table `matches`
+--
+ALTER TABLE `matches`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+
+--
 -- AUTO_INCREMENT for table `personality_infomation`
 --
 ALTER TABLE `personality_infomation`
@@ -191,6 +246,20 @@ ALTER TABLE `users`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `likes`
+--
+ALTER TABLE `likes`
+  ADD CONSTRAINT `likes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `likes_ibfk_2` FOREIGN KEY (`liked_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `matches`
+--
+ALTER TABLE `matches`
+  ADD CONSTRAINT `matches_ibfk_1` FOREIGN KEY (`user1_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `matches_ibfk_2` FOREIGN KEY (`user2_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `personality_infomation`

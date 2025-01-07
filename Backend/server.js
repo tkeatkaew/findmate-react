@@ -103,6 +103,8 @@ app.post("/personalinfo", (req, res) => {
     maritalstatus,
     gender,
     lgbt,
+    province,
+    university,
   } = req.body;
 
   // Check if the user exists in the `users` table
@@ -117,7 +119,9 @@ app.post("/personalinfo", (req, res) => {
     age,
     maritalstatus,
     gender,
-    lgbt
+    lgbt,
+    province,
+    university
   );
 
   db.query(checkEmailQuery, [email], (err, result) => {
@@ -129,7 +133,7 @@ app.post("/personalinfo", (req, res) => {
       // User exists, insert data into the `findmate` table
       const userId = result[0].id;
       const insertPersonalInfoQuery =
-        "INSERT INTO personality_infomation (user_id, firstname, lastname, nickname, age, maritalstatus, gender, lgbt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        "INSERT INTO personality_infomation (user_id, firstname, lastname, nickname, age, maritalstatus, gender, lgbt, province, university) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
       db.query(
         insertPersonalInfoQuery,
         [
@@ -141,6 +145,8 @@ app.post("/personalinfo", (req, res) => {
           maritalstatus,
           gender,
           lgbt,
+          province,
+          university,
         ],
         (err, result) => {
           if (err) {
@@ -262,8 +268,8 @@ app.post("/knn", (req, res) => {
     const encodeTrait = (trait) => {
       const traitMap = {
         type_introvert: 1,
-        type_extrovert: 2,
-        type_ambivert: 3,
+        type_ambivert: 2,
+        type_extrovert: 3,
         sleep_before_midnight: 1,
         sleep_after_midnight: 2,
         wake_morning: 1,
@@ -585,19 +591,39 @@ app.get("/personalitytraits/:userId", (req, res) => {
 // Update user's personal information
 app.put("/personalinfo/:userId", (req, res) => {
   const userId = req.params.userId;
-  const { firstname, lastname, nickname, age, maritalstatus, gender, lgbt } =
-    req.body;
+  const {
+    firstname,
+    lastname,
+    nickname,
+    age,
+    maritalstatus,
+    gender,
+    lgbt,
+    province,
+    university,
+  } = req.body;
 
   const query = `
     UPDATE personality_infomation 
     SET firstname = ?, lastname = ?, nickname = ?, age = ?, 
-        maritalstatus = ?, gender = ?, lgbt = ?
+        maritalstatus = ?, gender = ?, lgbt = ?, province = ?, university = ?
     WHERE user_id = ?
   `;
 
   db.query(
     query,
-    [firstname, lastname, nickname, age, maritalstatus, gender, lgbt, userId],
+    [
+      firstname,
+      lastname,
+      nickname,
+      age,
+      maritalstatus,
+      gender,
+      lgbt,
+      province,
+      university,
+      userId,
+    ],
     (err, result) => {
       if (err) {
         console.error("Database error:", err);
