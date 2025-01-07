@@ -246,6 +246,110 @@ const EditProfile = () => {
     }
   };
 
+  const [changePasswordDialogOpen, setChangePasswordDialogOpen] =
+    useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordErrors, setPasswordErrors] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  // Add these functions in the EditProfile component
+  const handleChangePasswordClick = () => {
+    setChangePasswordDialogOpen(true);
+    setPasswordForm({
+      oldPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+    setPasswordErrors({
+      oldPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+  };
+
+  const handleClosePasswordDialog = () => {
+    setChangePasswordDialogOpen(false);
+  };
+
+  const handlePasswordFormChange = (field) => (e) => {
+    setPasswordForm((prev) => ({
+      ...prev,
+      [field]: e.target.value,
+    }));
+    // Clear error when user starts typing
+    if (passwordErrors[field]) {
+      setPasswordErrors((prev) => ({
+        ...prev,
+        [field]: "",
+      }));
+    }
+  };
+
+  const validatePasswordForm = () => {
+    const errors = {};
+
+    if (!passwordForm.oldPassword) {
+      errors.oldPassword = "Please enter your current password";
+    }
+
+    if (!passwordForm.newPassword) {
+      errors.newPassword = "Please enter a new password";
+    } else if (passwordForm.newPassword.length < 6) {
+      errors.newPassword = "Password must be at least 6 characters long";
+    }
+
+    if (!passwordForm.confirmPassword) {
+      errors.confirmPassword = "Please confirm your new password";
+    } else if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
+    }
+
+    return errors;
+  };
+
+  const handleChangePassword = async () => {
+    // Validate form
+    const errors = validatePasswordForm();
+    if (Object.keys(errors).length > 0) {
+      setPasswordErrors(errors);
+      return;
+    }
+
+    try {
+      // First verify old password
+      const verifyResponse = await axios.post("/verify-password", {
+        user_id: user.id,
+        password: passwordForm.oldPassword,
+      });
+
+      if (!verifyResponse.data.verified) {
+        setPasswordErrors((prev) => ({
+          ...prev,
+          oldPassword: "Current password is incorrect",
+        }));
+        return;
+      }
+
+      // If old password is correct, update to new password
+      await axios.put(`/users/${user.id}/password`, {
+        newPassword: passwordForm.newPassword,
+      });
+
+      handleClosePasswordDialog();
+      showAlert("Password changed successfully!", "success");
+    } catch (error) {
+      console.error("Error changing password:", error);
+      showAlert("Error changing password. Please try again.", "error");
+    }
+  };
+
   // Loading screen
   if (isLoading) {
     return (
@@ -430,6 +534,14 @@ const EditProfile = () => {
                   display: "flex",
                 }}
               >
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={handleChangePasswordClick}
+                  sx={{ textTransform: "none" }}
+                >
+                  Change Password
+                </Button>
                 <Button
                   variant="outlined"
                   color="error"
@@ -893,6 +1005,67 @@ const EditProfile = () => {
             sx={{ textTransform: "none" }}
           >
             Delete Account
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Add this Dialog component before the Delete Account dialog */}
+      <Dialog
+        open={changePasswordDialogOpen}
+        onClose={handleClosePasswordDialog}
+      >
+        <DialogTitle>Change Password</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1, minWidth: "300px" }}>
+            <TextField
+              type="password"
+              label="Current Password"
+              value={passwordForm.oldPassword}
+              onChange={handlePasswordFormChange("oldPassword")}
+              error={!!passwordErrors.oldPassword}
+              helperText={passwordErrors.oldPassword}
+              fullWidth
+              required
+            />
+            <TextField
+              type="password"
+              label="New Password"
+              value={passwordForm.newPassword}
+              onChange={handlePasswordFormChange("newPassword")}
+              error={!!passwordErrors.newPassword}
+              helperText={passwordErrors.newPassword}
+              fullWidth
+              required
+            />
+            <TextField
+              type="password"
+              label="Confirm New Password"
+              value={passwordForm.confirmPassword}
+              onChange={handlePasswordFormChange("confirmPassword")}
+              error={!!passwordErrors.confirmPassword}
+              helperText={passwordErrors.confirmPassword}
+              fullWidth
+              required
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={handleClosePasswordDialog}
+            sx={{ textTransform: "none" }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleChangePassword}
+            variant="contained"
+            sx={{ textTransform: "none" }}
+            disabled={
+              !passwordForm.oldPassword ||
+              !passwordForm.newPassword ||
+              !passwordForm.confirmPassword
+            }
+          >
+            Change Password
           </Button>
         </DialogActions>
       </Dialog>

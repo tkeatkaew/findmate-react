@@ -853,3 +853,28 @@ app.delete("/users/:userId", async (req, res) => {
     res.status(500).json({ error: "Error deleting account" });
   }
 });
+
+// Change password endpoint
+app.put("/users/:userId/password", (req, res) => {
+  const userId = req.params.userId;
+  const { newPassword } = req.body;
+
+  // Hash the new password
+  const hashedPassword = bcrypt.hashSync(newPassword, 10);
+
+  // Update the password in the database
+  const query = "UPDATE users SET password = ? WHERE id = ?";
+
+  db.query(query, [hashedPassword, userId], (err, result) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Error updating password" });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({ message: "Password updated successfully" });
+  });
+});
