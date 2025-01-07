@@ -103,6 +103,19 @@ const Discovery = () => {
     if (user) fetchKnnData();
   }, [user]);
 
+  const handleLike = async (likedUserId) => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      await axios.post("/like", {
+        user_id: user.id,
+        liked_user_id: likedUserId,
+      });
+      alert("User liked!");
+    } catch (err) {
+      alert("Error liking user");
+    }
+  };
+
   // Handle opening modal
   const handleOpenDetails = (user) => {
     setSelectedUser(user);
@@ -164,36 +177,58 @@ const Discovery = () => {
             Discover Similar Users
           </Typography>
           {users.length > 0 ? (
-            <Stack spacing={2}>
-              {users.map((neighbor) => (
-                <Paper
-                  key={neighbor.user_id}
-                  sx={{
-                    padding: "1rem",
-                    border: "1px solid #eee",
-                    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
-                    borderRadius: "15px",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => handleOpenDetails(neighbor)}
-                >
-                  <Typography variant="h6">
-                    {neighbor.traits.nickname || "No Nickname"} -{" "}
-                    {neighbor.similarity}% Similar
-                  </Typography>
+            <Box
+              sx={{
+                maxHeight: "79vh", // Adjust as needed for desired height
+                overflowY: "auto", // Enable vertical scrolling
+                paddingRight: "1rem",
+                borderRadius: "15px",
+              }}
+            >
+              <Stack spacing={2}>
+                {users.map((neighbor) => (
+                  <Paper
+                    key={neighbor.user_id}
+                    sx={{
+                      padding: "1rem",
+                      border: "1px solid #eee",
+                      boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
+                      borderRadius: "15px",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => handleOpenDetails(neighbor)}
+                  >
+                    <img
+                      src={
+                        neighbor.traits.profile_picture ||
+                        "http://localhost:3000/uploads/anonymous.jpg"
+                      }
+                      // alt="Profile"
+                      style={{
+                        width: "50px",
+                        height: "50px",
+                        borderRadius: "50%",
+                        marginRight: "1rem",
+                      }}
+                    />
 
-                  {["type", "clean", "drink", "smoke", "expense", "loud"].map(
-                    (key) => (
-                      <Typography key={key} variant="body2">
-                        <strong>{labelMapping[key]}:</strong>{" "}
-                        {valueMapping[neighbor.traits[key]] ||
-                          neighbor.traits[key]}
-                      </Typography>
-                    )
-                  )}
-                </Paper>
-              ))}
-            </Stack>
+                    <Typography variant="h6">
+                      {neighbor.traits.nickname || "No Nickname"} -{" "}
+                      {neighbor.similarity}% Similar
+                    </Typography>
+                    {["type", "clean", "drink", "smoke", "expense", "loud"].map(
+                      (key) => (
+                        <Typography key={key} variant="body2">
+                          <strong>{labelMapping[key]}:</strong>{" "}
+                          {valueMapping[neighbor.traits[key]] ||
+                            neighbor.traits[key]}
+                        </Typography>
+                      )
+                    )}
+                  </Paper>
+                ))}
+              </Stack>
+            </Box>
           ) : (
             <Typography variant="body1">Loading similar users...</Typography>
           )}
@@ -222,10 +257,24 @@ const Discovery = () => {
               borderRadius: "15px",
             }}
           >
+            <img
+              src={
+                selectedUser.profile_picture ||
+                "http://localhost:3000/uploads/anonymous.jpg"
+              }
+              // alt="Profile"
+              style={{
+                width: "50px",
+                height: "50px",
+                borderRadius: "50%",
+                marginRight: "1rem",
+              }}
+            />
             <Typography id="user-details-modal" variant="h5" gutterBottom>
               {selectedUser.traits.nickname} - {selectedUser.similarity}%
               Similar
             </Typography>
+
             <Stack spacing={2}>
               {Object.entries(selectedUser.traits).map(
                 ([key, value]) =>
@@ -238,10 +287,12 @@ const Discovery = () => {
               )}
             </Stack>
             <Button
+              onClick={() => handleLike(selectedUser.traits.user_id)}
               variant="contained"
-              onClick={handleCloseDetails}
-              sx={{ marginTop: "1rem" }}
             >
+              Like
+            </Button>
+            <Button variant="contained" onClick={handleCloseDetails}>
               Close
             </Button>
           </Box>

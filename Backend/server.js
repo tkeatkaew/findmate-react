@@ -4,10 +4,12 @@ const bcrypt = require("bcryptjs");
 const session = require("express-session");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-
-const knn = require("ml-knn");
+const multer = require("multer");
+const path = require("path");
 
 const app = express();
+
+const knn = require("ml-knn");
 
 // MySQL Connection
 const db = mysql.createConnection({
@@ -241,11 +243,11 @@ app.listen(PORT, () => {
 app.post("/knn", (req, res) => {
   const { user_id } = req.body;
 
-  // Join `personality_traits` with `personality_information` to get nicknames
   const getAllTraitsQuery = `
-    SELECT pt.*, pi.nickname 
-    FROM personality_traits pt 
+    SELECT pt.*, pi.nickname, u.profile_picture
+    FROM personality_traits pt
     JOIN personality_infomation pi ON pt.user_id = pi.user_id
+    JOIN users u ON pt.user_id = u.id
   `;
 
   db.query(getAllTraitsQuery, (err, results) => {
@@ -254,11 +256,9 @@ app.post("/knn", (req, res) => {
       return res.status(500).json({ error: "Database error" });
     }
 
-    // Find the current user's traits
     const currentUser = results.find((user) => user.user_id === user_id);
     if (!currentUser) return res.status(404).json({ error: "User not found" });
 
-    // Helper function to encode traits
     const encodeTrait = (trait) => {
       const traitMap = {
         type_introvert: 1,
@@ -306,10 +306,9 @@ app.post("/knn", (req, res) => {
         period_sometime: 2,
         period_no_need: 3,
       };
-      return traitMap[trait] || 0; // Default to 0 for unknown traits
+      return traitMap[trait] || 0;
     };
 
-    // Prepare dataset and labels
     const dataset = results.map((user) => ({
       id: user.user_id,
       traits: [
@@ -349,7 +348,6 @@ app.post("/knn", (req, res) => {
       encodeTrait(currentUser.period),
     ];
 
-    // Calculate similarity percentage
     const calculateSimilarity = (targetTraits) => {
       const distance = Math.sqrt(
         targetTraits.reduce(
@@ -360,12 +358,12 @@ app.post("/knn", (req, res) => {
       );
       const maxDistance = Math.sqrt(
         currentUserTraits.length * Math.pow(4 - 1, 2)
-      ); // Assuming trait values range from 1 to 4
+      );
       return Math.round(((maxDistance - distance) / maxDistance) * 100);
     };
 
     const neighbors = dataset
-      .filter((user) => user.id !== user_id) // Exclude the current user
+      .filter((user) => user.id !== user_id)
       .map((user) => {
         const userTraits = results.find((u) => u.user_id === user.id);
         return {
@@ -374,8 +372,109 @@ app.post("/knn", (req, res) => {
           traits: userTraits,
         };
       })
-      .sort((a, b) => b.similarity - a.similarity); // Sort by similarity
+      .sort((a, b) => b.similarity - a.similarity);
 
     res.status(200).json({ neighbors });
+  });
+});
+
+// Multer configuration for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Folder to store uploaded images
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+const upload = multer({ storage });
+
+// Add route to handle profile picture uploads
+app.post(
+  "/upload-profile-picture",
+  upload.single("profile_picture"),
+  (req, res) => {
+    const { user_id } = req.body;
+    const profilePictureUrl = `/uploads/${req.file.filename}`;
+    const query = "UPDATE users SET profile_picture = ? WHERE id = ?";
+
+    db.query(query, [profilePictureUrl, user_id], (err) => {
+      if (err) {
+        console.error("Error updating profile picture:", err);
+        return res
+          .status(500)
+          .json({ error: "Failed to update profile picture" });
+      }
+      res.status(200).json({
+        message: "Profile picture uploaded successfully",
+        profilePictureUrl,
+      });
+    });
+  }
+);
+
+// Serve uploaded files statically
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Like Route
+app.post("/like", (req, res) => {
+  const { user_id, liked_user_id } = req.body;
+
+  const likeQuery = "INSERT INTO likes (user_id, liked_user_id) VALUES (?, ?)";
+  db.query(likeQuery, [user_id, liked_user_id], (err) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+
+    const mutualLikeQuery = `
+          SELECT * FROM likes
+          WHERE user_id = ? AND liked_user_id = ?;
+      `;
+    db.query(mutualLikeQuery, [liked_user_id, user_id], (err, result) => {
+      if (err) return res.status(500).json({ error: "Database error" });
+
+      if (result.length > 0) {
+        const matchQuery = `
+                  INSERT INTO matches (user1_id, user2_id)
+                  VALUES (?, ?);
+              `;
+        db.query(matchQuery, [user_id, liked_user_id], (err) => {
+          if (err) return res.status(500).json({ error: "Database error" });
+          return res.status(200).json({ message: "Match created!" });
+        });
+      } else {
+        return res.status(200).json({ message: "Like added!" });
+      }
+    });
+  });
+});
+
+// Liked Route
+app.get("/liked", (req, res) => {
+  const { user_id } = req.query;
+
+  const likedUsersQuery = `
+      SELECT u.id, u.name, u.profile_picture
+      FROM likes l
+      JOIN users u ON l.liked_user_id = u.id
+      WHERE l.user_id = ?;
+  `;
+  db.query(likedUsersQuery, [user_id], (err, results) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.status(200).json(results);
+  });
+});
+
+// Match Route
+app.get("/matches", (req, res) => {
+  const { user_id } = req.query;
+
+  const matchesQuery = `
+      SELECT u.id, u.name, u.profile_picture
+      FROM matches m
+      JOIN users u ON (m.user1_id = u.id OR m.user2_id = u.id)
+      WHERE (m.user1_id = ? OR m.user2_id = ?) AND u.id != ?;
+  `;
+  db.query(matchesQuery, [user_id, user_id, user_id], (err, results) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    res.status(200).json(results);
   });
 });

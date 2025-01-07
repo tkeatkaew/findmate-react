@@ -25,13 +25,31 @@ const PersonalInfo = () => {
   const [maritalstatus, setMaritalstatus] = useState("");
   const [gender, setGender] = useState("");
   const [lgbt, setLGBT] = useState(false);
+  const [profilePicture, setProfilePicture] = useState(null);
+
   const navigate = useNavigate();
   const location = useLocation();
   const { user_id, email } = location.state || {};
 
+  const handleFileChange = (e) => {
+    setProfilePicture(e.target.files[0]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Upload profile picture if selected
+      if (profilePicture) {
+        const formData = new FormData();
+        formData.append("profile_picture", profilePicture);
+        formData.append("user_id", user_id);
+
+        const { data } = await axios.post("/upload-profile-picture", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        console.log("Profile picture uploaded:", data.profilePictureUrl);
+      }
+
       await axios.post("/personalinfo", {
         user_id,
         email,
@@ -139,6 +157,12 @@ const PersonalInfo = () => {
                 />
                 <Typography variant="body2">LGBT</Typography>
               </span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ marginBottom: "1rem" }}
+              />
               <Button type="submit" variant="contained" fullWidth>
                 Save & Continue
               </Button>
