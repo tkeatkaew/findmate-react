@@ -18,6 +18,7 @@ const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
   const role = "user";
@@ -64,24 +65,26 @@ const Register = () => {
       >
         <Stack spacing={2}>
           <Typography variant="h1" sx={{ fontSize: "2rem", fontWeight: 500 }}>
-            Sign Up
+            สมัครใช้งาน
           </Typography>
           {message && <p>{message}</p>}
           <form onSubmit={handleSubmit}>
             <Stack spacing={2}>
-              {/* <TextField
+              <TextField
                 required
                 type="text"
-                label="Username"
+                label="ชื่อเล่น"
+                placeholder="ชื่อเล่นของคุณ"
                 variant="outlined"
                 fullWidth
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-              /> */}
+              />
               <TextField
                 required
                 type="email"
-                label="Email"
+                label="อีเมล"
+                placeholder="อีเมลของคุณ"
                 variant="outlined"
                 fullWidth
                 value={email}
@@ -90,11 +93,22 @@ const Register = () => {
               <TextField
                 required
                 type="password"
-                label="Password"
+                label="รหัสผ่าน"
+                placeholder="••••••••"
                 variant="outlined"
                 fullWidth
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+              />
+              <TextField
+                required
+                type="password"
+                label="ยืนยันรหัสผ่าน"
+                placeholder="••••••••"
+                variant="outlined"
+                fullWidth
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
               />
               <Button
                 type="submit"
@@ -102,21 +116,21 @@ const Register = () => {
                 fullWidth
                 sx={{ textTransform: "none" }}
               >
-                Sign Up
+                สมัครใช้งาน
               </Button>
               <Typography
                 component="div"
                 variant="body2"
                 sx={{ textAlign: "center" }}
               >
-                Do have an account?{" "}
+                มีบัญชี Find Mate อยู่แล้ว?{" "}
                 <span>
                   <Link href="/login" variant="body2">
-                    Sign in
+                    เข้าสู่ระบบ
                   </Link>
                 </span>
               </Typography>
-              <Divider sx={{ fontSize: "0.785rem" }}>or</Divider>
+              <Divider sx={{ fontSize: "0.785rem" }}>หรือ</Divider>
               <Button
                 startIcon={<GoogleIcon />}
                 variant="outlined"
@@ -128,7 +142,7 @@ const Register = () => {
                   textTransform: "none",
                 }}
               >
-                Sign in with Google
+                สมัครใช้งานด้วย Google
               </Button>
             </Stack>
           </form>

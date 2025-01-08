@@ -705,6 +705,9 @@ const PersonalInfo = () => {
   const [instagram, setInstagram] = useState("");
   const [lineId, setLineId] = useState("");
   const [phone, setPhone] = useState("");
+  const [dormName, setDormName] = useState("");
+  const [vehicle, setVehicle] = useState("");
+  const [selfIntroduction, setSelfIntroduction] = useState("");
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -759,6 +762,9 @@ const PersonalInfo = () => {
         instagram,
         line_id: lineId,
         phone,
+        dorm_name: dormName,
+        vehicle,
+        self_introduction: selfIntroduction,
       });
       alert("Personal information saved successfully!");
       navigate("/personalityprofile", { state: { user_id } });
@@ -773,7 +779,7 @@ const PersonalInfo = () => {
       <Box
         sx={{
           padding: "2rem",
-          maxWidth: "400px",
+          maxWidth: "600px",
           minWidth: "400px",
           margin: "auto",
           marginTop: "10vh",
@@ -827,37 +833,6 @@ const PersonalInfo = () => {
                 onChange={(e) => setAge(e.target.value)}
               />
               <FormControl fullWidth required>
-                <InputLabel>จังหวัด</InputLabel>
-                <Select value={province} onChange={handleProvinceChange}>
-                  {provinces.map((prov) => (
-                    <MenuItem key={prov} value={prov}>
-                      {prov}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControl fullWidth required disabled={!province}>
-                <InputLabel>มหาวิทยาลัย</InputLabel>
-                <Select
-                  value={university}
-                  onChange={(e) => setUniversity(e.target.value)}
-                >
-                  {province &&
-                    (universitiesByProvince[province] || []).map((uni) => (
-                      <MenuItem key={uni} value={uni}>
-                        {uni}
-                      </MenuItem>
-                    ))}
-                </Select>
-                {!province && (
-                  <FormHelperText>
-                    Please select a province first
-                  </FormHelperText>
-                )}
-              </FormControl>
-
-              <FormControl fullWidth required>
                 <InputLabel>สถานะ</InputLabel>
                 <Select
                   value={maritalstatus}
@@ -887,14 +862,75 @@ const PersonalInfo = () => {
                 />
                 <Typography variant="body2">มีความหลากหลายทางเพศ</Typography>
               </Box>
+              <FormControl fullWidth required>
+                <InputLabel>จังหวัด</InputLabel>
+                <Select value={province} onChange={handleProvinceChange}>
+                  {provinces.map((prov) => (
+                    <MenuItem key={prov} value={prov}>
+                      {prov}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth required disabled={!province}>
+                <InputLabel>มหาวิทยาลัย</InputLabel>
+                <Select
+                  value={university}
+                  onChange={(e) => setUniversity(e.target.value)}
+                >
+                  {province &&
+                    (universitiesByProvince[province] || []).map((uni) => (
+                      <MenuItem key={uni} value={uni}>
+                        {uni}
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+
+              <TextField
+                type="text"
+                label="ชื่อหอพัก"
+                placeholder="ชื่อหอพักของคุณ"
+                variant="outlined"
+                fullWidth
+                value={dormName}
+                onChange={(e) => setDormName(e.target.value)}
+              />
+
+              <FormControl fullWidth>
+                <InputLabel>ยานพาหนะ</InputLabel>
+                <Select
+                  value={vehicle}
+                  onChange={(e) => setVehicle(e.target.value)}
+                  label="ยานพาหนะ"
+                >
+                  <MenuItem value="none">ไม่มี</MenuItem>
+                  <MenuItem value="motorbike">มอเตอร์ไซค์</MenuItem>
+                  <MenuItem value="car">รถยนต์</MenuItem>
+                  <MenuItem value="other">อื่นๆ</MenuItem>
+                </Select>
+              </FormControl>
+
+              <TextField
+                label="แนะนำตัว"
+                placeholder="แนะนำตัวคุณสั้นๆ"
+                multiline
+                rows={4}
+                variant="outlined"
+                fullWidth
+                value={selfIntroduction}
+                onChange={(e) => setSelfIntroduction(e.target.value)}
+              />
+
               <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
-                Social Media (Optional)
+                โซเชียลมีเดียและข้อมูลติดต่อ
               </Typography>
 
               <TextField
                 type="text"
-                label="Facebook Profile"
-                placeholder="Your Facebook profile URL or username"
+                label="Facebook"
+                placeholder="ชื่อ Facebook ของคุณ"
                 variant="outlined"
                 fullWidth
                 value={facebook}
@@ -904,7 +940,7 @@ const PersonalInfo = () => {
               <TextField
                 type="text"
                 label="Instagram"
-                placeholder="Your Instagram username"
+                placeholder="ชื่อ Instagram ของคุณ"
                 variant="outlined"
                 fullWidth
                 value={instagram}
@@ -914,7 +950,7 @@ const PersonalInfo = () => {
               <TextField
                 type="text"
                 label="Line ID"
-                placeholder="Your Line ID"
+                placeholder="Line ID"
                 variant="outlined"
                 fullWidth
                 value={lineId}
@@ -923,15 +959,19 @@ const PersonalInfo = () => {
 
               <TextField
                 type="tel"
-                label="Phone Number"
-                placeholder="Your phone number"
+                label="หมายเลขโทรศัพท์"
+                placeholder="หมายเลขโทรศัพท์ของคุณ"
                 variant="outlined"
                 fullWidth
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
               />
 
-              <Button type="button" onClick={handleButtonClick}>
+              <Button
+                type="button"
+                onClick={handleButtonClick}
+                variant="outlined"
+              >
                 เลือกรูปภาพโปรไฟล์
               </Button>
               <input

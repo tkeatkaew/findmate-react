@@ -199,17 +199,17 @@ const Discovery = () => {
               to="/discovery"
               sx={{ textTransform: "none" }}
             >
-              Discover
+              ค้นหารูมเมท
             </Button>
             <Button component={Link} to="/liked" sx={{ textTransform: "none" }}>
-              Liked
+              ชอบ
             </Button>
             <Button
               component={Link}
               to="/matched"
               sx={{ textTransform: "none" }}
             >
-              Matched
+              จับคู่
             </Button>
           </Stack>
         </Box>
@@ -217,7 +217,7 @@ const Discovery = () => {
         {/* Main Content */}
         <Box sx={{ flex: 1, padding: "1rem" }}>
           <Typography variant="h4" gutterBottom>
-            Discover Similar Users
+            ค้นหารูมเมทที่คล้ายคลึงกับคุณ
           </Typography>
           {users.length > 0 ? (
             <Box
@@ -266,7 +266,7 @@ const Discovery = () => {
                         <Box>
                           <Typography variant="h6">
                             {neighbor.traits.nickname || "Anonymous"} -{" "}
-                            {neighbor.similarity}% Similar
+                            ความคล้ายคลึง {neighbor.similarity}%
                           </Typography>
                           {[
                             "type",
@@ -290,7 +290,7 @@ const Discovery = () => {
               </Stack>
             </Box>
           ) : (
-            <Typography variant="body1">Loading similar users...</Typography>
+            <Typography variant="body1">กำลังโหลด ...</Typography>
           )}
         </Box>
       </Box>
@@ -338,8 +338,8 @@ const Discovery = () => {
                 }}
               />
               <Typography variant="h5" component="h2">
-                {selectedUser.traits.nickname || "Anonymous"} -{" "}
-                {selectedUser.similarity}% Similar
+                {selectedUser.traits.nickname || "Anonymous"} - ความคล้ายคลึง{" "}
+                {selectedUser.similarity}%
               </Typography>
             </Stack>
 
@@ -361,10 +361,10 @@ const Discovery = () => {
                 color={likeStatus[selectedUser.user_id] ? "error" : "primary"}
                 onClick={() => handleLike(selectedUser.user_id)}
               >
-                {likeStatus[selectedUser.user_id] ? "Unlike" : "Like"}
+                {likeStatus[selectedUser.user_id] ? "ถอนถูกใจ" : "ถูกใจ"}
               </Button>
               <Button variant="outlined" onClick={() => setSelectedUser(null)}>
-                Close
+                ปิด
               </Button>
             </Stack>
           </Box>

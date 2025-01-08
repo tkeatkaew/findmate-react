@@ -185,17 +185,17 @@ const Matched = () => {
               to="/discovery"
               sx={{ textTransform: "none" }}
             >
-              Discover
+              ค้นหารูมเมท
             </Button>
             <Button component={Link} to="/liked" sx={{ textTransform: "none" }}>
-              Liked
+              ชอบ
             </Button>
             <Button
               component={Link}
               to="/matched"
               sx={{ textTransform: "none" }}
             >
-              Matched
+              จับคู่
             </Button>
           </Stack>
         </Box>
@@ -203,7 +203,7 @@ const Matched = () => {
         {/* Main Content */}
         <Box sx={{ flex: 1, padding: "1rem" }}>
           <Typography variant="h4" gutterBottom>
-            Your Matches
+            คนที่จับคู่กับคุณสำเร็จ
           </Typography>
           {matches.length > 0 ? (
             <Box
@@ -267,7 +267,7 @@ const Matched = () => {
               </Stack>
             </Box>
           ) : (
-            <Typography variant="body1">No matches found yet.</Typography>
+            <Typography variant="body1">ยังไม่มีคนจับคู่กับคุณ</Typography>
           )}
         </Box>
       </Box>

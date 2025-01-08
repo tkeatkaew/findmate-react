@@ -184,17 +184,17 @@ const Liked = () => {
               to="/discovery"
               sx={{ textTransform: "none" }}
             >
-              Discover
+              ค้นหารูมเมท
             </Button>
             <Button component={Link} to="/liked" sx={{ textTransform: "none" }}>
-              Liked
+              ชอบ
             </Button>
             <Button
               component={Link}
               to="/matched"
               sx={{ textTransform: "none" }}
             >
-              Matched
+              จับคู่
             </Button>
           </Stack>
         </Box>
@@ -202,7 +202,7 @@ const Liked = () => {
         {/* Main Content */}
         <Box sx={{ flex: 1, padding: "1rem" }}>
           <Typography variant="h4" gutterBottom>
-            Liked Users
+            คนที่คุณกดถูกใจ
           </Typography>
           {likedUsers.length > 0 ? (
             <Box
@@ -273,7 +273,7 @@ const Liked = () => {
               </Stack>
             </Box>
           ) : (
-            <Typography variant="body1">No liked users found.</Typography>
+            <Typography variant="body1">ไม่มีคนที่คุณกดถูกใจ</Typography>
           )}
         </Box>
       </Box>

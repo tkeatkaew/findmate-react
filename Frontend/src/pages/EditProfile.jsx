@@ -770,6 +770,9 @@ const EditProfile = () => {
     lgbt: false,
     province: "",
     university: "",
+    dorm_name: "",
+    vehicle: "",
+    self_introduction: "",
   });
 
   // Personality Traits State
@@ -1074,7 +1077,7 @@ const EditProfile = () => {
         }}
       >
         <Typography variant="h4" gutterBottom align="center">
-          Edit Profile
+          แก้ไขโปรไฟล์
         </Typography>
 
         <Tabs
@@ -1084,8 +1087,8 @@ const EditProfile = () => {
           centered
           variant="fullWidth"
         >
-          <Tab label="Personal Information" />
-          <Tab label="Personality Traits" />
+          <Tab label="ประวัติส่วนตัว" />
+          <Tab label="ลักษณะนิสัย" />
         </Tabs>
 
         <form onSubmit={handleSubmit}>
@@ -1142,7 +1145,7 @@ const EditProfile = () => {
 
               <TextField
                 name="firstname"
-                label="First Name"
+                label="ชื่อจริง"
                 value={personalInfo.firstname}
                 onChange={handlePersonalInfoChange}
                 fullWidth
@@ -1151,7 +1154,7 @@ const EditProfile = () => {
 
               <TextField
                 name="lastname"
-                label="Last Name"
+                label="นามสกุล"
                 value={personalInfo.lastname}
                 onChange={handlePersonalInfoChange}
                 fullWidth
@@ -1160,7 +1163,7 @@ const EditProfile = () => {
 
               <TextField
                 name="nickname"
-                label="Nickname"
+                label="ชื่อเล่น"
                 value={personalInfo.nickname}
                 onChange={handlePersonalInfoChange}
                 fullWidth
@@ -1169,7 +1172,7 @@ const EditProfile = () => {
 
               <TextField
                 name="age"
-                label="Age"
+                label="อายุ"
                 type="number"
                 value={personalInfo.age}
                 onChange={handlePersonalInfoChange}
@@ -1177,9 +1180,45 @@ const EditProfile = () => {
                 required
                 inputProps={{ min: 0 }}
               />
+              <FormControl fullWidth required>
+                <InputLabel>สถานะ</InputLabel>
+                <Select
+                  name="maritalstatus"
+                  value={personalInfo.maritalstatus}
+                  onChange={handlePersonalInfoChange}
+                  label="Marital Status"
+                >
+                  <MenuItem value="single">โสด</MenuItem>
+                  <MenuItem value="inrelationship">มีแฟน</MenuItem>
+                  <MenuItem value="married">แต่งงานแล้ว</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth required>
+                <InputLabel>เพศ</InputLabel>
+                <Select
+                  name="gender"
+                  value={personalInfo.gender}
+                  onChange={handlePersonalInfoChange}
+                  label="Gender"
+                >
+                  <MenuItem value="male">ชาย</MenuItem>
+                  <MenuItem value="female">หญิง</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    name="lgbt"
+                    checked={personalInfo.lgbt}
+                    onChange={handlePersonalInfoChange}
+                  />
+                }
+                label="มีความหลากหลายทางเพศ"
+              />
               {/* Add Province Selection */}
               <FormControl fullWidth required>
-                <InputLabel>Province</InputLabel>
+                <InputLabel>จังหวัด</InputLabel>
                 <Select
                   name="province"
                   value={personalInfo.province}
@@ -1196,7 +1235,7 @@ const EditProfile = () => {
 
               {/* Add University Selection */}
               <FormControl fullWidth required disabled={!personalInfo.province}>
-                <InputLabel>University</InputLabel>
+                <InputLabel>มหาวิทยาลัย</InputLabel>
                 <Select
                   name="university"
                   value={personalInfo.university}
@@ -1212,60 +1251,50 @@ const EditProfile = () => {
                       )
                     )}
                 </Select>
-                {!personalInfo.province && (
-                  <FormHelperText>
-                    Please select a province first
-                  </FormHelperText>
-                )}
               </FormControl>
 
-              <FormControl fullWidth required>
-                <InputLabel>Marital Status</InputLabel>
+              <TextField
+                name="dorm_name"
+                label="ชื่อหอพัก"
+                value={personalInfo.dorm_name || ""}
+                onChange={handlePersonalInfoChange}
+                fullWidth
+              />
+
+              <FormControl fullWidth>
+                <InputLabel>ยานพาหนะ</InputLabel>
                 <Select
-                  name="maritalstatus"
-                  value={personalInfo.maritalstatus}
+                  name="vehicle"
+                  value={personalInfo.vehicle || ""}
                   onChange={handlePersonalInfoChange}
-                  label="Marital Status"
+                  label="ยานพาหนะ"
                 >
-                  <MenuItem value="single">Single</MenuItem>
-                  <MenuItem value="inrelationship">In Relationship</MenuItem>
-                  <MenuItem value="married">Married</MenuItem>
+                  <MenuItem value="none">ไม่มี</MenuItem>
+                  <MenuItem value="motorbike">มอเตอร์ไซค์</MenuItem>
+                  <MenuItem value="car">รถยนต์</MenuItem>
+                  <MenuItem value="other">อื่นๆ</MenuItem>
                 </Select>
               </FormControl>
 
-              <FormControl fullWidth required>
-                <InputLabel>Gender</InputLabel>
-                <Select
-                  name="gender"
-                  value={personalInfo.gender}
-                  onChange={handlePersonalInfoChange}
-                  label="Gender"
-                >
-                  <MenuItem value="male">Male</MenuItem>
-                  <MenuItem value="female">Female</MenuItem>
-                </Select>
-              </FormControl>
-
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    name="lgbt"
-                    checked={personalInfo.lgbt}
-                    onChange={handlePersonalInfoChange}
-                  />
-                }
-                label="LGBT"
+              <TextField
+                name="self_introduction"
+                label="แนะนำตัว"
+                value={personalInfo.self_introduction || ""}
+                onChange={handlePersonalInfoChange}
+                multiline
+                rows={4}
+                fullWidth
               />
               <Divider sx={{ my: 2 }}>
                 <Typography variant="h6" color="textSecondary">
-                  Social Media
+                  โซเชียลมีเดียและข้อมูลติดต่อ
                 </Typography>
               </Divider>
 
               <Stack spacing={2}>
                 <TextField
                   name="facebook"
-                  label="Facebook Profile"
+                  label="Facebook"
                   placeholder="Your Facebook profile URL or username"
                   value={personalInfo.facebook}
                   onChange={handlePersonalInfoChange}
@@ -1292,7 +1321,7 @@ const EditProfile = () => {
 
                 <TextField
                   name="phone"
-                  label="Phone Number"
+                  label="หมายเลขโทรศัพท์"
                   placeholder="Your phone number"
                   value={personalInfo.phone}
                   onChange={handlePersonalInfoChange}
@@ -1301,7 +1330,10 @@ const EditProfile = () => {
               </Stack>
               <Box
                 sx={{
+                  mt: 3,
                   display: "flex",
+                  justifyContent: "flex-start",
+                  gap: 2,
                 }}
               >
                 <Button
@@ -1310,7 +1342,7 @@ const EditProfile = () => {
                   onClick={handleChangePasswordClick}
                   sx={{ textTransform: "none" }}
                 >
-                  Change Password
+                  เปลี่ยนรหัสผ่าน
                 </Button>
                 <Button
                   variant="outlined"
@@ -1318,7 +1350,7 @@ const EditProfile = () => {
                   onClick={handleDeleteAccountClick}
                   sx={{ textTransform: "none" }}
                 >
-                  Delete Account
+                  ลบบัญชีถาวร
                 </Button>
               </Box>
             </Stack>
@@ -1712,14 +1744,14 @@ const EditProfile = () => {
               onClick={() => navigate(-1)}
               sx={{ textTransform: "none" }}
             >
-              Cancel
+              ยกเลิก
             </Button>
             <Button
               type="submit"
               variant="contained"
               sx={{ textTransform: "none" }}
             >
-              Save Changes
+              บันทึก
             </Button>
           </Box>
         </form>

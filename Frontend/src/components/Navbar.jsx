@@ -78,17 +78,17 @@ const Navbar = () => {
             }}
           >
             <Button component={Link} to="/" sx={{ textTransform: "none" }}>
-              Home
+              หน้าหลัก
             </Button>
             <Button component={Link} to="/about" sx={{ textTransform: "none" }}>
-              About Us
+              เกี่ยวกับเรา
             </Button>
             <Button
               component={Link}
               to="/donate"
               sx={{ textTransform: "none" }}
             >
-              Donate
+              บริจาค
             </Button>
           </Stack>
 
@@ -133,9 +133,9 @@ const Navbar = () => {
                   to="/edit-profile"
                   onClick={handleClose}
                 >
-                  Edit Profile
+                  แก้ไขโปรไฟล์
                 </MenuItem>
-                <MenuItem onClick={handleSignOut}>Sign out</MenuItem>
+                <MenuItem onClick={handleSignOut}>ออกจากระบบ</MenuItem>
               </Menu>
             </Box>
           ) : (
@@ -149,7 +149,7 @@ const Navbar = () => {
                 textTransform: "none",
               }}
             >
-              Sign in
+              เข้าสู่ระบบ
             </Button>
           )}
         </Box>

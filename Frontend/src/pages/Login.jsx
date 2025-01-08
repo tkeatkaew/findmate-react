@@ -54,16 +54,8 @@ const Login = () => {
         }}
       >
         <Stack spacing={2} useFlexGap>
-          <Typography component="div" variant="body2">
-            <span>
-              <Link href="/" variant="body2">
-                {/* <NavigateBeforeRoundedIcon /> */}
-                Back
-              </Link>
-            </span>
-          </Typography>
           <Typography variant="h1" sx={{ fontSize: "2rem", fontWeight: 500 }}>
-            Sign in
+            เข้าสู่ระบบ
           </Typography>
           {error && <p style={{ color: "red" }}>{error}</p>}
           <form onSubmit={handleSubmit}>
@@ -71,8 +63,8 @@ const Login = () => {
               <TextField
                 required
                 type="email"
-                label="Email"
-                placeholder="your@email.com"
+                label="อีเมล"
+                placeholder="อีเมลของคุณ"
                 variant="outlined"
                 fullWidth
                 autoFocus
@@ -85,7 +77,7 @@ const Login = () => {
               <TextField
                 required
                 name="password"
-                label="Password"
+                label="รหัสผ่าน"
                 placeholder="••••••••"
                 type="password"
                 id="password"
@@ -101,21 +93,21 @@ const Login = () => {
                 fullWidth
                 sx={{ textTransform: "none" }}
               >
-                Sign in
+                เข้าสู่ระบบ
               </Button>
               <Typography
                 component="div"
                 variant="body2"
                 sx={{ textAlign: "center" }}
               >
-                Don&apos;t have an account?{" "}
+                ยังไม่มีบัญชี Find Mate?{" "}
                 <span>
                   <Link href="/register" variant="body2">
-                    Sign up
+                    สมัครเลย
                   </Link>
                 </span>
               </Typography>
-              <Divider sx={{ fontSize: "0.785rem" }}>or</Divider>
+              <Divider sx={{ fontSize: "0.785rem" }}>หรือ</Divider>
               <Button
                 startIcon={<GoogleIcon />}
                 variant="outlined"
@@ -127,7 +119,7 @@ const Login = () => {
                   textTransform: "none",
                 }}
               >
-                Sign in with Google
+                เข้าสู่ระบบด้วย Google
               </Button>
             </Stack>
           </form>
