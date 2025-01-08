@@ -275,7 +275,7 @@ app.post("/knn", (req, res) => {
   const { user_id } = req.body;
 
   const getAllTraitsQuery = `
-    SELECT pt.*, pi.nickname, u.profile_picture
+    SELECT pt.*, pi.*, u.profile_picture
     FROM personality_traits pt
     JOIN personality_infomation pi ON pt.user_id = pi.user_id
     JOIN users u ON pt.user_id = u.id

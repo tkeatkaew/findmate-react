@@ -9,6 +9,8 @@ import Paper from "@mui/material/Paper";
 import Modal from "@mui/material/Modal";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
+import Grid from "@mui/material/Grid";
+import Divider from "@mui/material/Divider";
 import AppTheme from "../AppTheme";
 
 const Discovery = () => {
@@ -89,6 +91,24 @@ const Discovery = () => {
     period_no_need: "ไม่จำเป็น",
   };
 
+  const maritalStatusMapping = {
+    single: "โสด",
+    inrelationship: "มีแฟน",
+    married: "แต่งงานแล้ว",
+  };
+
+  const genderMapping = {
+    male: "ชาย",
+    female: "หญิง",
+  };
+
+  const vehicleMapping = {
+    none: "ไม่มี",
+    motorbike: "มอเตอร์ไซค์",
+    car: "รถยนต์",
+    other: "อื่นๆ",
+  };
+
   useEffect(() => {
     if (!user) {
       navigate("/login");
@@ -97,7 +117,6 @@ const Discovery = () => {
     }
   }, [user, navigate]);
 
-  // Fetch users and their like status
   const fetchUsers = async () => {
     try {
       const { data } = await axios.post("/knn", { user_id: user.id });
@@ -301,7 +320,6 @@ const Discovery = () => {
           open={!!selectedUser}
           onClose={() => setSelectedUser(null)}
           aria-labelledby="user-details-modal"
-          aria-describedby="user-details-description"
         >
           <Box
             sx={{
@@ -311,19 +329,20 @@ const Discovery = () => {
               transform: "translate(-50%, -50%)",
               width: "70%",
               minWidth: "500px",
+              maxHeight: "90vh",
+              overflow: "auto",
               backgroundColor: "white",
               padding: "2rem",
               boxShadow: 24,
               borderRadius: "15px",
-              maxHeight: "90vh",
-              overflowY: "auto",
             }}
           >
+            {/* Header */}
             <Stack
               direction="row"
               spacing={2}
               alignItems="center"
-              sx={{ mb: 2 }}
+              sx={{ mb: 3 }}
             >
               <img
                 src={
@@ -337,24 +356,138 @@ const Discovery = () => {
                   borderRadius: "50%",
                 }}
               />
-              <Typography variant="h5" component="h2">
-                {selectedUser.traits.nickname || "Anonymous"} - ความคล้ายคลึง{" "}
-                {selectedUser.similarity}%
-              </Typography>
+              <Box>
+                <Typography variant="h5" component="h2">
+                  {selectedUser.traits.nickname || "Anonymous"}
+                </Typography>
+                <Typography variant="subtitle1">
+                  ความคล้ายคลึง {selectedUser.similarity}%
+                </Typography>
+              </Box>
             </Stack>
 
-            <Stack spacing={2}>
+            <Divider sx={{ my: 2 }} />
+
+            {/* Personal Information */}
+            <Typography variant="h6" gutterBottom>
+              ข้อมูลส่วนตัว
+            </Typography>
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={12} sm={6}>
+                <Typography>
+                  <strong>ชื่อจริง:</strong> {selectedUser.traits.firstname}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography>
+                  <strong>นามสกุล:</strong> {selectedUser.traits.lastname}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography>
+                  <strong>อายุ:</strong> {selectedUser.traits.age} ปี
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography>
+                  <strong>สถานะ:</strong>{" "}
+                  {maritalStatusMapping[selectedUser.traits.maritalstatus]}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography>
+                  <strong>เพศ:</strong>{" "}
+                  {genderMapping[selectedUser.traits.gender]}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography>
+                  <strong>ความหลากหลายทางเพศ:</strong>{" "}
+                  {selectedUser.traits.lgbt ? "ใช่" : "ไม่ใช่"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography>
+                  <strong>หอพัก:</strong>{" "}
+                  {selectedUser.traits.dorm_name || "ไม่ระบุ"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography>
+                  <strong>ยานพาหนะ:</strong>{" "}
+                  {vehicleMapping[selectedUser.traits.vehicle] || "ไม่ระบุ"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography>
+                  <strong>จังหวัด:</strong> {selectedUser.traits.province}
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography>
+                  <strong>มหาวิทยาลัย:</strong> {selectedUser.traits.university}
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography>
+                  <strong>แนะนำตัว:</strong>{" "}
+                  {selectedUser.traits.self_introduction}
+                </Typography>
+              </Grid>
+            </Grid>
+            <Divider sx={{ my: 2 }} />
+            {/* Contact Information */}
+            <Typography variant="h6" gutterBottom>
+              ข้อมูลการติดต่อ
+            </Typography>
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={12} sm={6}>
+                <Typography>
+                  <strong>Facebook:</strong>{" "}
+                  {selectedUser.traits.facebook || "ไม่ระบุ"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography>
+                  <strong>Instagram:</strong>{" "}
+                  {selectedUser.traits.instagram || "ไม่ระบุ"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography>
+                  <strong>Line ID:</strong>{" "}
+                  {selectedUser.traits.line_id || "ไม่ระบุ"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography>
+                  <strong>เบอร์โทรศัพท์:</strong>{" "}
+                  {selectedUser.traits.phone || "ไม่ระบุ"}
+                </Typography>
+              </Grid>
+            </Grid>
+
+            <Divider sx={{ my: 2 }} />
+
+            {/* Personality Traits */}
+            <Typography variant="h6" gutterBottom>
+              ลักษณะนิสัย
+            </Typography>
+            <Grid container spacing={2} sx={{ mb: 3 }}>
               {Object.entries(selectedUser.traits).map(
                 ([key, value]) =>
                   labelMapping[key] && (
-                    <Typography key={key} variant="body1">
-                      <strong>{labelMapping[key]}:</strong>{" "}
-                      {valueMapping[value] || value}
-                    </Typography>
+                    <Grid item xs={12} sm={6} key={key}>
+                      <Typography>
+                        <strong>{labelMapping[key]}:</strong>{" "}
+                        {valueMapping[value] || value}
+                      </Typography>
+                    </Grid>
                   )
               )}
-            </Stack>
+            </Grid>
 
+            {/* Action Buttons */}
             <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
               <Button
                 variant="contained"
