@@ -26,6 +26,7 @@ import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import FormHelperText from "@mui/material/FormHelperText";
+import Divider from "@mui/material/Divider";
 import AppTheme from "../AppTheme";
 
 import Dialog from "@mui/material/Dialog";
@@ -1255,6 +1256,49 @@ const EditProfile = () => {
                 }
                 label="LGBT"
               />
+              <Divider sx={{ my: 2 }}>
+                <Typography variant="h6" color="textSecondary">
+                  Social Media
+                </Typography>
+              </Divider>
+
+              <Stack spacing={2}>
+                <TextField
+                  name="facebook"
+                  label="Facebook Profile"
+                  placeholder="Your Facebook profile URL or username"
+                  value={personalInfo.facebook}
+                  onChange={handlePersonalInfoChange}
+                  fullWidth
+                />
+
+                <TextField
+                  name="instagram"
+                  label="Instagram"
+                  placeholder="Your Instagram username"
+                  value={personalInfo.instagram}
+                  onChange={handlePersonalInfoChange}
+                  fullWidth
+                />
+
+                <TextField
+                  name="line_id"
+                  label="Line ID"
+                  placeholder="Your Line ID"
+                  value={personalInfo.line_id}
+                  onChange={handlePersonalInfoChange}
+                  fullWidth
+                />
+
+                <TextField
+                  name="phone"
+                  label="Phone Number"
+                  placeholder="Your phone number"
+                  value={personalInfo.phone}
+                  onChange={handlePersonalInfoChange}
+                  fullWidth
+                />
+              </Stack>
               <Box
                 sx={{
                   display: "flex",

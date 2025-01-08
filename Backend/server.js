@@ -105,6 +105,10 @@ app.post("/personalinfo", (req, res) => {
     lgbt,
     province,
     university,
+    facebook,
+    instagram,
+    line_id,
+    phone,
   } = req.body;
 
   // Check if the user exists in the `users` table
@@ -121,7 +125,11 @@ app.post("/personalinfo", (req, res) => {
     gender,
     lgbt,
     province,
-    university
+    university,
+    facebook,
+    instagram,
+    line_id,
+    phone
   );
 
   db.query(checkEmailQuery, [email], (err, result) => {
@@ -133,7 +141,7 @@ app.post("/personalinfo", (req, res) => {
       // User exists, insert data into the `findmate` table
       const userId = result[0].id;
       const insertPersonalInfoQuery =
-        "INSERT INTO personality_infomation (user_id, firstname, lastname, nickname, age, maritalstatus, gender, lgbt, province, university) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        "INSERT INTO personality_infomation (user_id, firstname, lastname, nickname, age, maritalstatus, gender, lgbt, province, university, facebook, instagram, line_id, phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
       db.query(
         insertPersonalInfoQuery,
         [
@@ -147,6 +155,10 @@ app.post("/personalinfo", (req, res) => {
           lgbt,
           province,
           university,
+          facebook,
+          instagram,
+          line_id,
+          phone,
         ],
         (err, result) => {
           if (err) {
@@ -601,12 +613,18 @@ app.put("/personalinfo/:userId", (req, res) => {
     lgbt,
     province,
     university,
+    facebook,
+    instagram,
+    line_id,
+    phone,
   } = req.body;
 
   const query = `
     UPDATE personality_infomation 
     SET firstname = ?, lastname = ?, nickname = ?, age = ?, 
-        maritalstatus = ?, gender = ?, lgbt = ?, province = ?, university = ?
+        maritalstatus = ?, gender = ?, lgbt = ?, province = ?, 
+        university = ?, facebook = ?, instagram = ?, line_id = ?, 
+        phone = ?
     WHERE user_id = ?
   `;
 
@@ -622,6 +640,10 @@ app.put("/personalinfo/:userId", (req, res) => {
       lgbt,
       province,
       university,
+      facebook,
+      instagram,
+      line_id,
+      phone,
       userId,
     ],
     (err, result) => {

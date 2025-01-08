@@ -10,6 +10,7 @@ import Modal from "@mui/material/Modal";
 import AppTheme from "../AppTheme";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
+import { InputAdornment, Divider } from "@mui/material";
 
 const Matched = () => {
   const [matches, setMatches] = useState([]);
