@@ -88,7 +88,7 @@ const Navbar = () => {
               to="/donate"
               sx={{ textTransform: "none" }}
             >
-              บริจาค
+              โดเนท
             </Button>
           </Stack>
 

@@ -10,12 +10,11 @@ import Modal from "@mui/material/Modal";
 import AppTheme from "../AppTheme";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
-import { InputAdornment, Divider } from "@mui/material";
 
 const Matched = () => {
   const [matches, setMatches] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [likeStatus, setLikeStatus] = useState({});
+
   const [alert, setAlert] = useState({
     open: false,
     message: "",
@@ -123,12 +122,6 @@ const Matched = () => {
         action: action,
       });
       setSelectedUser(null);
-
-      // Update local state
-      setLikeStatus((prev) => ({
-        ...prev,
-        [targetUserId]: !prev[targetUserId],
-      }));
 
       showAlert(
         action === "like"

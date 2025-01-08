@@ -14,7 +14,6 @@ import Snackbar from "@mui/material/Snackbar";
 const Liked = () => {
   const [likedUsers, setLikedUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [likeStatus, setLikeStatus] = useState({});
   const [alert, setAlert] = useState({
     open: false,
     message: "",
@@ -122,12 +121,6 @@ const Liked = () => {
         action: action,
       });
       setSelectedUser(null);
-
-      // Update local state
-      setLikeStatus((prev) => ({
-        ...prev,
-        [targetUserId]: !prev[targetUserId],
-      }));
 
       showAlert(
         action === "like"

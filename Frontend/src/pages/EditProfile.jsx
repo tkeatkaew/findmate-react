@@ -25,7 +25,6 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
-import FormHelperText from "@mui/material/FormHelperText";
 import Divider from "@mui/material/Divider";
 import AppTheme from "../AppTheme";
 

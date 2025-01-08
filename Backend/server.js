@@ -61,7 +61,6 @@ app.post("/register", (req, res) => {
       [name, email, hashedPassword, role],
       (err, result) => {
         if (err) return res.status(500).json({ error: "Error inserting user" });
-        console.log(result);
         res.status(200).json({
           id: result.insertId,
           email: checkEmailQuery,
