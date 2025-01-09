@@ -203,7 +203,7 @@ const Liked = () => {
                 maxHeight: "79vh",
                 overflowY: "auto",
                 paddingRight: "1rem",
-                borderRadius: "15px",
+                borderRadius: "20px",
               }}
             >
               <Stack spacing={2}>
@@ -214,7 +214,7 @@ const Liked = () => {
                       padding: "1rem",
                       border: "1px solid #eee",
                       boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
-                      borderRadius: "15px",
+                      borderRadius: "20px",
                       cursor: "pointer",
                       "&:hover": {
                         backgroundColor: "rgba(0, 0, 0, 0.04)",
@@ -236,9 +236,9 @@ const Liked = () => {
                           }
                           alt="Profile"
                           style={{
-                            width: "50px",
-                            height: "50px",
-                            borderRadius: "50%",
+                            width: "150px",
+                            height: "150px",
+                            borderRadius: "10%",
                           }}
                         />
                         <Box>

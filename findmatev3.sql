@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Jan 08, 2025 at 03:32 PM
+-- Generation Time: Jan 09, 2025 at 12:00 AM
 -- Server version: 8.0.35
 -- PHP Version: 8.3.9
 
@@ -41,11 +41,14 @@ CREATE TABLE `likes` (
 INSERT INTO `likes` (`id`, `user_id`, `liked_user_id`, `created_at`) VALUES
 (15, 41, 38, '2025-01-07 11:38:41'),
 (48, 38, 45, '2025-01-07 17:01:41'),
-(51, 56, 38, '2025-01-07 23:27:05'),
 (53, 65, 43, '2025-01-08 01:55:21'),
 (54, 65, 38, '2025-01-08 01:55:31'),
 (59, 38, 56, '2025-01-08 13:40:58'),
-(67, 38, 41, '2025-01-08 14:01:12');
+(68, 61, 38, '2025-01-08 15:43:30'),
+(69, 38, 61, '2025-01-08 15:43:41'),
+(72, 56, 38, '2025-01-08 23:37:54'),
+(73, 56, 65, '2025-01-08 23:38:01'),
+(74, 56, 41, '2025-01-08 23:54:05');
 
 -- --------------------------------------------------------
 
@@ -65,8 +68,8 @@ CREATE TABLE `matches` (
 --
 
 INSERT INTO `matches` (`id`, `user1_id`, `user2_id`, `created_at`) VALUES
-(34, 38, 56, '2025-01-08 13:40:58'),
-(40, 38, 41, '2025-01-08 14:01:13');
+(41, 38, 61, '2025-01-08 15:43:41'),
+(43, 56, 38, '2025-01-08 23:37:54');
 
 -- --------------------------------------------------------
 
@@ -100,22 +103,22 @@ CREATE TABLE `personality_infomation` (
 --
 
 INSERT INTO `personality_infomation` (`id`, `user_id`, `firstname`, `lastname`, `nickname`, `age`, `maritalstatus`, `gender`, `lgbt`, `province`, `university`, `facebook`, `instagram`, `line_id`, `phone`, `dorm_name`, `vehicle`, `self_introduction`) VALUES
-(19, 38, 'Teerapat', 'Chomchoey', 'James', 23, 'single', 'male', 1, 'กรุงเทพมหานคร', 'มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ', 'Teerapat Chomchoey', 'jschomchoey', 'jschomchey', '0616989385', 'CK Apartment', 'motorbike', 'เจมส์'),
+(19, 38, 'Teerapat', 'Chomchoey', 'James', 23, 'single', 'male', 0, 'กรุงเทพมหานคร', 'มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ', 'Teerapat Chomchoey', 'jschomchoey', 'jschomchoey', '0616989385', 'CK Apartment', 'motorbike', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer suscipit in sem in commodo. Sed laoreet elementum mi eu posuere. Proin eu eros vel metus tempor venenatis eu vitae mi. Quisque ultrices efficitur felis, sit amet tristique dui rutrum non. Nulla convallis massa vitae neque dapibus ultrices. Nunc at ipsum pretium, volutpat felis a, convallis elit. Curabitur in ipsum vitae tortor consequat fringilla at malesuada nunc. Ut quis est non ligula semper varius sed ut nisl. Cras id sapien mi. Curabitur vitae efficitur ex. Duis nisl sem, auctor et erat vitae, lobortis mollis massa.'),
 (20, 39, 'a', 'a', 'a', 22, 'single', 'female', 1, 'กรุงเทพมหานคร', 'จุฬาลงกรณ์มหาวิทยาลัย', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
 (21, 40, 'b', 'b', 'b', 34, 'inrelationship', 'male', 1, 'กรุงเทพมหานคร', 'มหาวิทยาลัยศิลปากร', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
-(22, 41, 'Compare', 'Compare', 'Compare', 23, 'single', 'male', 1, 'เชียงใหม่', 'มหาวิทยาลัยเชียงใหม่', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
+(22, 41, 'Compare', 'Compare', 'Compare', 23, 'single', 'male', 1, 'เชียงใหม่', 'มหาวิทยาลัยเชียงใหม่', 'Teerapat Chomchoey', 'jschomchoey', 'jschomchoey', '0616989385', 'CK Apartment', 'motorbike', 'เจมส์'),
 (23, 42, 'd', 'd', 'd', 23, 'inrelationship', 'female', 0, 'ขอนแก่น', 'มหาวิทยาลัยขอนแก่น', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
 (24, 43, 'e', 'e', 'e', 12, 'inrelationship', 'male', 1, 'กรุงเทพมหานคร', 'มหาวิทยาลัยมหิดล', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
 (25, 44, 'f', 'f', 'f', 24, 'inrelationship', 'male', 1, 'ขอนแก่น', 'มหาวิทยาลัยราชภัฏขอนแก่น', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
 (26, 45, 'g', 'g', 'g', 45, 'single', 'male', 1, 'กรุงเทพมหานคร', 'สถาบันเทคโนโลยีพระจอมเกล้าเจ้าคุณทหารลาดกระบัง', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
 (27, 46, 'h', 'h', 'h', 45, 'inrelationship', 'female', 1, 'กรุงเทพมหานคร', 'มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
 (28, 47, 'i', 'i', 'i', 41, 'inrelationship', 'female', 1, 'กรุงเทพมหานคร', 'มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
-(34, 56, 'j', 'j', 'j', 23, 'single', 'female', 0, 'เชียงใหม่', 'มหาวิทยาลัยเชียงใหม่', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
+(34, 56, 'j', 'j', 'j', 23, 'single', 'female', 0, 'เชียงใหม่', 'มหาวิทยาลัยเทคโนโลยีราชมงคลล้านนา วิทยาเขตภาคพายัพจังหวัดเชียงใหม่', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
 (35, 57, 'k', 'k', 'k', 24, 'inrelationship', 'male', 1, 'เชียงใหม่', 'มหาวิทยาลัยเทคโนโลยีราชมงคลล้านนา วิทยาเขตดอยสะเก็ด', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
 (36, 58, 'l', 'l', 'l', 21, 'single', 'male', 0, 'ชุมพร', 'สถาบันเทคโนโลยีพระจอมเกล้าเจ้าคุณทหารลาดกระบัง วิทยาเขตชุมพรเขตอุดมศักดิ์', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
 (37, 59, 'm', 'm', 'm', 44, 'single', 'female', 1, 'เชียงใหม่', 'มหาวิทยาลัยนอร์ท-เชียงใหม่', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
 (38, 60, 'n', 'n', 'n', 32, 'single', 'male', 0, 'ตราด', 'วิทยาลัยชุมชนตราด', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
-(39, 61, 'o', 'o', 'o', 57, 'single', 'male', 0, 'ตรัง', 'มหาวิทยาลัยรามคำแหง สาขาวิทยบริการเฉลิมพระเกียรติจังหวัดตรัง', 'o', 'o', 'o', 'o', NULL, 'none', NULL),
+(39, 61, 'o', 'o', 'o', 57, 'single', 'male', 0, 'กรุงเทพมหานคร', 'มหาวิทยาลัยการกีฬาแห่งชาติ วิทยาเขตกรุงเทพ', 'o', 'o', 'o', 'o', NULL, 'car', NULL),
 (40, 62, 'p', 'p', 'p', 32, 'single', 'male', 1, 'เชียงใหม่', 'มหาวิทยาลัยแม่โจ้', 'p', 'p', 'p', 'p', 'p', 'car', 'p'),
 (41, 63, 'q', 'q', 'q', 21, 'inrelationship', 'male', 1, 'ตราด', 'วิทยาลัยชุมชนตราด', 'q', 'q', '', '', '', 'motorbike', 'q'),
 (42, 65, 'r', 'r', 'r', 24, 'single', 'female', 1, 'กรุงเทพมหานคร', 'มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ', 'r', 'r', '', 'r', '', 'motorbike', 'rrr');
@@ -191,7 +194,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `profile_picture`) VALUES
-(38, 'James', 'tpcc.general@gmail.com', '$2a$10$f404FhS0fV1d09Ob30zqyuRUSTkqXb1D97iWIqzgh4KKn0pkh4rby', 'user', '/uploads/1736294903213-LINE_logo.png'),
+(38, 'James', 'tpcc.general@gmail.com', '$2a$10$f404FhS0fV1d09Ob30zqyuRUSTkqXb1D97iWIqzgh4KKn0pkh4rby', 'user', '/uploads/1736367561067-James.jpg'),
 (39, 'a', 'a@gmail.com', '$2a$10$mfOSYvY0BbCx3ubjByIpiukQMalY7CF6VqBtMIurBdIcrWTjO9fDi', 'user', NULL),
 (40, 'b', 'b@gmail.com', '$2a$10$/CNwGzfV9MOhRAsz/F6T8.wLXhZ3aiY9Y4F5HcZzqUaYdvIrl9DIK', 'user', NULL),
 (41, 'Compare', 'compare@gmail.com', '$2a$10$i/qcmyGjAGZrBc35IPC0ueUoLFRyYAZFaCL7zNh/z5BY9p6bibnVy', 'user', NULL),
@@ -259,13 +262,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `likes`
 --
 ALTER TABLE `likes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
 
 --
 -- AUTO_INCREMENT for table `matches`
 --
 ALTER TABLE `matches`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
 -- AUTO_INCREMENT for table `personality_infomation`
