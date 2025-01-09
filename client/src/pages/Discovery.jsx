@@ -462,7 +462,7 @@ const Discovery = () => {
               <Grid item xs={12} sm={6}>
                 <Typography>
                   <strong>เบอร์โทรศัพท์:</strong>{" "}
-                  {selectedUser.traits.phone || "ไม่ระบุ"}
+                  {"แสดงเมื่อจับคู่สำเร็จ" || "ไม่ระบุ"}
                 </Typography>
               </Grid>
             </Grid>
