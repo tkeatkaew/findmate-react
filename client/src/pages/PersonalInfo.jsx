@@ -708,6 +708,9 @@ const PersonalInfo = () => {
   const [vehicle, setVehicle] = useState("");
   const [selfIntroduction, setSelfIntroduction] = useState("");
 
+  const [contactError, setContactError] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
   const { user_id, email } = location.state || {};
@@ -732,6 +735,15 @@ const PersonalInfo = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormSubmitted(true);
+    // Check if at least one contact method is provided
+    const hasContact = facebook || instagram || lineId || phone;
+    if (!hasContact) {
+      setContactError(true);
+      return;
+    }
+    setContactError(false);
+
     try {
       // Upload profile picture if selected
       if (profilePicture) {
@@ -912,8 +924,8 @@ const PersonalInfo = () => {
               </FormControl>
 
               <TextField
-                label="แนะนำตัว"
-                placeholder="แนะนำตัวคุณสั้นๆ"
+                label="ข้อความเพิ่มเติม อธิบายตัวเองหรือสิ่งที่ต้องการ"
+                placeholder="อธิบายตัวเองหรือสิ่งที่ต้องการ"
                 multiline
                 rows={4}
                 variant="outlined"

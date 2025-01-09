@@ -1277,7 +1277,8 @@ const EditProfile = () => {
 
               <TextField
                 name="self_introduction"
-                label="แนะนำตัว"
+                label="ข้อความเพิ่มเติม"
+                placeholder="อธิบายตัวเองหรือสิ่งที่ต้องการ"
                 value={personalInfo.self_introduction || ""}
                 onChange={handlePersonalInfoChange}
                 multiline

@@ -131,6 +131,15 @@ const Discovery = () => {
   const fetchUsers = async () => {
     try {
       const { data } = await axios.post("/knn", { user_id: user.id });
+      console.log("All neighbors data:", data.neighbors); // Log entire neighbors data
+      data.neighbors.forEach((neighbor) => {
+        console.log("User ID:", neighbor.user_id);
+        console.log(
+          "Profile picture from traits:",
+          neighbor.traits.profile_picture
+        );
+        console.log("Profile picture direct:", neighbor.profile_picture);
+      });
       setUsers(data.neighbors);
 
       // Fetch like status for all users
@@ -283,8 +292,9 @@ const Discovery = () => {
                       <Stack direction="row" spacing={2} alignItems="center">
                         <img
                           src={
-                            neighbor.traits.profile_picture ||
-                            "http://localhost:3000/uploads/anonymous.jpg"
+                            neighbor.traits.profile_picture
+                              ? `http://localhost:3000${neighbor.traits.profile_picture}`
+                              : "http://localhost:3000/uploads/anonymous.jpg"
                           }
                           alt="Profile"
                           style={{
@@ -293,6 +303,7 @@ const Discovery = () => {
                             borderRadius: "10%",
                           }}
                         />
+
                         <Box>
                           <Typography variant="h6">
                             {neighbor.traits.nickname || "Anonymous"} -{" "}
@@ -357,14 +368,15 @@ const Discovery = () => {
             >
               <img
                 src={
-                  selectedUser.traits.profile_picture ||
-                  "http://localhost:3000/uploads/anonymous.jpg"
+                  selectedUser.traits.profile_picture
+                    ? `http://localhost:3000${selectedUser.traits.profile_picture}`
+                    : "http://localhost:3000/uploads/anonymous.jpg"
                 }
                 alt="Profile"
                 style={{
-                  width: "100px",
-                  height: "100px",
-                  borderRadius: "50%",
+                  width: "150px",
+                  height: "150px",
+                  borderRadius: "10%",
                 }}
               />
               <Box>
@@ -441,7 +453,7 @@ const Discovery = () => {
               </Grid>
               <Grid item xs={12}>
                 <Typography>
-                  <strong>แนะนำตัว:</strong>{" "}
+                  <strong>ข้อความเพิ่มเติม:</strong>{" "}
                   {selectedUser.traits.self_introduction}
                 </Typography>
               </Grid>
@@ -499,6 +511,11 @@ const Discovery = () => {
                           borderRadius: "15px",
                           padding: "8px",
                           transition: "border-color 0.3s ease",
+                          backgroundColor:
+                            currentUserTraits &&
+                            value === currentUserTraits[key]
+                              ? "#d5edd6"
+                              : " transparent",
                         }}
                       >
                         <strong>{labelMapping[key]}:</strong>{" "}

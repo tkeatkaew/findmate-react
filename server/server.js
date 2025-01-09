@@ -290,6 +290,8 @@ app.post("/knn", (req, res) => {
     const currentUser = results.find((user) => user.user_id === user_id);
     if (!currentUser) return res.status(404).json({ error: "User not found" });
 
+    console.log(currentUser);
+
     const encodeTrait = (trait) => {
       const traitMap = {
         type_introvert: 1,
