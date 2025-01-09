@@ -16,6 +16,7 @@ import AppTheme from "../AppTheme";
 const Discovery = () => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [currentUserTraits, setCurrentUserTraits] = useState(null);
   const [likeStatus, setLikeStatus] = useState({});
   const [alert, setAlert] = useState({
     open: false,
@@ -114,8 +115,18 @@ const Discovery = () => {
       navigate("/login");
     } else {
       fetchUsers();
+      fetchCurrentUserTraits();
     }
   }, [user, navigate]);
+
+  const fetchCurrentUserTraits = async () => {
+    try {
+      const response = await axios.get(`/personalitytraits/${user.id}`);
+      setCurrentUserTraits(response.data);
+    } catch (err) {
+      console.error("Error fetching current user traits:", err);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -351,8 +362,8 @@ const Discovery = () => {
                 }
                 alt="Profile"
                 style={{
-                  width: "80px",
-                  height: "80px",
+                  width: "100px",
+                  height: "100px",
                   borderRadius: "50%",
                 }}
               />
@@ -478,7 +489,18 @@ const Discovery = () => {
                 ([key, value]) =>
                   labelMapping[key] && (
                     <Grid item xs={12} sm={6} key={key}>
-                      <Typography>
+                      <Typography
+                        sx={{
+                          border:
+                            currentUserTraits &&
+                            value === currentUserTraits[key]
+                              ? "1px solid #4caf50"
+                              : "1px solid transparent",
+                          borderRadius: "15px",
+                          padding: "8px",
+                          transition: "border-color 0.3s ease",
+                        }}
+                      >
                         <strong>{labelMapping[key]}:</strong>{" "}
                         {valueMapping[value] || value}
                       </Typography>
