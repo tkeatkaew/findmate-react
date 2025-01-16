@@ -10,6 +10,7 @@ import Home from "./pages/Home";
 import PersonalInfo from "./pages/PersonalInfo";
 import PersonalityProfile from "./pages/PersonalityProfile";
 import EditProfile from "./pages/EditProfile";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const App = () => {
   return (
@@ -25,6 +26,7 @@ const App = () => {
         <Route path="/personalInfo" element={<PersonalInfo />} />
         <Route path="/personalityprofile" element={<PersonalityProfile />} />
         <Route path="/edit-profile" element={<EditProfile />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Routes>
     </Router>
   );

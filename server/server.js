@@ -73,19 +73,40 @@ app.post("/register", (req, res) => {
 });
 
 // Login Route
+// Modify your login route in server.js
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  const getUserQuery = "SELECT * FROM users WHERE email = ?";
+  const getUserQuery =
+    "SELECT id, name, email, password, role, profile_picture, is_suspended, suspension_reason FROM users WHERE email = ?";
+
   db.query(getUserQuery, [email], (err, result) => {
     if (err) return res.status(500).json({ error: "Database error" });
     if (result.length === 0) {
       return res.status(404).json({ error: "User not found" });
     }
+
     const user = result[0];
     if (!bcrypt.compareSync(password, user.password)) {
       return res.status(401).json({ error: "Invalid password" });
     }
-    req.session.user = { id: user.id, name: user.name, email: user.email };
+
+    // Check if user is suspended
+    if (user.is_suspended) {
+      return res.status(403).json({
+        error: "Account suspended",
+        reason: user.suspension_reason,
+      });
+    }
+
+    // Continue with normal login...
+    req.session.user = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      profile_picture: user.profile_picture,
+    };
+
     res.status(200).json({ user: req.session.user });
   });
 });
@@ -279,6 +300,7 @@ app.post("/knn", (req, res) => {
     FROM personality_traits pt
     JOIN personality_infomation pi ON pt.user_id = pi.user_id
     JOIN users u ON pt.user_id = u.id
+    WHERE u.role = 'user' && u.is_suspended = 0
   `;
 
   db.query(getAllTraitsQuery, (err, results) => {
@@ -946,4 +968,245 @@ app.put("/users/:userId/password", (req, res) => {
 
     res.json({ message: "Password updated successfully" });
   });
+});
+
+// Add these new routes to server.js
+
+// Admin Stats Route
+app.get("/admin/stats", async (req, res) => {
+  try {
+    const [usersResult, matchesResult, reportsResult] = await Promise.all([
+      new Promise((resolve, reject) => {
+        db.query(
+          "SELECT COUNT(*) as count FROM users WHERE role = 'user'",
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result[0].count);
+          }
+        );
+      }),
+      new Promise((resolve, reject) => {
+        db.query("SELECT COUNT(*) as count FROM matches", (err, result) => {
+          if (err) reject(err);
+          resolve(result[0].count);
+        });
+      }),
+      new Promise((resolve, reject) => {
+        db.query("SELECT COUNT(*) as count FROM reports", (err, result) => {
+          if (err) reject(err);
+          resolve(result[0].count);
+        });
+      }),
+    ]);
+
+    res.json({
+      totalUsers: usersResult,
+      totalMatches: matchesResult,
+      totalReports: reportsResult,
+    });
+  } catch (error) {
+    console.error("Error fetching admin stats:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// User Reports Routes
+app.post("/reports/user", async (req, res) => {
+  const { reporter_id, reported_user_id, type, description } = req.body;
+
+  const query = `
+    INSERT INTO reports (reporter_id, reported_user_id, type, description, report_type, status)
+    VALUES (?, ?, ?, ?, 'user', 'pending')
+  `;
+
+  db.query(
+    query,
+    [reporter_id, reported_user_id, type, description],
+    (err, result) => {
+      if (err) {
+        console.error("Error creating user report:", err);
+        return res.status(500).json({ error: "Error creating report" });
+      }
+      res.status(201).json({ message: "Report created successfully" });
+    }
+  );
+});
+
+app.get("/admin/user-reports", (req, res) => {
+  const query = `
+    SELECT r.*, 
+           u1.name as reporter_name,
+           u2.name as reported_user_name
+    FROM reports r
+    JOIN users u1 ON r.reporter_id = u1.id
+    JOIN users u2 ON r.reported_user_id = u2.id
+    WHERE r.report_type = 'user'
+    ORDER BY r.created_at DESC
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching user reports:", err);
+      return res.status(500).json({ error: "Error fetching reports" });
+    }
+    res.json(results);
+  });
+});
+
+// System Reports Routes
+app.post("/reports/system", upload.single("image"), async (req, res) => {
+  const { user_id, type, description } = req.body;
+  const image = req.file ? `/uploads/${req.file.filename}` : null;
+
+  const query = `
+    INSERT INTO reports (reporter_id, type, description, image, report_type, status)
+    VALUES (?, ?, ?, ?, 'system', 'pending')
+  `;
+
+  db.query(query, [user_id, type, description, image], (err, result) => {
+    if (err) {
+      console.error("Error creating system report:", err);
+      return res.status(500).json({ error: "Error creating report" });
+    }
+    res.status(201).json({ message: "Report created successfully" });
+  });
+});
+
+app.get("/admin/system-reports", (req, res) => {
+  const query = `
+    SELECT r.*, u.name as reporter_name
+    FROM reports r
+    JOIN users u ON r.reporter_id = u.id
+    WHERE r.report_type = 'system'
+    ORDER BY r.created_at DESC
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching system reports:", err);
+      return res.status(500).json({ error: "Error fetching reports" });
+    }
+    res.json(results);
+  });
+});
+
+// Suggestions Routes
+app.post("/suggestions", async (req, res) => {
+  const { user_id, content } = req.body;
+
+  const query = `
+    INSERT INTO suggestions (user_id, content, status)
+    VALUES (?, ?, 'pending')
+  `;
+
+  db.query(query, [user_id, content], (err, result) => {
+    if (err) {
+      console.error("Error creating suggestion:", err);
+      return res.status(500).json({ error: "Error creating suggestion" });
+    }
+    res.status(201).json({ message: "Suggestion created successfully" });
+  });
+});
+
+app.get("/admin/suggestions", (req, res) => {
+  const query = `
+    SELECT s.*, u.name as user_name
+    FROM suggestions s
+    JOIN users u ON s.user_id = u.id
+    ORDER BY s.created_at DESC
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching suggestions:", err);
+      return res.status(500).json({ error: "Error fetching suggestions" });
+    }
+    res.json(results);
+  });
+});
+
+// Update Report Status
+app.post("/admin/reports/:id/action", (req, res) => {
+  const { id } = req.params;
+  const { action } = req.body;
+
+  const query = "UPDATE reports SET status = ? WHERE id = ?";
+
+  db.query(query, [action, id], (err, result) => {
+    if (err) {
+      console.error("Error updating report status:", err);
+      return res.status(500).json({ error: "Error updating report" });
+    }
+    res.json({ message: "Report updated successfully" });
+  });
+});
+
+// Add user action route (suspend/unsuspend)
+app.post("/admin/user-action/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const { action, reason, report_id } = req.body;
+
+  try {
+    if (action === "suspend") {
+      // Update user's suspension status
+      await new Promise((resolve, reject) => {
+        db.query(
+          "UPDATE users SET is_suspended = 1, suspension_reason = ? WHERE id = ?",
+          [reason, userId],
+          (err) => {
+            if (err) reject(err);
+            resolve();
+          }
+        );
+      });
+    } else if (action === "unsuspend") {
+      // Remove user's suspension
+      await new Promise((resolve, reject) => {
+        db.query(
+          "UPDATE users SET is_suspended = 0, suspension_reason = NULL WHERE id = ?",
+          [userId],
+          (err) => {
+            if (err) reject(err);
+            resolve();
+          }
+        );
+      });
+    }
+
+    // Update report status
+    await new Promise((resolve, reject) => {
+      db.query(
+        "UPDATE reports SET status = ? WHERE id = ?",
+        [action === "suspend" ? "resolved" : "pending", report_id],
+        (err) => {
+          if (err) reject(err);
+          resolve();
+        }
+      );
+    });
+
+    res.json({ message: "User action completed successfully" });
+  } catch (error) {
+    console.error("Error performing user action:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Add delete report route
+app.delete("/admin/reports/:reportId", async (req, res) => {
+  const { reportId } = req.params;
+
+  try {
+    await new Promise((resolve, reject) => {
+      db.query("DELETE FROM reports WHERE id = ?", [reportId], (err) => {
+        if (err) reject(err);
+        resolve();
+      });
+    });
+
+    res.json({ message: "Report deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting report:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });

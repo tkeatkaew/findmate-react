@@ -745,7 +745,7 @@ const EditProfile = () => {
         // If password is verified, proceed with account deletion
         await axios.delete(`/users/${user.id}`);
         localStorage.removeItem("user");
-        showAlert("Account deleted successfully", "success");
+        showAlert("ลบบัญชีถาวรสำเร็จ", "success");
         setTimeout(() => {
           navigate("/");
         }, 2000);
@@ -922,7 +922,7 @@ const EditProfile = () => {
         user_id: user.id,
       });
 
-      showAlert("Profile updated successfully!", "success");
+      showAlert("บันทึกโปรไฟล์สำเร็จ!", "success");
 
       // Redirect after successful update
       setTimeout(() => {
@@ -930,7 +930,7 @@ const EditProfile = () => {
       }, 2000);
     } catch (error) {
       console.error("Error updating profile:", error);
-      showAlert("Error updating profile", "error");
+      showAlert("บันทึกโปรไฟล์ไม่สำเร็จ", "error");
     }
   };
 
@@ -1031,10 +1031,10 @@ const EditProfile = () => {
       });
 
       handleClosePasswordDialog();
-      showAlert("Password changed successfully!", "success");
+      showAlert("เปลี่ยนรหัสผ่านสำเร็จ!", "success");
     } catch (error) {
       console.error("Error changing password:", error);
-      showAlert("Error changing password. Please try again.", "error");
+      showAlert("เปลี่ยนรหัสผ่านสำเร็จไม่สำเร็จ", "error");
     }
   };
 

@@ -32,9 +32,10 @@ const Login = () => {
     try {
       const { data } = await axios.post("/login", { email, password });
       localStorage.setItem("user", JSON.stringify(data.user));
+      console.log(data.user);
       navigate("/discovery");
     } catch (err) {
-      setError("Invalid email or password");
+      setError("อีเมลหรือรหัสผ่านไม่ถูกต้องหรือบัญชีถูกระงับ");
     }
   };
 
