@@ -393,7 +393,7 @@ const Discovery = () => {
       "มหาวิทยาลัยราชภัฏนครราชสีมา",
       "มหาวิทยาลัยมหาจุฬาลงกรณราชวิทยาลัย วิทยาเขตนครราชสีมา",
       "มหาวิทยาลัยมหามกุฏราชวิทยาลัย มหาปชาบดีเถรีวิทยาลัย ในพระสังฆราชูปถัมภ์",
-      "มหาวิทยาลัยมหามกุฏราชวิทยาลัย วิทยาลัยศาสนศาสตร์นครราชสีมา",
+      "มหาวิทยาลัยมหามกุฏราชวิทยาลัย วิทยาเขตศาสนศาสตร์นครราชสีมา",
       "วิทยาลัยนครราชสีมา",
       "มหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน",
       "มหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน นครราชสีมา",
@@ -861,7 +861,12 @@ const Discovery = () => {
     other: "อื่นๆ",
   };
 
+  // ----------------------------------------------------
+  // ONLY FETCH ONCE WHEN COMPONENT MOUNTS
+  // ----------------------------------------------------
   useEffect(() => {
+    // If not logged in, or if admin, redirect.
+    // Otherwise fetch the needed data only once.
     if (!user) {
       navigate("/login");
     } else if (user.role === "admin") {
@@ -870,7 +875,9 @@ const Discovery = () => {
       fetchUsers();
       fetchCurrentUserTraits();
     }
-  }, [user, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  // ----------------------------------------------------
 
   const fetchCurrentUserTraits = async () => {
     try {
@@ -889,7 +896,7 @@ const Discovery = () => {
       fetchLikeStatuses(data.neighbors);
     } catch (err) {
       console.error("Error fetching users:", err);
-      showAlert("เรียกช้อมูลไม่สำเร็จ", "error");
+      showAlert("เรียกข้อมูลไม่สำเร็จ", "error");
     }
   };
 
@@ -911,7 +918,9 @@ const Discovery = () => {
     setLikeStatus(statuses);
   };
 
-  // Filter Handlers
+  // ----------------------------------
+  // FILTER HANDLERS
+  // ----------------------------------
   const handleOpenFilter = (event) => {
     setFilterAnchorEl(event.currentTarget);
   };
@@ -919,16 +928,143 @@ const Discovery = () => {
   const handleCloseFilter = () => {
     setFilterAnchorEl(null);
   };
-  // Add this function to handle image uploads
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setReportImage(file);
-      setReportImagePreview(URL.createObjectURL(file));
+
+  const handleProvinceChange = (event) => {
+    setSelectedProvince(event.target.value);
+    setSelectedUniversity(""); // reset if province changes
+  };
+
+  const handleUniversityChange = (event) => {
+    setSelectedUniversity(event.target.value);
+  };
+
+  const handleTraitChange = (category, value) => {
+    setSelectedTraits((prev) => {
+      const current = prev[category];
+      const updated = current.includes(value)
+        ? current.filter((v) => v !== value)
+        : [...current, value];
+      return {
+        ...prev,
+        [category]: updated,
+      };
+    });
+  };
+
+  // ---- IMPROVED FILTER FUNCTION ----
+  const applyFilters = () => {
+    let filtered = [...users];
+
+    // 1) Province Filter (EXACT match)
+    if (selectedProvince.trim() !== "") {
+      filtered = filtered.filter((u) => {
+        // optional chaining in case traits is missing
+        const userProvince = u.traits?.province?.trim() || "";
+        return userProvince === selectedProvince.trim();
+      });
+    }
+
+    // 2) University Filter (EXACT match)
+    if (selectedUniversity.trim() !== "") {
+      filtered = filtered.filter((u) => {
+        const userUniversity = u.traits?.university?.trim() || "";
+        return userUniversity === selectedUniversity.trim();
+      });
+    }
+
+    // 3) Trait filters (multiple categories, "OR" logic within each category)
+    //    For each category, if user selected any values, we require that
+    //    the user’s trait must match at least one of those values.
+    Object.entries(selectedTraits).forEach(([category, values]) => {
+      // If no values are selected for this category, skip it.
+      if (values.length > 0) {
+        filtered = filtered.filter((u) => {
+          const traitValue = u.traits?.[category];
+          if (!traitValue) return false; // user has no data -> exclude
+
+          // If user’s trait is a string (e.g. "type_introvert"):
+          if (typeof traitValue === "string") {
+            // must be in the "values" array
+            return values.includes(traitValue);
+          }
+
+          // If user’s trait is an array (e.g. ["type_introvert", "type_extrovert"])
+          if (Array.isArray(traitValue)) {
+            // check if there's any intersection with selected values
+            return traitValue.some((val) => values.includes(val));
+          }
+
+          // If it's neither string nor array, fail by default.
+          return false;
+        });
+      }
+    });
+
+    setFilteredUsers(filtered);
+    handleCloseFilter();
+  };
+
+  // Clear filters
+  const clearFilters = () => {
+    setSelectedProvince("");
+    setSelectedUniversity("");
+    setSelectedTraits({
+      gender: [],
+      type: [],
+      sleep: [],
+      clean: [],
+      smoke: [],
+      drink: [],
+      period: [],
+    });
+    setFilteredUsers(users);
+  };
+
+  // Count total active filters for UI label
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (selectedProvince) count++;
+    if (selectedUniversity) count++;
+    count += Object.values(selectedTraits).reduce(
+      (acc, arr) => acc + arr.length,
+      0
+    );
+    return count;
+  };
+
+  // ----------------------------------
+  // LIKE / REPORT / ETC.
+  // ----------------------------------
+  const handleLike = async (targetUserId, event) => {
+    if (event) {
+      event.stopPropagation();
+    }
+    setSelectedUser(null);
+    try {
+      const action = likeStatus[targetUserId] ? "unlike" : "like";
+      await axios.post("/like", {
+        user_id: user.id,
+        liked_user_id: targetUserId,
+        action: action,
+      });
+
+      setLikeStatus((prev) => ({
+        ...prev,
+        [targetUserId]: !prev[targetUserId],
+      }));
+      showAlert(
+        action === "like" ? "กดถูกใจสำเร็จ!" : "ถอนถูกใจสำเร็จ!",
+        "success"
+      );
+    } catch (err) {
+      console.error("Error handling like:", err);
+      showAlert("Error processing your request", "error");
+    } finally {
+      setSelectedUser(null);
     }
   };
 
-  // Add this function to handle system reports and suggestions
+  // System / suggestion reports
   const handleSystemReport = async () => {
     try {
       const formData = new FormData();
@@ -938,16 +1074,16 @@ const Discovery = () => {
       if (reportImage) {
         formData.append("image", reportImage);
       }
-
       if (isSuggestion) {
+        // If it’s just a suggestion
         await axios.post("/suggestions", {
           user_id: user.id,
           content: systemDescription,
         });
       } else {
+        // If it’s a system bug report
         await axios.post("/reports/system", formData);
       }
-
       showAlert(
         isSuggestion ? "ส่งข้อเสนอแนะเรียบร้อยแล้ว" : "ส่งรายงานเรียบร้อยแล้ว",
         "success"
@@ -963,111 +1099,15 @@ const Discovery = () => {
     }
   };
 
-  const handleProvinceChange = (event) => {
-    const newProvince = event.target.value;
-    setSelectedProvince(newProvince);
-    // Reset university when province changes
-    setSelectedUniversity("");
-  };
-
-  const handleUniversityChange = (event) => {
-    setSelectedUniversity(event.target.value);
-  };
-
-  const handleTraitChange = (category, value) => {
-    setSelectedTraits((prev) => ({
-      ...prev,
-      [category]: prev[category].includes(value)
-        ? prev[category].filter((v) => v !== value)
-        : [...prev[category], value],
-    }));
-  };
-
-  const clearFilters = () => {
-    setSelectedProvince("");
-    setSelectedUniversity("");
-    setSelectedTraits({
-      type: [],
-      sleep: [],
-      clean: [],
-      smoke: [],
-      drink: [],
-      period: [],
-      gender: [],
-    });
-    setFilteredUsers(users);
-  };
-
-  const applyFilters = () => {
-    let filtered = [...users];
-
-    // Apply province filter
-    if (selectedProvince) {
-      filtered = filtered.filter(
-        (user) => user.traits.province === selectedProvince
-      );
-    }
-
-    // Apply university filter
-    if (selectedUniversity) {
-      filtered = filtered.filter(
-        (user) => user.traits.university === selectedUniversity
-      );
-    }
-
-    // Apply trait filters
-    Object.entries(selectedTraits).forEach(([category, values]) => {
-      if (values.length > 0) {
-        filtered = filtered.filter((user) =>
-          values.includes(user.traits[category])
-        );
-      }
-    });
-
-    setFilteredUsers(filtered);
-    handleCloseFilter();
-  };
-
-  // Get count of active filters
-  const getActiveFilterCount = () => {
-    let count = 0;
-    if (selectedProvince) count++;
-    if (selectedUniversity) count++;
-    count += Object.values(selectedTraits).flat().length;
-    return count;
-  };
-
-  const handleLike = async (targetUserId, event) => {
-    if (event) {
-      event.stopPropagation();
-    }
-    setSelectedUser(null);
-    try {
-      const action = likeStatus[targetUserId] ? "unlike" : "like";
-      await axios.post("/like", {
-        user_id: user.id,
-        liked_user_id: targetUserId,
-        action: action,
-      });
-      setSelectedUser(null);
-
-      // Update local state
-      setLikeStatus((prev) => ({
-        ...prev,
-        [targetUserId]: !prev[targetUserId],
-      }));
-
-      showAlert(
-        action === "like" ? "กดถูกใจสำเร็จ!" : "ถอนถูกใจสำเร็จ!",
-        "success"
-      );
-    } catch (err) {
-      setSelectedUser(null);
-      console.error("Error handling like:", err);
-      showAlert("Error processing your request", "error");
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setReportImage(file);
+      setReportImagePreview(URL.createObjectURL(file));
     }
   };
 
+  // Show / hide alerts
   const showAlert = (message, severity) => {
     setAlert({
       open: true,
@@ -1077,13 +1117,12 @@ const Discovery = () => {
   };
 
   const handleCloseAlert = () => {
-    setAlert({ ...alert, open: false });
+    setAlert((prev) => ({ ...prev, open: false }));
   };
 
   return (
     <AppTheme>
       <Box sx={{ display: "flex", minHeight: "90vh" }}>
-        {/* Sidebar */}
         {/* Sidebar */}
         <Box
           sx={{
@@ -1098,14 +1137,7 @@ const Discovery = () => {
             justifyContent: "space-between",
           }}
         >
-          <Stack
-            direction="column"
-            spacing={2}
-            sx={{
-              flex: "1 1 auto",
-              justifyContent: "top",
-            }}
-          >
+          <Stack direction="column" spacing={2}>
             <Button
               component={Link}
               to="/discovery"
@@ -1129,8 +1161,8 @@ const Discovery = () => {
                 setIsSuggestion(false);
                 setSystemReportDialog(true);
               }}
-              sx={{ textTransform: "none" }}
               color="error"
+              sx={{ textTransform: "none" }}
             >
               แจ้งปัญหาการใช้งาน
             </Button>
@@ -1231,13 +1263,11 @@ const Discovery = () => {
                 >
                   <MenuItem value="">ทั้งหมด</MenuItem>
                   {selectedProvince &&
-                    universitiesByProvince[selectedProvince]?.map(
-                      (university) => (
-                        <MenuItem key={university} value={university}>
-                          {university}
-                        </MenuItem>
-                      )
-                    )}
+                    universitiesByProvince[selectedProvince]?.map((uni) => (
+                      <MenuItem key={uni} value={uni}>
+                        {uni}
+                      </MenuItem>
+                    ))}
                 </Select>
               </FormControl>
 
@@ -1247,6 +1277,7 @@ const Discovery = () => {
               {Object.entries(traitOptions).map(([category, options]) => (
                 <Box key={category} sx={{ mb: 2 }}>
                   <Typography variant="subtitle2" gutterBottom>
+                    {/* Customize each category's display name */}
                     {category === "gender"
                       ? "เพศ"
                       : category === "type"
@@ -1267,13 +1298,13 @@ const Discovery = () => {
                         key={option.value}
                         control={
                           <Checkbox
+                            size="small"
                             checked={selectedTraits[category].includes(
                               option.value
                             )}
                             onChange={() =>
                               handleTraitChange(category, option.value)
                             }
-                            size="small"
                           />
                         }
                         label={option.label}
@@ -1284,7 +1315,6 @@ const Discovery = () => {
                 </Box>
               ))}
 
-              {/* Apply Filter Button */}
               <Button
                 fullWidth
                 variant="contained"
@@ -1343,7 +1373,6 @@ const Discovery = () => {
                             objectFit: "cover",
                           }}
                         />
-
                         <Box>
                           <Typography variant="h6">
                             {neighbor.traits.nickname || "Anonymous"} -{" "}
@@ -1358,7 +1387,7 @@ const Discovery = () => {
                             "loud",
                           ].map((key) => (
                             <Typography key={key} variant="body2">
-                              <strong>{labelMapping[key]}:</strong>{" "}
+                              <strong>{labelMapping[key] || key}:</strong>{" "}
                               {valueMapping[neighbor.traits[key]] ||
                                 neighbor.traits[key]}
                             </Typography>
@@ -1501,7 +1530,9 @@ const Discovery = () => {
                 </Typography>
               </Grid>
             </Grid>
+
             <Divider sx={{ my: 2 }} />
+
             {/* Contact Information */}
             <Typography variant="h6" gutterBottom>
               ข้อมูลการติดต่อ
@@ -1527,8 +1558,7 @@ const Discovery = () => {
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Typography>
-                  <strong>เบอร์โทรศัพท์:</strong>{" "}
-                  {"แสดงเมื่อจับคู่สำเร็จ" || "ไม่ระบุ"}
+                  <strong>เบอร์โทรศัพท์:</strong> แสดงเมื่อจับคู่สำเร็จ
                 </Typography>
               </Grid>
             </Grid>
@@ -1540,38 +1570,35 @@ const Discovery = () => {
               ลักษณะนิสัย
             </Typography>
             <Grid container spacing={2} sx={{ mb: 3 }}>
-              {Object.entries(selectedUser.traits).map(
-                ([key, value]) =>
-                  labelMapping[key] && (
-                    <Grid item xs={12} sm={6} key={key}>
-                      <Typography
-                        sx={{
-                          border:
-                            currentUserTraits &&
-                            value === currentUserTraits[key]
-                              ? "1px solid #4caf50"
-                              : "1px solid transparent",
-                          borderRadius: "15px",
-                          padding: "8px",
-                          transition: "border-color 0.3s ease",
-                          backgroundColor:
-                            currentUserTraits &&
-                            value === currentUserTraits[key]
-                              ? "#d5edd6"
-                              : " transparent",
-                        }}
-                      >
-                        <strong>{labelMapping[key]}:</strong>{" "}
-                        {valueMapping[value] || value}
-                      </Typography>
-                    </Grid>
-                  )
-              )}
+              {Object.entries(selectedUser.traits).map(([key, value]) => {
+                if (!labelMapping[key]) return null;
+                const matchHighlight =
+                  currentUserTraits && value === currentUserTraits[key];
+
+                return (
+                  <Grid item xs={12} sm={6} key={key}>
+                    <Typography
+                      sx={{
+                        border: matchHighlight
+                          ? "1px solid #4caf50"
+                          : "1px solid transparent",
+                        borderRadius: "15px",
+                        padding: "8px",
+                        backgroundColor: matchHighlight
+                          ? "#d5edd6"
+                          : "transparent",
+                      }}
+                    >
+                      <strong>{labelMapping[key]}:</strong>{" "}
+                      {valueMapping[value] || value}
+                    </Typography>
+                  </Grid>
+                );
+              })}
             </Grid>
 
             {/* Action Buttons */}
             <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-              {/* Original Like Button */}
               <Button
                 variant="contained"
                 color={likeStatus[selectedUser.user_id] ? "error" : "primary"}
@@ -1579,7 +1606,6 @@ const Discovery = () => {
               >
                 {likeStatus[selectedUser.user_id] ? "ถอนถูกใจ" : "ถูกใจ"}
               </Button>
-              {/* Add Report Button */}
               <Button
                 variant="outlined"
                 color="error"
@@ -1611,6 +1637,8 @@ const Discovery = () => {
           {alert.message}
         </Alert>
       </Snackbar>
+
+      {/* Report User Dialog */}
       <Dialog
         open={reportDialogOpen}
         onClose={() => setReportDialogOpen(false)}
@@ -1673,6 +1701,7 @@ const Discovery = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
       {/* System Report/Suggestion Dialog */}
       <Dialog
         open={systemReportDialog}

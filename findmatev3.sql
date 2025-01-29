@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Jan 09, 2025 at 12:00 AM
+-- Generation Time: Jan 29, 2025 at 06:35 AM
 -- Server version: 8.0.35
 -- PHP Version: 8.3.9
 
@@ -45,10 +45,14 @@ INSERT INTO `likes` (`id`, `user_id`, `liked_user_id`, `created_at`) VALUES
 (54, 65, 38, '2025-01-08 01:55:31'),
 (59, 38, 56, '2025-01-08 13:40:58'),
 (68, 61, 38, '2025-01-08 15:43:30'),
-(69, 38, 61, '2025-01-08 15:43:41'),
 (72, 56, 38, '2025-01-08 23:37:54'),
 (73, 56, 65, '2025-01-08 23:38:01'),
-(74, 56, 41, '2025-01-08 23:54:05');
+(74, 56, 41, '2025-01-08 23:54:05'),
+(76, 67, 38, '2025-01-09 08:20:26'),
+(77, 38, 67, '2025-01-09 08:21:00'),
+(78, 38, 41, '2025-01-11 06:58:43'),
+(79, 40, 61, '2025-01-11 07:10:47'),
+(80, 44, 40, '2025-01-19 15:11:57');
 
 -- --------------------------------------------------------
 
@@ -68,8 +72,9 @@ CREATE TABLE `matches` (
 --
 
 INSERT INTO `matches` (`id`, `user1_id`, `user2_id`, `created_at`) VALUES
-(41, 38, 61, '2025-01-08 15:43:41'),
-(43, 56, 38, '2025-01-08 23:37:54');
+(43, 56, 38, '2025-01-08 23:37:54'),
+(45, 38, 67, '2025-01-09 08:21:00'),
+(46, 38, 41, '2025-01-11 06:58:43');
 
 -- --------------------------------------------------------
 
@@ -106,7 +111,7 @@ INSERT INTO `personality_infomation` (`id`, `user_id`, `firstname`, `lastname`, 
 (19, 38, 'Teerapat', 'Chomchoey', 'James', 23, 'single', 'male', 0, 'กรุงเทพมหานคร', 'มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ', 'Teerapat Chomchoey', 'jschomchoey', 'jschomchoey', '0616989385', 'CK Apartment', 'motorbike', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer suscipit in sem in commodo. Sed laoreet elementum mi eu posuere. Proin eu eros vel metus tempor venenatis eu vitae mi. Quisque ultrices efficitur felis, sit amet tristique dui rutrum non. Nulla convallis massa vitae neque dapibus ultrices. Nunc at ipsum pretium, volutpat felis a, convallis elit. Curabitur in ipsum vitae tortor consequat fringilla at malesuada nunc. Ut quis est non ligula semper varius sed ut nisl. Cras id sapien mi. Curabitur vitae efficitur ex. Duis nisl sem, auctor et erat vitae, lobortis mollis massa.'),
 (20, 39, 'a', 'a', 'a', 22, 'single', 'female', 1, 'กรุงเทพมหานคร', 'จุฬาลงกรณ์มหาวิทยาลัย', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
 (21, 40, 'b', 'b', 'b', 34, 'inrelationship', 'male', 1, 'กรุงเทพมหานคร', 'มหาวิทยาลัยศิลปากร', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
-(22, 41, 'Compare', 'Compare', 'Compare', 23, 'single', 'male', 1, 'เชียงใหม่', 'มหาวิทยาลัยเชียงใหม่', 'Teerapat Chomchoey', 'jschomchoey', 'jschomchoey', '0616989385', 'CK Apartment', 'motorbike', 'เจมส์'),
+(22, 41, 'Compare', 'Compare', 'Compare', 23, 'single', 'male', 0, 'เชียงใหม่', 'มหาวิทยาลัยเชียงใหม่', 'Teerapat Chomchoey', 'jschomchoey', 'jschomchoey', '0616989385', 'CK Apartment', 'motorbike', 'เจมส์'),
 (23, 42, 'd', 'd', 'd', 23, 'inrelationship', 'female', 0, 'ขอนแก่น', 'มหาวิทยาลัยขอนแก่น', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
 (24, 43, 'e', 'e', 'e', 12, 'inrelationship', 'male', 1, 'กรุงเทพมหานคร', 'มหาวิทยาลัยมหิดล', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
 (25, 44, 'f', 'f', 'f', 24, 'inrelationship', 'male', 1, 'ขอนแก่น', 'มหาวิทยาลัยราชภัฏขอนแก่น', NULL, NULL, NULL, NULL, NULL, 'none', NULL),
@@ -121,7 +126,10 @@ INSERT INTO `personality_infomation` (`id`, `user_id`, `firstname`, `lastname`, 
 (39, 61, 'o', 'o', 'o', 57, 'single', 'male', 0, 'กรุงเทพมหานคร', 'มหาวิทยาลัยการกีฬาแห่งชาติ วิทยาเขตกรุงเทพ', 'o', 'o', 'o', 'o', NULL, 'car', NULL),
 (40, 62, 'p', 'p', 'p', 32, 'single', 'male', 1, 'เชียงใหม่', 'มหาวิทยาลัยแม่โจ้', 'p', 'p', 'p', 'p', 'p', 'car', 'p'),
 (41, 63, 'q', 'q', 'q', 21, 'inrelationship', 'male', 1, 'ตราด', 'วิทยาลัยชุมชนตราด', 'q', 'q', '', '', '', 'motorbike', 'q'),
-(42, 65, 'r', 'r', 'r', 24, 'single', 'female', 1, 'กรุงเทพมหานคร', 'มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ', 'r', 'r', '', 'r', '', 'motorbike', 'rrr');
+(42, 65, 'r', 'r', 'r', 24, 'single', 'female', 1, 'กรุงเทพมหานคร', 'มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ', 'r', 'r', '', 'r', '', 'motorbike', 'rrr'),
+(43, 66, 'Amin', 'Admin', 'Admin', 23, 'inrelationship', 'male', 1, 'ขอนแก่น', 'มหาวิทยาลัยขอนแก่น', 'sdsd', '', '', '', 'sd', 'motorbike', 'sdfad.fnagsldgn;jadfgadfdfvjba\'fv'),
+(44, 67, 'ภีมวัจน์', 'ทรายตา', 'ภู', 23, 'single', 'male', 0, 'เชียงใหม่', 'มหาวิทยาลัยเทคโนโลยีราชมงคลล้านนา วิทยาเขตภาคพายัพจังหวัดเชียงใหม่', 'ภีมวัจน์ ทรายตา', '_thephuuu', 'phu1105', '0931713860', '', 'motorbike', 'ขาว หมวย สวย อึ๋ม'),
+(45, 68, 'qa', 'qa', 'qa', 32, 'single', 'female', 1, 'เชียงใหม่', 'มหาวิทยาลัยมหามกุฏราชวิทยาลัย วิทยาเขตล้านนา', 'wqe', 'qwe', 'qew', '', '', 'motorbike', 'weqweqwe');
 
 -- --------------------------------------------------------
 
@@ -172,7 +180,60 @@ INSERT INTO `personality_traits` (`id`, `user_id`, `type`, `sleep`, `wake`, `cle
 (17, 61, 'type_extrovert', 'sleep_before_midnight', 'wake_evening', 'clean_every_day', 'ac_only_sleep', 'drink_always', 'smoke_always', 'money_late', 'money_half', 'pet_have', 'cook_ok', 'loud_low', 'friend_tell_first', 'religion_no_affect', 'period_sometime'),
 (18, 62, 'type_introvert', 'sleep_after_midnight', 'wake_evening', 'clean_once_a_week', 'ac_only_hot', 'drink_spacial', 'smoke_never', 'money_on_time', 'money_ratio', 'pet_dont_have', 'cook_tell_first', 'loud_medium', 'friend_tell_first', 'religion_no_affect', 'period_sometime'),
 (19, 63, 'type_ambivert', 'sleep_before_midnight', 'wake_noon', 'clean_every_day', 'ac_only_sleep', 'drink_spacial', 'smoke_always', 'money_late', 'money_half', 'pet_have', 'cook_no', 'loud_medium', 'friend_no', 'religion_ok', 'period_sometime'),
-(20, 65, 'type_extrovert', 'sleep_before_midnight', 'wake_noon', 'clean_every_other_day', 'ac_only_sleep', 'drink_weekend', 'smoke_spacial', 'money_late', 'money_ratio', 'pet_have', 'cook_tell_first', 'loud_medium', 'friend_tell_first', 'religion_ok', 'period_sometime');
+(20, 65, 'type_extrovert', 'sleep_before_midnight', 'wake_noon', 'clean_every_other_day', 'ac_only_sleep', 'drink_weekend', 'smoke_spacial', 'money_late', 'money_ratio', 'pet_have', 'cook_tell_first', 'loud_medium', 'friend_tell_first', 'religion_ok', 'period_sometime'),
+(21, 66, 'type_extrovert', 'sleep_before_midnight', 'wake_evening', 'clean_once_a_week', 'ac_only_hot', 'drink_always', 'smoke_spacial', 'money_late', 'money_half', 'pet_have', 'cook_tell_first', 'loud_high', 'friend_tell_first', 'religion_no_affect', 'period_sometime'),
+(22, 67, 'type_ambivert', 'sleep_after_midnight', 'wake_noon', 'clean_once_a_week', 'ac_only_hot', 'drink_always', 'smoke_spacial', 'money_late', 'money_half', 'pet_have', 'cook_tell_first', 'loud_high', 'friend_tell_first', 'religion_no_affect', 'period_sometime'),
+(23, 68, 'type_introvert', 'sleep_before_midnight', 'wake_morning', 'clean_every_other_day', 'ac_only_hot', 'drink_weekend', 'smoke_spacial', 'money_late', 'money_half', 'pet_dont_have', 'cook_tell_first', 'loud_high', 'friend_tell_first', 'religion_no_affect', 'period_sometime');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `reports`
+--
+
+CREATE TABLE `reports` (
+  `id` int NOT NULL,
+  `reporter_id` int NOT NULL,
+  `reported_user_id` int DEFAULT NULL,
+  `type` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `description` text COLLATE utf8mb4_general_ci NOT NULL,
+  `image` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `report_type` enum('user','system') COLLATE utf8mb4_general_ci NOT NULL,
+  `status` enum('pending','resolved','rejected') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `reports`
+--
+
+INSERT INTO `reports` (`id`, `reporter_id`, `reported_user_id`, `type`, `description`, `image`, `report_type`, `status`, `created_at`) VALUES
+(1, 38, 41, 'harassment', 'dsfsdfsdfsd', NULL, 'user', 'rejected', '2025-01-11 16:52:11'),
+(3, 38, 39, 'inappropriate', 'ทดสอบการรายงาน', NULL, 'user', 'rejected', '2025-01-11 21:00:38'),
+(4, 38, NULL, 'ui', 'ทดสอบ', '/uploads/1736634005301-437565052_2357716371092617_9163711070272391592_n.jpg', 'system', 'pending', '2025-01-11 22:20:05'),
+(5, 38, NULL, 'performance', 'กกก', NULL, 'system', 'pending', '2025-01-13 08:36:37');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `suggestions`
+--
+
+CREATE TABLE `suggestions` (
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `content` text COLLATE utf8mb4_general_ci NOT NULL,
+  `status` enum('pending','reviewed','implemented','rejected') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `suggestions`
+--
+
+INSERT INTO `suggestions` (`id`, `user_id`, `content`, `status`, `created_at`) VALUES
+(1, 38, 'ทดสอบ', 'pending', '2025-01-11 22:20:35'),
+(2, 38, 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent non felis non velit feugiat lacinia. Nulla mattis at ligula in hendrerit. Morbi non velit id odio scelerisque porttitor id a sapien. Pellentesque enim tortor, faucibus non augue sit amet, porttitor congue ipsum. Pellentesque massa tortor, pharetra vel justo placerat, consequat tristique ligula. Etiam sed eros placerat, finibus erat vitae, lobortis quam. Vestibulum risus enim, vestibulum lobortis nulla a, mattis tincidunt velit. Curabitur ut pharetra enim. Donec orci ante, blandit in ante nec, aliquam dignissim eros.\n\n', 'pending', '2025-01-11 22:21:16');
 
 -- --------------------------------------------------------
 
@@ -186,33 +247,38 @@ CREATE TABLE `users` (
   `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `role` enum('user','admin') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'user',
-  `profile_picture` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL
+  `profile_picture` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `is_suspended` tinyint(1) DEFAULT '0',
+  `suspension_reason` text COLLATE utf8mb4_general_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `profile_picture`) VALUES
-(38, 'James', 'tpcc.general@gmail.com', '$2a$10$f404FhS0fV1d09Ob30zqyuRUSTkqXb1D97iWIqzgh4KKn0pkh4rby', 'user', '/uploads/1736367561067-James.jpg'),
-(39, 'a', 'a@gmail.com', '$2a$10$mfOSYvY0BbCx3ubjByIpiukQMalY7CF6VqBtMIurBdIcrWTjO9fDi', 'user', NULL),
-(40, 'b', 'b@gmail.com', '$2a$10$/CNwGzfV9MOhRAsz/F6T8.wLXhZ3aiY9Y4F5HcZzqUaYdvIrl9DIK', 'user', NULL),
-(41, 'Compare', 'compare@gmail.com', '$2a$10$i/qcmyGjAGZrBc35IPC0ueUoLFRyYAZFaCL7zNh/z5BY9p6bibnVy', 'user', NULL),
-(42, 'd', 'd@gmail.com', '$2a$10$JEXebQX8K2SLp5iq5SxiounxbT1vIxpTf1RQNmzZ6m6pSqeH61Bba', 'user', '/uploads/1736205148397-James.jpg'),
-(43, 'e', 'e@gmail.com', '$2a$10$BZWOOigwfH4OkyAV/Pc64usfNexkUwyxXGPVeMkuxHhBDsfKhB.LW', 'user', NULL),
-(44, 'f', 'f@gmail.com', '$2a$10$kamIl0qNjt88zKiVUuM0K..ZqkK6A8csCtbns1MDssW86c1L0ibO6', 'user', NULL),
-(45, 'g', 'g@gmail.com', '$2a$10$/5wLfKZ3QJlGJ8NsTRYWnuFm0QT854AegdcXg3iUHUGivlCFpg2.O', 'user', NULL),
-(46, 'h', 'h@gmail.com', '$2a$10$uMrV6ZpmUBLUTWtkxLLtfOwhKahe3SMfNDuWk0p/XEYKbt5Wk8jKC', 'user', NULL),
-(47, 'i', 'i@gmail.com', '$2a$10$qVAqdcw5/48OQyPFmevqd.pSNxceA6pkkIS82.qP89o.4xEAZmBGW', 'user', NULL),
-(56, 'j', 'j@gmail.com', '$2a$10$JiKngO4lCe5DYNck2IB5Wu5f.ZrRqY3nSgkmI6PCfRF5q99G0IGVO', 'user', NULL),
-(57, 'k', 'k@gmail.com', '$2a$10$ApcgMYNPJzAhaAJFjQjmVuR5f6nsFrIIzwiawbXoXy4ZQQfHWXNWO', 'user', NULL),
-(58, 'l', 'l@gmail.com', '$2a$10$w0tC.VObSEE/MNJl7Wdz/OoDeungREI20cY6ou8tVyvIvKFLumhVC', 'user', NULL),
-(59, 'm', 'm@gmail.com', '$2a$10$C6DxEgTi3ZwifwbPZbSQ1..DcYHoYrJOXtJ9AWgbLsHCZPQexgkFa', 'user', '/uploads/1736289616086-James.jpg'),
-(60, 'n', 'n@gmail.com', '$2a$10$bRfvOaZH03kT4HktI9oFmeTRh12FxczH1hhJsIwePCRr7ozdT82nq', 'user', '/uploads/1736289790478-James.jpg'),
-(61, 'o', 'o@gmail.com', '$2a$10$W0NDzClq6unFu3EhUpyG4uc6TWKiglPOPdngrboBiOG.YSm9wPCR2', 'user', '/uploads/1736290635967-James.jpg'),
-(62, 'p', 'p@gmail.com', '$2a$10$tS7P.hfU5GqdfI9612fp6OAO5kWslKSuTuFSww3w74kImiDg938C2', 'user', '/uploads/1736298257898-James.jpg'),
-(63, 'q', 'q@gmail.com', '$2a$10$/zzKMwrE2vE6xvGcXO85cuRRO00KpdyYJYed1L2HOoLUnI3ANrVR2', 'user', NULL),
-(65, 'r', 'r@gmail.com', '$2a$10$ilHYfBuNv3JTdH.WIC7U0eKvrGz7tKtS1lGZEwR.Uk/zOyppgRfGa', 'user', '/uploads/1736301277697-James.jpg');
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `profile_picture`, `is_suspended`, `suspension_reason`) VALUES
+(38, 'James', 'tpcc.general@gmail.com', '$2a$10$f404FhS0fV1d09Ob30zqyuRUSTkqXb1D97iWIqzgh4KKn0pkh4rby', 'user', '/uploads/1736578954063-80240ED7-623F-4412-9444-0C8E6CC77024.jpg', 0, NULL),
+(39, 'a', 'a@gmail.com', '$2a$10$mfOSYvY0BbCx3ubjByIpiukQMalY7CF6VqBtMIurBdIcrWTjO9fDi', 'user', '/uploads/1736579299922-A1FF3A52-7E43-496B-AF81-8FBE5D360E28.jpg', 0, NULL),
+(40, 'b', 'b@gmail.com', '$2a$10$/CNwGzfV9MOhRAsz/F6T8.wLXhZ3aiY9Y4F5HcZzqUaYdvIrl9DIK', 'user', '/uploads/1736579421507-97D6642D-FAC5-455A-9B6B-71B245DB5E93.jpg', 0, NULL),
+(41, 'Compare', 'compare@gmail.com', '$2a$10$i/qcmyGjAGZrBc35IPC0ueUoLFRyYAZFaCL7zNh/z5BY9p6bibnVy', 'user', NULL, 0, NULL),
+(42, 'd', 'd@gmail.com', '$2a$10$JEXebQX8K2SLp5iq5SxiounxbT1vIxpTf1RQNmzZ6m6pSqeH61Bba', 'user', '/uploads/1736205148397-James.jpg', 0, NULL),
+(43, 'e', 'e@gmail.com', '$2a$10$BZWOOigwfH4OkyAV/Pc64usfNexkUwyxXGPVeMkuxHhBDsfKhB.LW', 'user', NULL, 0, NULL),
+(44, 'f', 'f@gmail.com', '$2a$10$kamIl0qNjt88zKiVUuM0K..ZqkK6A8csCtbns1MDssW86c1L0ibO6', 'user', NULL, 0, NULL),
+(45, 'g', 'g@gmail.com', '$2a$10$/5wLfKZ3QJlGJ8NsTRYWnuFm0QT854AegdcXg3iUHUGivlCFpg2.O', 'user', '/uploads/1736606961868-407671912_3114387742029699_3195186485123866947_n.jpg', 1, 'บัญชีปลอม'),
+(46, 'h', 'h@gmail.com', '$2a$10$uMrV6ZpmUBLUTWtkxLLtfOwhKahe3SMfNDuWk0p/XEYKbt5Wk8jKC', 'user', '/uploads/1736607003681-411071610_6340072182759245_3500830113698890089_n.jpg', 0, NULL),
+(47, 'i', 'i@gmail.com', '$2a$10$qVAqdcw5/48OQyPFmevqd.pSNxceA6pkkIS82.qP89o.4xEAZmBGW', 'user', NULL, 0, NULL),
+(56, 'j', 'j@gmail.com', '$2a$10$JiKngO4lCe5DYNck2IB5Wu5f.ZrRqY3nSgkmI6PCfRF5q99G0IGVO', 'user', NULL, 0, NULL),
+(57, 'k', 'k@gmail.com', '$2a$10$ApcgMYNPJzAhaAJFjQjmVuR5f6nsFrIIzwiawbXoXy4ZQQfHWXNWO', 'user', NULL, 0, NULL),
+(58, 'l', 'l@gmail.com', '$2a$10$w0tC.VObSEE/MNJl7Wdz/OoDeungREI20cY6ou8tVyvIvKFLumhVC', 'user', NULL, 0, NULL),
+(59, 'm', 'm@gmail.com', '$2a$10$C6DxEgTi3ZwifwbPZbSQ1..DcYHoYrJOXtJ9AWgbLsHCZPQexgkFa', 'user', '/uploads/1736289616086-James.jpg', 0, NULL),
+(60, 'n', 'n@gmail.com', '$2a$10$bRfvOaZH03kT4HktI9oFmeTRh12FxczH1hhJsIwePCRr7ozdT82nq', 'user', '/uploads/1736289790478-James.jpg', 0, NULL),
+(61, 'o', 'o@gmail.com', '$2a$10$W0NDzClq6unFu3EhUpyG4uc6TWKiglPOPdngrboBiOG.YSm9wPCR2', 'user', '/uploads/1736290635967-James.jpg', 0, NULL),
+(62, 'p', 'p@gmail.com', '$2a$10$tS7P.hfU5GqdfI9612fp6OAO5kWslKSuTuFSww3w74kImiDg938C2', 'user', '/uploads/1736298257898-James.jpg', 0, NULL),
+(63, 'q', 'q@gmail.com', '$2a$10$/zzKMwrE2vE6xvGcXO85cuRRO00KpdyYJYed1L2HOoLUnI3ANrVR2', 'user', NULL, 0, NULL),
+(65, 'r', 'r@gmail.com', '$2a$10$ilHYfBuNv3JTdH.WIC7U0eKvrGz7tKtS1lGZEwR.Uk/zOyppgRfGa', 'user', '/uploads/1736301277697-James.jpg', 0, NULL),
+(66, 'admin', 'admin@gmail.com', '$2a$10$cbwNvl0TLoknskbG8HwajuWmQ/e82X0.wZ.Ou36UVjgERFBAhdk.a', 'admin', '/uploads/1736407465155-James.jpg', 0, NULL),
+(67, 'thephuuu', 'phuma1105@gmail.com', '$2a$10$SMbE4HNVVqpEHYc3m8voE.ypt6GwEWnjx9dLtyoZB7hUnHFB5kq76', 'user', '/uploads/1736606866838-437565052_2357716371092617_9163711070272391592_n.jpg', 0, NULL),
+(68, 'qw', 'qw@gmail.com', '$2a$10$B9o1GUWSRIVGrtcwTMC/c.G0U/S0FbEFVmhyN5f4v8KIpiSyz3BP.', 'user', NULL, 0, NULL);
 
 --
 -- Indexes for dumped tables
@@ -249,6 +315,21 @@ ALTER TABLE `personality_traits`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indexes for table `reports`
+--
+ALTER TABLE `reports`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `reporter_id` (`reporter_id`),
+  ADD KEY `reported_user_id` (`reported_user_id`);
+
+--
+-- Indexes for table `suggestions`
+--
+ALTER TABLE `suggestions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -262,31 +343,43 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `likes`
 --
 ALTER TABLE `likes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
 
 --
 -- AUTO_INCREMENT for table `matches`
 --
 ALTER TABLE `matches`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT for table `personality_infomation`
 --
 ALTER TABLE `personality_infomation`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT for table `personality_traits`
 --
 ALTER TABLE `personality_traits`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+
+--
+-- AUTO_INCREMENT for table `reports`
+--
+ALTER TABLE `reports`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `suggestions`
+--
+ALTER TABLE `suggestions`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
 
 --
 -- Constraints for dumped tables
@@ -318,6 +411,19 @@ ALTER TABLE `personality_infomation`
 --
 ALTER TABLE `personality_traits`
   ADD CONSTRAINT `personality_traits_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `reports`
+--
+ALTER TABLE `reports`
+  ADD CONSTRAINT `reports_ibfk_1` FOREIGN KEY (`reporter_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `reports_ibfk_2` FOREIGN KEY (`reported_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `suggestions`
+--
+ALTER TABLE `suggestions`
+  ADD CONSTRAINT `suggestions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
