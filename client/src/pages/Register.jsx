@@ -32,6 +32,13 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Add validation
+    if (password !== confirmPassword) {
+      setMessage("รหัสผ่านไม่ตรงกัน");
+      return;
+    }
+
     try {
       const { data } = await axios.post("/register", {
         name,
@@ -39,13 +46,15 @@ const Register = () => {
         password,
         role,
       });
-      console.log(name, email, password, role);
-      setMessage("Registration successful!");
-      navigate("/personalinfo", {
+
+      setMessage("ลงทะเบียนสำเร็จ กรุณาตรวจสอบอีเมลของคุณ");
+
+      // Navigate to OTP verification page
+      navigate("/verify-otp", {
         state: { user_id: data.id, email },
       });
     } catch (err) {
-      setMessage("Error registering user.");
+      setMessage(err.response?.data?.error || "เกิดข้อผิดพลาดในการลงทะเบียน");
     }
   };
 

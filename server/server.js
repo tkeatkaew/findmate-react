@@ -11,6 +11,8 @@ const app = express();
 
 const knn = require("ml-knn");
 
+const nodemailer = require("nodemailer");
+
 // MySQL Connection
 const db = mysql.createConnection({
   host: "localhost",
@@ -44,32 +46,171 @@ app.use(
   })
 );
 
+//Create a transporter using SMTP
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "findmate.official@gmail.com", // Your Gmail address
+    pass: "buky yekv rhsp pyta", // Your Gmail app password
+  },
+});
+
+// Store OTPs temporarily (in production, use Redis or similar)
+const otpStore = new Map();
+
+// Generate OTP
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// Send OTP via email
+async function sendOTP(email, otp) {
+  const mailOptions = {
+    from: "findmate.official@gmail.com",
+    to: email,
+    subject: "Your Find Mate Verification Code",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>ยืนยันตัวตนสำหรับ Find Mate</h2>
+        <p>รหัส OTP ของคุณคือ:</p>
+        <h1 style="font-size: 32px; letter-spacing: 5px; color: #4a90e2;">${otp}</h1>
+        <p>รหัสนี้จะหมดอายุในอีก 5 นาที</p>
+        <p>หากคุณไม่ได้ทำการลงทะเบียน กรุณาละเว้นข้อความนี้</p>
+      </div>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
 // Register Route
-app.post("/register", (req, res) => {
+app.post("/register", async (req, res) => {
   const { name, email, password, role } = req.body;
-  const checkEmailQuery = "SELECT * FROM users WHERE email = ?";
-  db.query(checkEmailQuery, [email], (err, result) => {
-    if (err) return res.status(500).json({ error: "Database error" });
-    if (result.length > 0) {
+
+  try {
+    // Check if email exists
+    const emailCheckResult = await new Promise((resolve, reject) => {
+      db.query(
+        "SELECT * FROM users WHERE email = ?",
+        [email],
+        (err, result) => {
+          if (err) reject(err);
+          resolve(result);
+        }
+      );
+    });
+
+    if (emailCheckResult.length > 0) {
       return res.status(400).json({ error: "Email already registered" });
     }
+
+    // Hash password
     const hashedPassword = bcrypt.hashSync(password, 10);
-    const insertUserQuery =
-      "INSERT INTO users (name, email, password,role) VALUES (?, ?, ?, ?)";
-    db.query(
-      insertUserQuery,
-      [name, email, hashedPassword, role],
-      (err, result) => {
-        if (err) return res.status(500).json({ error: "Error inserting user" });
-        res.status(200).json({
-          id: result.insertId,
-          email: checkEmailQuery,
-          message: "User registered successfully!",
-        });
-      }
-    );
-    console.log(name, email, hashedPassword, role);
-  });
+
+    // Insert user
+    const insertResult = await new Promise((resolve, reject) => {
+      db.query(
+        "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+        [name, email, hashedPassword, role],
+        (err, result) => {
+          if (err) reject(err);
+          resolve(result);
+        }
+      );
+    });
+
+    // Generate and send OTP
+    const otp = generateOTP();
+    otpStore.set(email, {
+      otp,
+      timestamp: Date.now(),
+      verified: false,
+      attempts: 0,
+    });
+
+    await sendOTP(email, otp);
+
+    res.status(200).json({
+      id: insertResult.insertId,
+      message: "Registration initiated. Please verify your email.",
+    });
+  } catch (err) {
+    console.error("Registration error:", err);
+    res.status(500).json({ error: "Error during registration" });
+  }
+});
+
+// Add OTP verification endpoint
+app.post("/verify-otp", async (req, res) => {
+  const { email, otp } = req.body;
+  const storedData = otpStore.get(email);
+
+  if (!storedData) {
+    return res
+      .status(400)
+      .json({ error: "No OTP found. Please request a new one." });
+  }
+
+  // Check if OTP is expired (5 minutes)
+  if (Date.now() - storedData.timestamp > 5 * 60 * 1000) {
+    otpStore.delete(email);
+    return res
+      .status(400)
+      .json({ error: "OTP expired. Please request a new one." });
+  }
+
+  // Check attempts
+  if (storedData.attempts >= 3) {
+    otpStore.delete(email);
+    return res
+      .status(400)
+      .json({ error: "Too many attempts. Please request a new OTP." });
+  }
+
+  // Verify OTP
+  if (storedData.otp === otp) {
+    storedData.verified = true;
+    otpStore.delete(email); // Clean up after successful verification
+
+    // Update user's email verification status in database
+    await new Promise((resolve, reject) => {
+      db.query(
+        "UPDATE users SET email_verified = 1 WHERE email = ?",
+        [email],
+        (err) => {
+          if (err) reject(err);
+          resolve();
+        }
+      );
+    });
+
+    return res.json({ verified: true });
+  }
+
+  // Invalid OTP
+  storedData.attempts += 1;
+  return res.status(400).json({ error: "Invalid OTP" });
+});
+
+// Add resend OTP endpoint
+app.post("/resend-otp", async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const otp = generateOTP();
+    otpStore.set(email, {
+      otp,
+      timestamp: Date.now(),
+      verified: false,
+      attempts: 0,
+    });
+
+    await sendOTP(email, otp);
+    res.json({ message: "New OTP sent successfully" });
+  } catch (err) {
+    console.error("Error resending OTP:", err);
+    res.status(500).json({ error: "Error sending OTP" });
+  }
 });
 
 // Login Route

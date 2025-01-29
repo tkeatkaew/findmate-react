@@ -11,6 +11,7 @@ import PersonalInfo from "./pages/PersonalInfo";
 import PersonalityProfile from "./pages/PersonalityProfile";
 import EditProfile from "./pages/EditProfile";
 import AdminDashboard from "./pages/AdminDashboard";
+import OTPVerification from "./pages/OTPVerification";
 
 const App = () => {
   return (
@@ -27,6 +28,7 @@ const App = () => {
         <Route path="/personalityprofile" element={<PersonalityProfile />} />
         <Route path="/edit-profile" element={<EditProfile />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/verify-otp" element={<OTPVerification />} />
       </Routes>
     </Router>
   );
