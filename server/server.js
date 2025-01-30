@@ -55,8 +55,8 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Store OTPs temporarily (in production, use Redis or similar)
-const otpStore = new Map();
+// Store registration data and OTPs temporarily (in production, use Redis)
+const pendingRegistrations = new Map();
 
 // Generate OTP
 function generateOTP() {
@@ -66,7 +66,7 @@ function generateOTP() {
 // Send OTP via email
 async function sendOTP(email, otp) {
   const mailOptions = {
-    from: "findmate.official@gmail.com",
+    from: "your-email@gmail.com",
     to: email,
     subject: "Your Find Mate Verification Code",
     html: `
@@ -104,36 +104,38 @@ app.post("/register", async (req, res) => {
       return res.status(400).json({ error: "Email already registered" });
     }
 
-    // Hash password
+    // Generate OTP and store registration data
+    const otp = generateOTP();
+    const registrationId = Date.now().toString(); // Simple unique ID
     const hashedPassword = bcrypt.hashSync(password, 10);
 
-    // Insert user
-    const insertResult = await new Promise((resolve, reject) => {
-      db.query(
-        "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
-        [name, email, hashedPassword, role],
-        (err, result) => {
-          if (err) reject(err);
-          resolve(result);
-        }
-      );
+    pendingRegistrations.set(registrationId, {
+      userData: {
+        name,
+        email,
+        hashedPassword,
+        role,
+      },
+      otp: {
+        code: otp,
+        timestamp: Date.now(),
+        attempts: 0,
+      },
     });
 
-    // Generate and send OTP
-    const otp = generateOTP();
-    otpStore.set(email, {
-      otp,
-      timestamp: Date.now(),
-      verified: false,
-      attempts: 0,
-    });
-
+    // Send OTP
     await sendOTP(email, otp);
 
+    // Return registration ID instead of user ID
     res.status(200).json({
-      id: insertResult.insertId,
+      registration_id: registrationId,
       message: "Registration initiated. Please verify your email.",
     });
+
+    // Clean up old pending registrations after 10 minutes
+    setTimeout(() => {
+      pendingRegistrations.delete(registrationId);
+    }, 10 * 60 * 1000);
   } catch (err) {
     console.error("Registration error:", err);
     res.status(500).json({ error: "Error during registration" });
@@ -142,70 +144,91 @@ app.post("/register", async (req, res) => {
 
 // Add OTP verification endpoint
 app.post("/verify-otp", async (req, res) => {
-  const { email, otp } = req.body;
-  const storedData = otpStore.get(email);
+  const { registration_id, otp } = req.body;
+  const registrationData = pendingRegistrations.get(registration_id);
 
-  if (!storedData) {
+  if (!registrationData) {
     return res
       .status(400)
-      .json({ error: "No OTP found. Please request a new one." });
+      .json({ error: "Registration expired. Please register again." });
   }
 
+  const { userData, otp: otpData } = registrationData;
+
   // Check if OTP is expired (5 minutes)
-  if (Date.now() - storedData.timestamp > 5 * 60 * 1000) {
-    otpStore.delete(email);
+  if (Date.now() - otpData.timestamp > 5 * 60 * 1000) {
+    pendingRegistrations.delete(registration_id);
     return res
       .status(400)
-      .json({ error: "OTP expired. Please request a new one." });
+      .json({ error: "OTP expired. Please register again." });
   }
 
   // Check attempts
-  if (storedData.attempts >= 3) {
-    otpStore.delete(email);
+  if (otpData.attempts >= 3) {
+    pendingRegistrations.delete(registration_id);
     return res
       .status(400)
-      .json({ error: "Too many attempts. Please request a new OTP." });
+      .json({ error: "Too many attempts. Please register again." });
   }
 
   // Verify OTP
-  if (storedData.otp === otp) {
-    storedData.verified = true;
-    otpStore.delete(email); // Clean up after successful verification
+  if (otpData.code === otp) {
+    try {
+      // Insert verified user into database
+      const result = await new Promise((resolve, reject) => {
+        db.query(
+          "INSERT INTO users (name, email, password, role, email_verified) VALUES (?, ?, ?, ?, true)",
+          [
+            userData.name,
+            userData.email,
+            userData.hashedPassword,
+            userData.role,
+          ],
+          (err, result) => {
+            if (err) reject(err);
+            resolve(result);
+          }
+        );
+      });
 
-    // Update user's email verification status in database
-    await new Promise((resolve, reject) => {
-      db.query(
-        "UPDATE users SET email_verified = 1 WHERE email = ?",
-        [email],
-        (err) => {
-          if (err) reject(err);
-          resolve();
-        }
-      );
-    });
+      // Clean up pending registration
+      pendingRegistrations.delete(registration_id);
 
-    return res.json({ verified: true });
+      return res.json({
+        verified: true,
+        user_id: result.insertId,
+      });
+    } catch (err) {
+      console.error("Error creating user:", err);
+      return res.status(500).json({ error: "Error creating user account" });
+    }
   }
 
   // Invalid OTP
-  storedData.attempts += 1;
+  otpData.attempts += 1;
   return res.status(400).json({ error: "Invalid OTP" });
 });
 
 // Add resend OTP endpoint
 app.post("/resend-otp", async (req, res) => {
-  const { email } = req.body;
+  const { registration_id } = req.body;
+  const registrationData = pendingRegistrations.get(registration_id);
+
+  if (!registrationData) {
+    return res
+      .status(400)
+      .json({ error: "Registration expired. Please register again." });
+  }
 
   try {
-    const otp = generateOTP();
-    otpStore.set(email, {
-      otp,
+    const newOtp = generateOTP();
+    registrationData.otp = {
+      code: newOtp,
       timestamp: Date.now(),
-      verified: false,
       attempts: 0,
-    });
+    };
 
-    await sendOTP(email, otp);
+    await sendOTP(registrationData.userData.email, newOtp);
     res.json({ message: "New OTP sent successfully" });
   } catch (err) {
     console.error("Error resending OTP:", err);
@@ -1347,5 +1370,48 @@ app.delete("/admin/reports/:reportId", async (req, res) => {
   } catch (error) {
     console.error("Error deleting report:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/statistics", async (req, res) => {
+  try {
+    // Get total users (excluding admins)
+    const usersCount = await new Promise((resolve, reject) => {
+      db.query(
+        "SELECT COUNT(*) as count FROM users WHERE role = 'user'",
+        (err, result) => {
+          if (err) reject(err);
+          resolve(result[0].count);
+        }
+      );
+    });
+
+    // Get total successful matches
+    const matchesCount = await new Promise((resolve, reject) => {
+      db.query("SELECT COUNT(*) as count FROM matches", (err, result) => {
+        if (err) reject(err);
+        resolve(result[0].count);
+      });
+    });
+
+    // Get total unique universities
+    const universitiesCount = await new Promise((resolve, reject) => {
+      db.query(
+        "SELECT COUNT(DISTINCT university) as count FROM personality_infomation WHERE university IS NOT NULL AND university != ''",
+        (err, result) => {
+          if (err) reject(err);
+          resolve(result[0].count);
+        }
+      );
+    });
+
+    res.json({
+      totalUsers: usersCount,
+      totalMatches: matchesCount,
+      totalUniversities: universitiesCount,
+    });
+  } catch (error) {
+    console.error("Error fetching statistics:", error);
+    res.status(500).json({ error: "Error fetching statistics" });
   }
 });

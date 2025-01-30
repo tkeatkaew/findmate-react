@@ -11,6 +11,8 @@ import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 import SvgIcon from "@mui/material/SvgIcon";
 import Divider from "@mui/material/Divider";
+import CircularProgress from "@mui/material/CircularProgress";
+import Alert from "@mui/material/Alert";
 
 import AppTheme from "../AppTheme";
 
@@ -20,6 +22,8 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [alertSeverity, setAlertSeverity] = useState("error");
   const navigate = useNavigate();
   const role = "user";
 
@@ -33,11 +37,13 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Add validation
     if (password !== confirmPassword) {
       setMessage("รหัสผ่านไม่ตรงกัน");
+      setAlertSeverity("error");
       return;
     }
+
+    setIsLoading(true);
 
     try {
       const { data } = await axios.post("/register", {
@@ -47,14 +53,19 @@ const Register = () => {
         role,
       });
 
-      setMessage("ลงทะเบียนสำเร็จ กรุณาตรวจสอบอีเมลของคุณ");
+      setMessage("กรุณาตรวจสอบรหัส OTP ในอีเมลของคุณ");
+      setAlertSeverity("success");
 
-      // Navigate to OTP verification page
       navigate("/verify-otp", {
-        state: { user_id: data.id, email },
+        state: {
+          registration_id: data.registration_id,
+          email,
+        },
       });
     } catch (err) {
       setMessage(err.response?.data?.error || "เกิดข้อผิดพลาดในการลงทะเบียน");
+      setAlertSeverity("error");
+      setIsLoading(false);
     }
   };
 
@@ -76,7 +87,13 @@ const Register = () => {
           <Typography variant="h1" sx={{ fontSize: "2rem", fontWeight: 500 }}>
             สมัครใช้งาน
           </Typography>
-          {message && <p>{message}</p>}
+
+          {message && (
+            <Alert severity={alertSeverity} onClose={() => setMessage("")}>
+              {message}
+            </Alert>
+          )}
+
           <form onSubmit={handleSubmit}>
             <Stack spacing={2}>
               <TextField
@@ -88,6 +105,7 @@ const Register = () => {
                 fullWidth
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                disabled={isLoading}
               />
               <TextField
                 required
@@ -98,6 +116,7 @@ const Register = () => {
                 fullWidth
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
               />
               <TextField
                 required
@@ -108,6 +127,7 @@ const Register = () => {
                 fullWidth
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
               />
               <TextField
                 required
@@ -118,14 +138,26 @@ const Register = () => {
                 fullWidth
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={isLoading}
               />
               <Button
                 type="submit"
                 variant="contained"
                 fullWidth
-                sx={{ textTransform: "none" }}
+                disabled={isLoading}
+                sx={{
+                  textTransform: "none",
+                  height: "42px", // Fixed height to prevent button size change
+                }}
               >
-                สมัครใช้งาน
+                {isLoading ? (
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <CircularProgress size={20} color="inherit" />
+                    <Typography>กำลังส่ง OTP...</Typography>
+                  </Stack>
+                ) : (
+                  "สมัครใช้งาน"
+                )}
               </Button>
               <Typography
                 component="div"
@@ -133,17 +165,16 @@ const Register = () => {
                 sx={{ textAlign: "center" }}
               >
                 มีบัญชี Find Mate อยู่แล้ว?{" "}
-                <span>
-                  <Link href="/login" variant="body2">
-                    เข้าสู่ระบบ
-                  </Link>
-                </span>
+                <Link href="/login" variant="body2">
+                  เข้าสู่ระบบ
+                </Link>
               </Typography>
               <Divider sx={{ fontSize: "0.785rem" }}>หรือ</Divider>
               <Button
                 startIcon={<GoogleIcon />}
                 variant="outlined"
                 fullWidth
+                disabled={isLoading}
                 sx={{
                   "& .MuiSvgIcon-root": {
                     fontSize: "1rem",
@@ -160,6 +191,7 @@ const Register = () => {
     </AppTheme>
   );
 };
+
 function GoogleIcon() {
   return (
     <SvgIcon>
@@ -188,4 +220,5 @@ function GoogleIcon() {
     </SvgIcon>
   );
 }
+
 export default Register;

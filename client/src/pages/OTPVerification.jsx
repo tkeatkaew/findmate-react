@@ -19,10 +19,10 @@ const OTPVerification = () => {
   const [timeLeft, setTimeLeft] = useState(60);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user_id, email } = location.state || {};
+  const { registration_id, email } = location.state || {};
 
   useEffect(() => {
-    if (!user_id || !email) {
+    if (!registration_id || !email) {
       navigate("/register");
       return;
     }
@@ -37,26 +37,36 @@ const OTPVerification = () => {
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [timeLeft, navigate, user_id, email]);
+  }, [timeLeft, navigate, registration_id, email]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const response = await axios.post("/verify-otp", {
-        user_id,
-        email,
+        registration_id,
         otp,
       });
 
       if (response.data.verified) {
+        // User is now created in database
         navigate("/personalinfo", {
-          state: { user_id, email },
+          state: {
+            user_id: response.data.user_id,
+            email,
+          },
         });
       } else {
         setError("Invalid OTP code");
       }
     } catch (err) {
       setError(err.response?.data?.error || "Error verifying OTP");
+
+      // If registration expired, redirect back to register
+      if (err.response?.data?.error?.includes("expired")) {
+        setTimeout(() => {
+          navigate("/register");
+        }, 3000);
+      }
     }
   };
 
@@ -64,13 +74,19 @@ const OTPVerification = () => {
     setIsResending(true);
     try {
       await axios.post("/resend-otp", {
-        user_id,
-        email,
+        registration_id,
       });
       setTimeLeft(60);
       setError("");
     } catch (err) {
-      setError("Error resending OTP");
+      setError(err.response?.data?.error || "Error resending OTP");
+
+      // If registration expired, redirect back to register
+      if (err.response?.data?.error?.includes("expired")) {
+        setTimeout(() => {
+          navigate("/register");
+        }, 3000);
+      }
     } finally {
       setIsResending(false);
     }
@@ -113,6 +129,10 @@ const OTPVerification = () => {
                 onChange={(e) => setOtp(e.target.value)}
                 placeholder="กรอกรหัส OTP 6 หลัก"
                 fullWidth
+                inputProps={{
+                  maxLength: 6,
+                  pattern: "[0-9]*",
+                }}
               />
 
               <Button
