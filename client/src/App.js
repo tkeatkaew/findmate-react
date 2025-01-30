@@ -7,6 +7,7 @@ import Matched from "./pages/Matched";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/Home";
+import About from "./pages/About";
 import PersonalInfo from "./pages/PersonalInfo";
 import PersonalityProfile from "./pages/PersonalityProfile";
 import EditProfile from "./pages/EditProfile";
@@ -19,6 +20,7 @@ const App = () => {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
         <Route path="/discovery" element={<Discovery />} />
         <Route path="/liked" element={<Liked />} />
         <Route path="/matched" element={<Matched />} />

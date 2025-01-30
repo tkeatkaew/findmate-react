@@ -83,13 +83,6 @@ const Navbar = () => {
             <Button component={Link} to="/about" sx={{ textTransform: "none" }}>
               เกี่ยวกับเรา
             </Button>
-            <Button
-              component={Link}
-              to="/donate"
-              sx={{ textTransform: "none" }}
-            >
-              โดเนท
-            </Button>
           </Stack>
 
           {/* Right: Profile/Login */}
