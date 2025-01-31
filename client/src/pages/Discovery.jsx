@@ -1197,7 +1197,6 @@ const Discovery = () => {
                   color="error"
                   onClick={clearFilters}
                   startIcon={<X size={16} />}
-                  size="small"
                 >
                   ล้างตัวกรอง ({getActiveFilterCount()})
                 </Button>
@@ -1206,7 +1205,6 @@ const Discovery = () => {
                 variant="contained"
                 onClick={handleOpenFilter}
                 startIcon={<Filter size={16} />}
-                size="small"
               >
                 ตัวกรอง
               </Button>

@@ -694,8 +694,8 @@ const PersonalInfo = () => {
   const [lastname, setLastname] = useState("");
   const [nickname, setNickname] = useState("");
   const [age, setAge] = useState("");
-  const [maritalstatus, setMaritalstatus] = useState("");
-  const [gender, setGender] = useState("");
+  const [maritalstatus, setMaritalstatus] = useState("single");
+  const [gender, setGender] = useState("male");
   const [lgbt, setLGBT] = useState(false);
   const [profilePicture, setProfilePicture] = useState(null);
   const [province, setProvince] = useState("");
@@ -705,7 +705,7 @@ const PersonalInfo = () => {
   const [lineId, setLineId] = useState("");
   const [phone, setPhone] = useState("");
   const [dormName, setDormName] = useState("");
-  const [vehicle, setVehicle] = useState("");
+  const [vehicle, setVehicle] = useState("none");
   const [selfIntroduction, setSelfIntroduction] = useState("");
 
   const [contactError, setContactError] = useState(false);

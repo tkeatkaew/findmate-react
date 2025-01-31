@@ -48,7 +48,16 @@ const OTPVerification = () => {
       });
 
       if (response.data.verified) {
-        // User is now created in database
+        // Store user data in localStorage after successful verification
+        const userData = {
+          id: response.data.user_id,
+          email: email,
+          name: email.split("@")[0], // temporary name until they set their profile
+          role: "user",
+        };
+        localStorage.setItem("user", JSON.stringify(userData));
+
+        // Navigate to personal info page
         navigate("/personalinfo", {
           state: {
             user_id: response.data.user_id,
@@ -61,7 +70,6 @@ const OTPVerification = () => {
     } catch (err) {
       setError(err.response?.data?.error || "Error verifying OTP");
 
-      // If registration expired, redirect back to register
       if (err.response?.data?.error?.includes("expired")) {
         setTimeout(() => {
           navigate("/register");

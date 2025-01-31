@@ -143,6 +143,8 @@ app.post("/register", async (req, res) => {
 });
 
 // Add OTP verification endpoint
+// In server.js - Update the /verify-otp endpoint
+
 app.post("/verify-otp", async (req, res) => {
   const { registration_id, otp } = req.body;
   const registrationData = pendingRegistrations.get(registration_id);
@@ -194,9 +196,16 @@ app.post("/verify-otp", async (req, res) => {
       // Clean up pending registration
       pendingRegistrations.delete(registration_id);
 
+      // Return full user data
       return res.json({
         verified: true,
         user_id: result.insertId,
+        user: {
+          id: result.insertId,
+          name: userData.name,
+          email: userData.email,
+          role: userData.role,
+        },
       });
     } catch (err) {
       console.error("Error creating user:", err);
@@ -459,15 +468,15 @@ app.listen(PORT, () => {
 app.post("/knn", (req, res) => {
   const { user_id } = req.body;
 
-  const getAllTraitsQuery = `
+  const getTraitsQuery = `
     SELECT pt.*, pi.*, u.profile_picture
     FROM personality_traits pt
     JOIN personality_infomation pi ON pt.user_id = pi.user_id
     JOIN users u ON pt.user_id = u.id
-    WHERE u.role = 'user' && u.is_suspended = 0
+    WHERE u.role = 'user' AND u.is_suspended = 0
   `;
 
-  db.query(getAllTraitsQuery, (err, results) => {
+  db.query(getTraitsQuery, (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       return res.status(500).json({ error: "Database error" });
@@ -476,120 +485,94 @@ app.post("/knn", (req, res) => {
     const currentUser = results.find((user) => user.user_id === user_id);
     if (!currentUser) return res.status(404).json({ error: "User not found" });
 
-    const encodeTrait = (trait) => {
-      const traitMap = {
-        type_introvert: 1,
-        type_ambivert: 2,
-        type_extrovert: 3,
-        sleep_before_midnight: 1,
-        sleep_after_midnight: 2,
-        wake_morning: 1,
-        wake_noon: 2,
-        wake_evening: 3,
-        clean_every_day: 1,
-        clean_every_other_day: 2,
-        clean_once_a_week: 3,
-        clean_dont_really: 4,
-        ac_never: 1,
-        ac_only_sleep: 2,
-        ac_only_hot: 3,
-        ac_all_day: 4,
-        drink_never: 1,
-        drink_spacial: 2,
-        drink_weekend: 3,
-        drink_always: 4,
-        smoke_never: 1,
-        smoke_spacial: 2,
-        smoke_always: 3,
-        money_on_time: 1,
-        money_late: 2,
-        money_half: 1,
-        money_ratio: 2,
-        pet_dont_have: 1,
-        pet_have: 2,
-        cook_ok: 1,
-        cook_tell_first: 2,
-        cook_no: 3,
-        loud_low: 1,
-        loud_medium: 2,
-        loud_high: 3,
-        friend_ok: 1,
-        friend_tell_first: 2,
-        friend_no: 3,
-        religion_ok: 1,
-        religion_no_affect: 2,
-        religion_no: 3,
-        period_long: 1,
-        period_sometime: 2,
-        period_no_need: 3,
-      };
-      return traitMap[trait] || 0;
+    // One-hot encoding function
+    const encodeTrait = (trait, categories) => {
+      const index = categories.indexOf(trait);
+      if (index === -1) return new Array(categories.length).fill(0);
+      return categories.map((_, i) => (i === index ? 1 : 0));
     };
 
-    const dataset = results.map((user) => ({
-      id: user.user_id,
-      traits: [
-        encodeTrait(user.type),
-        encodeTrait(user.sleep),
-        encodeTrait(user.wake),
-        encodeTrait(user.clean),
-        encodeTrait(user.air_conditioner),
-        encodeTrait(user.drink),
-        encodeTrait(user.smoke),
-        encodeTrait(user.money),
-        encodeTrait(user.expense),
-        encodeTrait(user.pet),
-        encodeTrait(user.cook),
-        encodeTrait(user.loud),
-        encodeTrait(user.friend),
-        encodeTrait(user.religion),
-        encodeTrait(user.period),
+    // Define categories and weightings for each trait
+    const traitCategories = {
+      type: ["type_introvert", "type_ambivert", "type_extrovert"],
+      sleep: ["sleep_before_midnight", "sleep_after_midnight"],
+      wake: ["wake_morning", "wake_noon", "wake_evening"],
+      clean: [
+        "clean_every_day",
+        "clean_every_other_day",
+        "clean_once_a_week",
+        "clean_dont_really",
       ],
-    }));
-
-    const currentUserTraits = [
-      encodeTrait(currentUser.type),
-      encodeTrait(currentUser.sleep),
-      encodeTrait(currentUser.wake),
-      encodeTrait(currentUser.clean),
-      encodeTrait(currentUser.air_conditioner),
-      encodeTrait(currentUser.drink),
-      encodeTrait(currentUser.smoke),
-      encodeTrait(currentUser.money),
-      encodeTrait(currentUser.expense),
-      encodeTrait(currentUser.pet),
-      encodeTrait(currentUser.cook),
-      encodeTrait(currentUser.loud),
-      encodeTrait(currentUser.friend),
-      encodeTrait(currentUser.religion),
-      encodeTrait(currentUser.period),
-    ];
-
-    const calculateSimilarity = (targetTraits) => {
-      const distance = Math.sqrt(
-        targetTraits.reduce(
-          (acc, trait, index) =>
-            acc + Math.pow(trait - currentUserTraits[index], 2),
-          0
-        )
-      );
-      const maxDistance = Math.sqrt(
-        currentUserTraits.length * Math.pow(4 - 1, 2)
-      );
-      return Math.round(((maxDistance - distance) / maxDistance) * 100);
+      air_conditioner: [
+        "ac_never",
+        "ac_only_sleep",
+        "ac_only_hot",
+        "ac_all_day",
+      ],
+      drink: ["drink_never", "drink_spacial", "drink_weekend", "drink_always"],
+      smoke: ["smoke_never", "smoke_spacial", "smoke_always"],
+      money: ["money_on_time", "money_late"],
+      expense: ["money_half", "money_ratio"],
+      pet: ["pet_dont_have", "pet_have"],
+      cook: ["cook_ok", "cook_tell_first", "cook_no"],
+      loud: ["loud_low", "loud_medium", "loud_high"],
+      friend: ["friend_ok", "friend_tell_first", "friend_no"],
+      religion: ["religion_ok", "religion_no_affect", "religion_no"],
+      period: ["period_long", "period_sometime", "period_no_need"],
     };
 
-    const neighbors = dataset
-      .filter((user) => user.id !== user_id)
-      .map((user) => {
-        const userTraits = results.find((u) => u.user_id === user.id);
-        return {
-          user_id: user.id,
-          similarity: calculateSimilarity(user.traits),
-          traits: userTraits,
-        };
-      })
-      .sort((a, b) => b.similarity - a.similarity);
+    const weights = {
+      smoke: 2.0,
+      drink: 1.8,
+      sleep: 1.5,
+      money: 1.5,
+      expense: 1.5,
+      pet: 1.2,
+      religion: 1.2,
+      loud: 1.2,
+      friend: 1.1,
+      cook: 1.0,
+      clean: 0.8,
+    };
+
+    // Encode user traits and apply weights
+    const encodeUserTraits = (user) => {
+      return Object.keys(traitCategories).flatMap((trait) => {
+        const encoded = encodeTrait(user[trait], traitCategories[trait]);
+        return encoded.map((value) => value * (weights[trait] || 1)); // Apply weight
+      });
+    };
+
+    const currentUserTraits = encodeUserTraits(currentUser);
+
+    // Weighted Cosine similarity function
+    const cosineSimilarity = (vectorA, vectorB) => {
+      let dotProduct = 0,
+        magnitudeA = 0,
+        magnitudeB = 0;
+
+      vectorA.forEach((a, i) => {
+        dotProduct += a * vectorB[i];
+        magnitudeA += a * a;
+        magnitudeB += vectorB[i] * vectorB[i];
+      });
+
+      const similarity =
+        magnitudeA && magnitudeB
+          ? (dotProduct / (Math.sqrt(magnitudeA) * Math.sqrt(magnitudeB))) * 100
+          : 0;
+      return parseFloat(similarity.toFixed(2));
+    };
+
+    // Compute similarity with all other users
+    const neighbors = results
+      .filter((user) => user.user_id !== user_id)
+      .map((user) => ({
+        user_id: user.user_id,
+        similarity: cosineSimilarity(encodeUserTraits(user), currentUserTraits),
+        traits: user,
+      }))
+      .sort((a, b) => b.similarity - a.similarity); // Sort by highest similarity
 
     res.status(200).json({ neighbors });
   });

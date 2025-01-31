@@ -95,6 +95,7 @@ const StatsCard = ({ icon, value, label }) => (
 );
 
 const HomePage = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalMatches: 0,
@@ -104,6 +105,13 @@ const HomePage = () => {
   const theme = useTheme();
 
   useEffect(() => {
+    // Redirect to Discovery if user is logged in
+    if (user) {
+      navigate("/discovery");
+      return;
+    }
+
+    // Only fetch stats if user is not logged in
     const fetchStats = async () => {
       try {
         const response = await fetch("http://localhost:3000/statistics");
@@ -115,7 +123,7 @@ const HomePage = () => {
     };
 
     fetchStats();
-  }, []);
+  }, [user, navigate]);
 
   return (
     <AppTheme>
