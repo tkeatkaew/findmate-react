@@ -305,6 +305,7 @@ app.post("/personalinfo", (req, res) => {
     dorm_name,
     vehicle,
     self_introduction,
+    monthly_dorm_fee,
   } = req.body;
 
   // Check if the user exists in the `users` table
@@ -328,7 +329,8 @@ app.post("/personalinfo", (req, res) => {
     phone,
     dorm_name,
     vehicle,
-    self_introduction
+    self_introduction,
+    monthly_dorm_fee
   );
 
   db.query(checkEmailQuery, [email], (err, result) => {
@@ -340,12 +342,12 @@ app.post("/personalinfo", (req, res) => {
       // User exists, insert data into the `findmate` table
       const userId = result[0].id;
       const insertPersonalInfoQuery = `
-        INSERT INTO personality_infomation (
-          user_id, firstname, lastname, nickname, age, maritalstatus, 
-          gender, lgbt, province, university, facebook, instagram, 
-          line_id, phone, dorm_name, vehicle, self_introduction
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `;
+  INSERT INTO personality_infomation (
+    user_id, firstname, lastname, nickname, age, maritalstatus, 
+    gender, lgbt, province, university, facebook, instagram, 
+    line_id, phone, dorm_name, vehicle, self_introduction, monthly_dorm_fee
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`;
       db.query(
         insertPersonalInfoQuery,
         [
@@ -366,6 +368,7 @@ app.post("/personalinfo", (req, res) => {
           dorm_name,
           vehicle,
           self_introduction,
+          monthly_dorm_fee || null,
         ],
         (err, result) => {
           if (err) {
@@ -809,7 +812,7 @@ app.put("/personalinfo/:userId", (req, res) => {
     SET firstname = ?, lastname = ?, nickname = ?, age = ?, 
         maritalstatus = ?, gender = ?, lgbt = ?, province = ?, 
         university = ?, facebook = ?, instagram = ?, line_id = ?, 
-        phone = ?, dorm_name = ?, vehicle = ?, self_introduction = ?
+        phone = ?, dorm_name = ?, vehicle = ?, self_introduction = ?, monthly_dorm_fee = ?
     WHERE user_id = ?
   `;
 
@@ -832,6 +835,7 @@ app.put("/personalinfo/:userId", (req, res) => {
       dorm_name,
       vehicle,
       self_introduction,
+      monthly_dorm_fee || null,
       userId,
     ],
     (err, result) => {

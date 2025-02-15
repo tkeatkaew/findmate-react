@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Jan 30, 2025 at 07:27 AM
+-- Generation Time: Feb 01, 2025 at 07:02 AM
 -- Server version: 8.0.35
 -- PHP Version: 8.3.9
 
@@ -55,7 +55,9 @@ INSERT INTO `likes` (`id`, `user_id`, `liked_user_id`, `created_at`) VALUES
 (82, 38, 62, '2025-01-29 08:07:48'),
 (83, 38, 58, '2025-01-29 08:28:25'),
 (84, 38, 46, '2025-01-29 08:44:57'),
-(85, 69, 38, '2025-01-29 10:40:11');
+(85, 69, 38, '2025-01-29 10:40:11'),
+(86, 81, 62, '2025-01-30 10:37:12'),
+(87, 82, 81, '2025-01-30 11:48:06');
 
 -- --------------------------------------------------------
 
@@ -132,7 +134,9 @@ INSERT INTO `personality_infomation` (`id`, `user_id`, `firstname`, `lastname`, 
 (43, 66, 'Amin', 'Admin', 'Admin', 23, 'inrelationship', 'male', 1, 'ขอนแก่น', 'มหาวิทยาลัยขอนแก่น', 'sdsd', '', '', '', 'sd', 'motorbike', 'sdfad.fnagsldgn;jadfgadfdfvjba\'fv'),
 (44, 67, 'ภีมวัจน์', 'ทรายตา', 'ภู', 23, 'single', 'male', 0, 'เชียงใหม่', 'มหาวิทยาลัยเทคโนโลยีราชมงคลล้านนา วิทยาเขตภาคพายัพจังหวัดเชียงใหม่', 'ภีมวัจน์ ทรายตา', '_thephuuu', 'phu1105', '0931713860', '', 'motorbike', 'ขาว หมวย สวย อึ๋ม'),
 (45, 68, 'qa', 'qa', 'qa', 32, 'single', 'female', 1, 'เชียงใหม่', 'มหาวิทยาลัยมหามกุฏราชวิทยาลัย วิทยาเขตล้านนา', 'wqe', 'qwe', 'qew', '', '', 'motorbike', 'weqweqwe'),
-(46, 69, 'ben', 'ramajub', 'ben', 20, 'married', 'female', 1, 'เชียงใหม่', 'มหาวิทยาลัยเชียงใหม่', 'benrama', 'benrama', 'benrama', '0811111111', 'banben', 'other', '');
+(46, 69, 'ben', 'ramajub', 'ben', 20, 'married', 'female', 1, 'เชียงใหม่', 'มหาวิทยาลัยเชียงใหม่', 'benrama', 'benrama', 'benrama', '0811111111', 'banben', 'other', ''),
+(51, 81, 'fasai', 'phiasaen', 'sea', 25, 'single', 'female', 1, 'เชียงใหม่', 'มหาวิทยาลัยเชียงใหม่', '', '__ssseaaa__', '', '', '', 'motorbike', ''),
+(52, 82, 'parichat', 'mahamai', 'baitoey', 24, 'single', 'female', 0, 'เชียงใหม่', 'มหาวิทยาลัยเชียงใหม่', '', '', '', '0989182433', '', 'motorbike', '');
 
 -- --------------------------------------------------------
 
@@ -187,7 +191,9 @@ INSERT INTO `personality_traits` (`id`, `user_id`, `type`, `sleep`, `wake`, `cle
 (21, 66, 'type_extrovert', 'sleep_before_midnight', 'wake_evening', 'clean_once_a_week', 'ac_only_hot', 'drink_always', 'smoke_spacial', 'money_late', 'money_half', 'pet_have', 'cook_tell_first', 'loud_high', 'friend_tell_first', 'religion_no_affect', 'period_sometime'),
 (22, 67, 'type_ambivert', 'sleep_after_midnight', 'wake_noon', 'clean_once_a_week', 'ac_only_hot', 'drink_always', 'smoke_spacial', 'money_late', 'money_half', 'pet_have', 'cook_tell_first', 'loud_high', 'friend_tell_first', 'religion_no_affect', 'period_sometime'),
 (23, 68, 'type_introvert', 'sleep_before_midnight', 'wake_morning', 'clean_every_other_day', 'ac_only_hot', 'drink_weekend', 'smoke_spacial', 'money_late', 'money_half', 'pet_dont_have', 'cook_tell_first', 'loud_high', 'friend_tell_first', 'religion_no_affect', 'period_sometime'),
-(24, 69, 'type_introvert', 'sleep_before_midnight', 'wake_noon', 'clean_every_day', 'ac_only_hot', 'drink_spacial', 'smoke_never', 'money_on_time', 'money_half', 'pet_have', 'cook_ok', 'loud_medium', 'friend_ok', 'religion_no_affect', 'period_long');
+(24, 69, 'type_introvert', 'sleep_before_midnight', 'wake_noon', 'clean_every_day', 'ac_only_hot', 'drink_spacial', 'smoke_never', 'money_on_time', 'money_half', 'pet_have', 'cook_ok', 'loud_medium', 'friend_ok', 'religion_no_affect', 'period_long'),
+(29, 81, 'type_ambivert', 'sleep_after_midnight', 'wake_morning', 'clean_dont_really', 'ac_all_day', 'drink_spacial', 'smoke_never', 'money_on_time', 'money_half', 'pet_dont_have', 'cook_tell_first', 'loud_medium', 'friend_tell_first', 'religion_no_affect', 'period_sometime'),
+(30, 82, 'type_introvert', 'sleep_after_midnight', 'wake_noon', NULL, 'ac_only_hot', 'drink_spacial', 'smoke_never', 'money_late', 'money_ratio', 'pet_dont_have', 'cook_no', 'loud_medium', 'friend_tell_first', 'religion_no_affect', 'period_sometime');
 
 -- --------------------------------------------------------
 
@@ -285,7 +291,9 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `profile_picture
 (66, 'admin', 'admin@gmail.com', '$2a$10$cbwNvl0TLoknskbG8HwajuWmQ/e82X0.wZ.Ou36UVjgERFBAhdk.a', 'admin', '/uploads/1736407465155-James.jpg', 0, NULL, 0),
 (67, 'thephuuu', 'phuma1105@gmail.com', '$2a$10$SMbE4HNVVqpEHYc3m8voE.ypt6GwEWnjx9dLtyoZB7hUnHFB5kq76', 'user', '/uploads/1736606866838-437565052_2357716371092617_9163711070272391592_n.jpg', 0, NULL, 0),
 (68, 'qw', 'qw@gmail.com', '$2a$10$B9o1GUWSRIVGrtcwTMC/c.G0U/S0FbEFVmhyN5f4v8KIpiSyz3BP.', 'user', NULL, 0, NULL, 0),
-(69, 'benramajub', 'benrama@gmail.com', '$2a$10$HxPZz.uWd9H0Il1uY7C/G.TD6cjymizCcxgw818yJybb5zI5ez50e', 'user', NULL, 0, NULL, 0);
+(69, 'benramajub', 'benrama@gmail.com', '$2a$10$HxPZz.uWd9H0Il1uY7C/G.TD6cjymizCcxgw818yJybb5zI5ez50e', 'user', NULL, 0, NULL, 0),
+(81, 'seatuan', 'shsy.svy@gmail.com', '$2a$10$lxKgnt1f0Y8j1HpI6aBdxeJ8cQv82hxAbbuT6UcG3pjlRqBxS1Lkm', 'user', NULL, 0, NULL, 1),
+(82, 'baitoey', 'parichat.tey@gmail.com', '$2a$10$gIDheaYKG8hLccZj3tpkWueEKL9JaSs3iYJWKNkSpGYuqEUgITaf.', 'user', NULL, 0, NULL, 1);
 
 --
 -- Indexes for dumped tables
@@ -350,7 +358,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `likes`
 --
 ALTER TABLE `likes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=88;
 
 --
 -- AUTO_INCREMENT for table `matches`
@@ -362,13 +370,13 @@ ALTER TABLE `matches`
 -- AUTO_INCREMENT for table `personality_infomation`
 --
 ALTER TABLE `personality_infomation`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
 
 --
 -- AUTO_INCREMENT for table `personality_traits`
 --
 ALTER TABLE `personality_traits`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `reports`
@@ -386,7 +394,7 @@ ALTER TABLE `suggestions`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
 
 --
 -- Constraints for dumped tables
