@@ -15,10 +15,10 @@ const nodemailer = require("nodemailer");
 
 // MySQL Connection
 const db = mysql.createConnection({
-  host: "localhost",
+  host: "mysql.railway.internal",
   user: "root",
-  password: "root",
-  database: "findmatev3",
+  password: "pYDQdlukFpwPVxMPHApLqrAebfVsIukG",
+  database: "mysql.railway.internal",
 });
 
 db.connect((err) => {
