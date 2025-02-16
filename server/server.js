@@ -14,19 +14,19 @@ const knn = require("ml-knn");
 const nodemailer = require("nodemailer");
 
 // MySQL Connection
-// const db = mysql.createConnection({
-//   host: "localhost",
-//   user: "root",
-//   password: "root",
-//   database: "findmatev3",
-// });
-
 const db = mysql.createConnection({
-  host: "mysql.railway.internal",
+  host: "localhost",
   user: "root",
-  password: "hAGSisGocpxGJpFQzPDLxdyZxOlaJGsG",
-  database: "railway",
+  password: "root",
+  database: "findmatev3",
 });
+
+// const db = mysql.createConnection({
+//   host: "mysql.railway.internal",
+//   user: "root",
+//   password: "hAGSisGocpxGJpFQzPDLxdyZxOlaJGsG",
+//   database: "railway",
+// });
 
 db.connect((err) => {
   if (err) {
