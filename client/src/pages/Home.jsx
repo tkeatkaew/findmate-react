@@ -181,7 +181,7 @@ const HomePage = () => {
               <StatsCard
                 icon={<School size={32} />}
                 value={stats.totalUniversities}
-                label="มหาวิทยาลัยที่เข้าร่วม"
+                label="รองรับมหาลัยทั่วประเทศ"
               />
             </Grid>
           </Grid>
