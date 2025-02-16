@@ -1,5 +1,5 @@
 const express = require("express");
-const mysql = require("mysql");
+const mysql = require("mysql2");
 const bcrypt = require("bcryptjs");
 const session = require("express-session");
 const bodyParser = require("body-parser");
@@ -14,11 +14,18 @@ const knn = require("ml-knn");
 const nodemailer = require("nodemailer");
 
 // MySQL Connection
+// const db = mysql.createConnection({
+//   host: "localhost",
+//   user: "root",
+//   password: "root",
+//   database: "findmatev3",
+// });
+
 const db = mysql.createConnection({
   host: "mysql.railway.internal",
   user: "root",
-  password: "pYDQdlukFpwPVxMPHApLqrAebfVsIukG",
-  database: "mysql.railway.internal",
+  password: "hAGSisGocpxGJpFQzPDLxdyZxOlaJGsG",
+  database: "railway",
 });
 
 db.connect((err) => {
