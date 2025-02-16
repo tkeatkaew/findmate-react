@@ -114,7 +114,9 @@ const HomePage = () => {
     // Only fetch stats if user is not logged in
     const fetchStats = async () => {
       try {
-        const response = await fetch("http://localhost:3000/statistics");
+        const response = await fetch(
+          "https://findmate-react-production.up.railway.app/statistics"
+        );
         const data = await response.json();
         setStats(data);
       } catch (error) {
