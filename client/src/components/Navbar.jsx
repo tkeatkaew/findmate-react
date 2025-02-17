@@ -1,23 +1,38 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Box from "@mui/material/Box";
-import CssBaseline from "@mui/material/CssBaseline";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
+import { Menu as MenuIcon, X } from "lucide-react";
 import AppTheme from "../AppTheme";
+import {
+  Box,
+  Button,
+  IconButton,
+  Typography,
+  Menu,
+  MenuItem,
+  Stack,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  Avatar,
+  Divider,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
 
 const Navbar = () => {
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   const isAuthenticated = !!localStorage.getItem("user");
   const user = isAuthenticated
     ? JSON.parse(localStorage.getItem("user"))
     : null;
 
-  const handleClick = (event) => {
+  const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -28,15 +43,94 @@ const Navbar = () => {
   const handleSignOut = () => {
     localStorage.removeItem("user");
     handleClose();
+    setMobileOpen(false);
     navigate("/");
   };
 
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  const menuItems = [
+    { text: "หน้าหลัก", path: "/" },
+    { text: "เกี่ยวกับเรา", path: "/about" },
+  ];
+
+  const drawer = (
+    <Box sx={{ width: 250, p: 2 }}>
+      <Stack spacing={2}>
+        {isAuthenticated && (
+          <Box sx={{ textAlign: "center", mb: 2 }}>
+            <Avatar
+              src={user.profile_picture || "/uploads/anonymous.jpg"}
+              sx={{ width: 64, height: 64, mx: "auto", mb: 1 }}
+            />
+            <Typography variant="subtitle1">{user.name}</Typography>
+          </Box>
+        )}
+        <List>
+          {menuItems.map((item) => (
+            <ListItem
+              key={item.text}
+              component={Link}
+              to={item.path}
+              onClick={() => setMobileOpen(false)}
+              sx={{
+                borderRadius: 2,
+                "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
+              }}
+            >
+              <ListItemText primary={item.text} />
+            </ListItem>
+          ))}
+          {isAuthenticated && (
+            <>
+              <ListItem
+                component={Link}
+                to="/edit-profile"
+                onClick={() => setMobileOpen(false)}
+                sx={{
+                  borderRadius: 2,
+                  "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
+                }}
+              >
+                <ListItemText primary="แก้ไขโปรไฟล์" />
+              </ListItem>
+              <ListItem
+                button
+                onClick={handleSignOut}
+                sx={{
+                  borderRadius: 2,
+                  "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
+                }}
+              >
+                <ListItemText primary="ออกจากระบบ" />
+              </ListItem>
+            </>
+          )}
+          {!isAuthenticated && (
+            <ListItem
+              component={Link}
+              to="/login"
+              onClick={() => setMobileOpen(false)}
+              sx={{
+                borderRadius: 2,
+                "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
+              }}
+            >
+              <ListItemText primary="เข้าสู่ระบบ" />
+            </ListItem>
+          )}
+        </List>
+      </Stack>
+    </Box>
+  );
+
   return (
     <AppTheme>
-      <CssBaseline />
       <Box
         sx={{
-          minWidth: "600px",
+          minWidth: "320px",
           padding: "0.5rem",
           paddingLeft: "1.5rem",
           border: "1px solid #eee",
@@ -53,7 +147,7 @@ const Navbar = () => {
             alignItems: "center",
           }}
         >
-          {/* Left: Logo */}
+          {/* Logo */}
           <Typography
             variant="p"
             component={Link}
@@ -68,84 +162,127 @@ const Navbar = () => {
             Find Mate
           </Typography>
 
-          {/* Center: Menu */}
-          <Stack
-            direction="row"
-            spacing={4}
-            sx={{
-              flex: "1 1 auto",
-              justifyContent: "center",
-            }}
-          >
-            <Button component={Link} to="/" sx={{ textTransform: "none" }}>
-              หน้าหลัก
-            </Button>
-            <Button component={Link} to="/about" sx={{ textTransform: "none" }}>
-              เกี่ยวกับเรา
-            </Button>
-          </Stack>
-
-          {/* Right: Profile/Login */}
-          {isAuthenticated ? (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Typography variant="body1">{user.name}</Typography>
-              <Box
-                onClick={handleClick}
-                sx={{
-                  cursor: "pointer",
-                  width: "40px",
-                  height: "40px",
-                  borderRadius: "50%",
-                  overflow: "hidden",
-                }}
-              >
-                <img
-                  src={
-                    user.profile_picture ||
-                    "http://localhost:3000/uploads/anonymous.jpg"
-                  }
-                  alt="Profile"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              </Box>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "right",
-                }}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
-              >
-                <MenuItem
-                  component={Link}
-                  to="/edit-profile"
-                  onClick={handleClose}
-                >
-                  แก้ไขโปรไฟล์
-                </MenuItem>
-                <MenuItem onClick={handleSignOut}>ออกจากระบบ</MenuItem>
-              </Menu>
-            </Box>
-          ) : (
-            <Button
-              variant="contained"
-              color="primary"
-              component={Link}
-              to="/login"
-              sx={{
-                flex: "0 1 auto",
-                textTransform: "none",
-              }}
+          {/* Mobile Menu Button */}
+          {isMobile && (
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ display: { md: "none" } }}
             >
-              เข้าสู่ระบบ
-            </Button>
+              {mobileOpen ? <X /> : <MenuIcon />}
+            </IconButton>
+          )}
+
+          {/* Desktop Menu */}
+          {!isMobile && (
+            <>
+              <Stack
+                direction="row"
+                spacing={4}
+                sx={{
+                  flex: "1 1 auto",
+                  justifyContent: "center",
+                }}
+              >
+                {menuItems.map((item) => (
+                  <Button
+                    key={item.text}
+                    component={Link}
+                    to={item.path}
+                    sx={{ textTransform: "none" }}
+                  >
+                    {item.text}
+                  </Button>
+                ))}
+              </Stack>
+
+              {/* Desktop Auth Section */}
+              {isAuthenticated ? (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Typography variant="body1">{user.name}</Typography>
+                  <Box
+                    onClick={handleProfileClick}
+                    sx={{
+                      cursor: "pointer",
+                      width: "40px",
+                      height: "40px",
+                      borderRadius: "50%",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <img
+                      src={user.profile_picture || "/uploads/anonymous.jpg"}
+                      alt="Profile"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </Box>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={handleClose}
+                    anchorOrigin={{
+                      vertical: "bottom",
+                      horizontal: "right",
+                    }}
+                    transformOrigin={{
+                      vertical: "top",
+                      horizontal: "right",
+                    }}
+                  >
+                    <MenuItem
+                      component={Link}
+                      to="/edit-profile"
+                      onClick={handleClose}
+                    >
+                      แก้ไขโปรไฟล์
+                    </MenuItem>
+                    <MenuItem onClick={handleSignOut}>ออกจากระบบ</MenuItem>
+                  </Menu>
+                </Box>
+              ) : (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  component={Link}
+                  to="/login"
+                  sx={{
+                    flex: "0 1 auto",
+                    textTransform: "none",
+                  }}
+                >
+                  เข้าสู่ระบบ
+                </Button>
+              )}
+            </>
           )}
         </Box>
+
+        {/* Mobile Drawer */}
+        <Drawer
+          variant="temporary"
+          anchor="right"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{
+            keepMounted: true, // Better mobile performance
+          }}
+          sx={{
+            display: { xs: "block", md: "none" },
+            "& .MuiDrawer-paper": {
+              boxSizing: "border-box",
+              width: 250,
+              borderRadius: "20px 0 0 20px",
+            },
+          }}
+        >
+          {drawer}
+        </Drawer>
       </Box>
     </AppTheme>
   );
