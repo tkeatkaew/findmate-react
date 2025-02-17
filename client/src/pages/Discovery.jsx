@@ -11,7 +11,15 @@ import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import Grid from "@mui/material/Grid";
 import Divider from "@mui/material/Divider";
-import { Filter, X } from "lucide-react";
+import {
+  Filter,
+  X,
+  Search,
+  Heart,
+  UserPlus2,
+  Bug,
+  MessageSquarePlus,
+} from "lucide-react";
 import InputLabel from "@mui/material/InputLabel";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
@@ -26,10 +34,40 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
+import { useTheme, useMediaQuery } from "@mui/material";
 
 import AppTheme from "../AppTheme";
 
 const Discovery = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const menuItems = [
+    { text: "ค้นหารูมเมท", icon: <Search size={20} />, path: "/discovery" },
+    { text: "ชอบ", icon: <Heart size={20} />, path: "/liked" },
+    { text: "จับคู่", icon: <UserPlus2 size={20} />, path: "/matched" },
+  ];
+
+  const footerItems = [
+    {
+      text: "แจ้งปัญหาการใช้งาน",
+      icon: <Bug size={20} />,
+      onClick: () => {
+        setIsSuggestion(false);
+        setSystemReportDialog(true);
+      },
+      color: "error",
+    },
+    {
+      text: "ข้อเสนอแนะ",
+      icon: <MessageSquarePlus size={20} />,
+      onClick: () => {
+        setIsSuggestion(true);
+        setSystemReportDialog(true);
+      },
+    },
+  ];
+
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentUserTraits, setCurrentUserTraits] = useState(null);
@@ -462,7 +500,7 @@ const Discovery = () => {
         {/* Sidebar */}
         <Box
           sx={{
-            width: "200px",
+            width: isMobile ? "auto" : "200px",
             padding: "0.5rem",
             border: "1px solid #eee",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
@@ -474,46 +512,43 @@ const Discovery = () => {
           }}
         >
           <Stack direction="column" spacing={2}>
-            <Button
-              component={Link}
-              to="/discovery"
-              sx={{ textTransform: "none" }}
-            >
-              ค้นหารูมเมท
-            </Button>
-            <Button component={Link} to="/liked" sx={{ textTransform: "none" }}>
-              ชอบ
-            </Button>
-            <Button
-              component={Link}
-              to="/matched"
-              sx={{ textTransform: "none" }}
-            >
-              จับคู่
-            </Button>
+            {menuItems.map((item) => (
+              <Button
+                key={item.text}
+                component={Link}
+                to={item.path}
+                startIcon={!isMobile && item.icon}
+                sx={{
+                  textTransform: "none",
+                  color: "black",
+                  justifyContent: isMobile ? "center" : "flex-start",
+                  minWidth: isMobile ? "48px" : "auto",
+                  p: isMobile ? "8px" : "8px 16px",
+                }}
+              >
+                {isMobile ? item.icon : item.text}
+              </Button>
+            ))}
             <Divider sx={{ my: 1 }} />
-            <Button
-              onClick={() => {
-                setIsSuggestion(false);
-                setSystemReportDialog(true);
-              }}
-              color="error"
-              sx={{ textTransform: "none" }}
-            >
-              แจ้งปัญหาการใช้งาน
-            </Button>
-            <Button
-              onClick={() => {
-                setIsSuggestion(true);
-                setSystemReportDialog(true);
-              }}
-              sx={{ textTransform: "none" }}
-            >
-              ข้อเสนอแนะ
-            </Button>
+            {footerItems.map((item) => (
+              <Button
+                key={item.text}
+                onClick={item.onClick}
+                startIcon={!isMobile && item.icon}
+                color={item.color || "primary"}
+                sx={{
+                  textTransform: "none",
+                  color: item.color === "error" ? "error.main" : "black",
+                  justifyContent: isMobile ? "center" : "flex-start",
+                  minWidth: isMobile ? "48px" : "auto",
+                  p: isMobile ? "8px" : "8px 16px",
+                }}
+              >
+                {isMobile ? item.icon : item.text}
+              </Button>
+            ))}
           </Stack>
         </Box>
-
         {/* Main Content */}
         <Box sx={{ flex: 1, padding: "1rem" }}>
           {/* Header with Filter */}
