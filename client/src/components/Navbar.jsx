@@ -65,7 +65,9 @@ const Navbar = () => {
               src={user.profile_picture || "/uploads/anonymous.jpg"}
               sx={{ width: 64, height: 64, mx: "auto", mb: 1 }}
             />
-            <Typography variant="subtitle1">{user.name}</Typography>
+            <Typography variant="subtitle1" sx={{ color: "black" }}>
+              {user.name}
+            </Typography>
           </Box>
         )}
         <List>
@@ -80,7 +82,7 @@ const Navbar = () => {
                 "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
               }}
             >
-              <ListItemText primary={item.text} />
+              <ListItemText primary={item.text} sx={{ color: "black" }} />
             </ListItem>
           ))}
           {isAuthenticated && (
@@ -94,7 +96,7 @@ const Navbar = () => {
                   "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
                 }}
               >
-                <ListItemText primary="แก้ไขโปรไฟล์" />
+                <ListItemText primary="แก้ไขโปรไฟล์" sx={{ color: "black" }} />
               </ListItem>
               <ListItem
                 button
@@ -104,7 +106,7 @@ const Navbar = () => {
                   "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
                 }}
               >
-                <ListItemText primary="ออกจากระบบ" />
+                <ListItemText primary="ออกจากระบบ" sx={{ color: "black" }} />
               </ListItem>
             </>
           )}
@@ -118,7 +120,7 @@ const Navbar = () => {
                 "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
               }}
             >
-              <ListItemText primary="เข้าสู่ระบบ" />
+              <ListItemText primary="เข้าสู่ระบบ" sx={{ color: "black" }} />
             </ListItem>
           )}
         </List>
@@ -155,7 +157,7 @@ const Navbar = () => {
             sx={{
               textDecoration: "none",
               fontWeight: "bold",
-              color: "inherit",
+              color: "black",
               flex: "0 1 auto",
             }}
           >
@@ -165,7 +167,7 @@ const Navbar = () => {
           {/* Mobile Menu Button */}
           {isMobile && (
             <IconButton
-              color="black"
+              color="inherit"
               aria-label="open drawer"
               edge="start"
               onClick={handleDrawerToggle}
@@ -191,7 +193,7 @@ const Navbar = () => {
                     key={item.text}
                     component={Link}
                     to={item.path}
-                    sx={{ textTransform: "none" }}
+                    sx={{ textTransform: "none", color: "black" }}
                   >
                     {item.text}
                   </Button>
@@ -201,7 +203,9 @@ const Navbar = () => {
               {/* Desktop Auth Section */}
               {isAuthenticated ? (
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <Typography variant="body1">{user.name}</Typography>
+                  <Typography variant="body1" sx={{ color: "black" }}>
+                    {user.name}
+                  </Typography>
                   <Box
                     onClick={handleProfileClick}
                     sx={{
@@ -213,7 +217,7 @@ const Navbar = () => {
                     }}
                   >
                     <img
-                      src={user.profile_picture || "../images/anonymous.jpg"}
+                      src={user.profile_picture || "/uploads/anonymous.jpg"}
                       alt="Profile"
                       style={{
                         width: "100%",
@@ -239,16 +243,19 @@ const Navbar = () => {
                       component={Link}
                       to="/edit-profile"
                       onClick={handleClose}
+                      sx={{ color: "black" }}
                     >
                       แก้ไขโปรไฟล์
                     </MenuItem>
-                    <MenuItem onClick={handleSignOut}>ออกจากระบบ</MenuItem>
+                    <MenuItem onClick={handleSignOut} sx={{ color: "black" }}>
+                      ออกจากระบบ
+                    </MenuItem>
                   </Menu>
                 </Box>
               ) : (
                 <Button
                   variant="contained"
-                  color="black"
+                  color="primary"
                   component={Link}
                   to="/login"
                   sx={{
