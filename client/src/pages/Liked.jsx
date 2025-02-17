@@ -252,15 +252,15 @@ const Liked = () => {
   };
 
   useEffect(() => {
-    // if (!user) {
-    //   navigate("/login");
-    //   return;
-    // }
-
-    if (1 == 0) {
+    if (!user) {
       navigate("/login");
       return;
     }
+
+    // if (1 == 0) {
+    //   navigate("/login");
+    //   return;
+    // }
 
     if (!dataFetched) {
       const fetchData = async () => {

@@ -23,14 +23,60 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import CircularProgress from "@mui/material/CircularProgress";
 import Chip from "@mui/material/Chip";
+import {
+  Filter,
+  X,
+  Search,
+  Heart,
+  UserPlus2,
+  Bug,
+  MessageSquarePlus,
+} from "lucide-react";
+import { useTheme, useMediaQuery } from "@mui/material";
 
 const Matched = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const menuItems = [
+    { text: "ค้นหารูมเมท", icon: <Search size={20} />, path: "/discovery" },
+    { text: "ชอบ", icon: <Heart size={20} />, path: "/liked" },
+    { text: "จับคู่", icon: <UserPlus2 size={20} />, path: "/matched" },
+  ];
+
+  const footerItems = [
+    {
+      text: "แจ้งปัญหาการใช้งาน",
+      icon: <Bug size={20} />,
+      onClick: () => {
+        setIsSuggestion(false);
+        setSystemReportDialog(true);
+      },
+      color: "error",
+    },
+    {
+      text: "ข้อเสนอแนะ",
+      icon: <MessageSquarePlus size={20} />,
+      onClick: () => {
+        setIsSuggestion(true);
+        setSystemReportDialog(true);
+      },
+    },
+  ];
+
+  const [isSuggestion, setIsSuggestion] = useState(false);
+  const [systemReportDialog, setSystemReportDialog] = useState(false);
+  const [systemReportType, setSystemReportType] = useState("");
+  const [systemDescription, setSystemDescription] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
+  const [reportImage, setReportImage] = useState(null);
+  const [reportImagePreview, setReportImagePreview] = useState("");
+
   const [matches, setMatches] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentUserTraits, setCurrentUserTraits] = useState(null);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [reportType, setReportType] = useState("");
-  const [reportDescription, setReportDescription] = useState("");
   const [dataFetched, setDataFetched] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [alert, setAlert] = useState({
@@ -41,6 +87,48 @@ const Matched = () => {
 
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+
+  const handleSystemReport = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("user_id", user.id);
+      formData.append("type", systemReportType);
+      formData.append("description", systemDescription);
+      if (reportImage) {
+        formData.append("image", reportImage);
+      }
+      if (isSuggestion) {
+        // If it’s just a suggestion
+        await axios.post("/suggestions", {
+          user_id: user.id,
+          content: systemDescription,
+        });
+      } else {
+        // If it’s a system bug report
+        await axios.post("/reports/system", formData);
+      }
+      showAlert(
+        isSuggestion ? "ส่งข้อเสนอแนะเรียบร้อยแล้ว" : "ส่งรายงานเรียบร้อยแล้ว",
+        "success"
+      );
+      setSystemReportDialog(false);
+      setSystemReportType("");
+      setSystemDescription("");
+      setReportImage(null);
+      setReportImagePreview("");
+      setIsSuggestion(false);
+    } catch (err) {
+      showAlert("เกิดข้อผิดพลาดในการส่งข้อมูล", "error");
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setReportImage(file);
+      setReportImagePreview(URL.createObjectURL(file));
+    }
+  };
 
   // Label and value mappings for user traits
   const labelMapping = {
@@ -169,6 +257,11 @@ const Matched = () => {
       navigate("/login");
       return;
     }
+
+    // if (1 == 0) {
+    //   navigate("/login");
+    //   return;
+    // }
 
     if (!dataFetched) {
       const fetchData = async () => {
@@ -304,7 +397,7 @@ const Matched = () => {
         {/* Sidebar */}
         <Box
           sx={{
-            width: "200px",
+            width: isMobile ? "auto" : "200px",
             padding: "0.5rem",
             border: "1px solid #eee",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
@@ -316,23 +409,41 @@ const Matched = () => {
           }}
         >
           <Stack direction="column" spacing={2}>
-            <Button
-              component={Link}
-              to="/discovery"
-              sx={{ textTransform: "none" }}
-            >
-              ค้นหารูมเมท
-            </Button>
-            <Button component={Link} to="/liked" sx={{ textTransform: "none" }}>
-              ชอบ
-            </Button>
-            <Button
-              component={Link}
-              to="/matched"
-              sx={{ textTransform: "none" }}
-            >
-              จับคู่
-            </Button>
+            {menuItems.map((item) => (
+              <Button
+                key={item.text}
+                component={Link}
+                to={item.path}
+                startIcon={!isMobile && item.icon}
+                sx={{
+                  textTransform: "none",
+                  color: "black",
+                  justifyContent: isMobile ? "center" : "flex-start",
+                  minWidth: isMobile ? "48px" : "auto",
+                  p: isMobile ? "8px" : "8px 16px",
+                }}
+              >
+                {isMobile ? item.icon : item.text}
+              </Button>
+            ))}
+            <Divider sx={{ my: 1 }} />
+            {footerItems.map((item) => (
+              <Button
+                key={item.text}
+                onClick={item.onClick}
+                startIcon={!isMobile && item.icon}
+                color={item.color || "primary"}
+                sx={{
+                  textTransform: "none",
+                  color: item.color === "error" ? "error.main" : "black",
+                  justifyContent: isMobile ? "center" : "flex-start",
+                  minWidth: isMobile ? "48px" : "auto",
+                  p: isMobile ? "8px" : "8px 16px",
+                }}
+              >
+                {isMobile ? item.icon : item.text}
+              </Button>
+            ))}
           </Stack>
         </Box>
 
@@ -642,7 +753,7 @@ const Matched = () => {
         </Modal>
       )}
 
-      {/* Report Dialog */}
+      {/* Report User Dialog */}
       <Dialog
         open={reportDialogOpen}
         onClose={() => setReportDialogOpen(false)}
@@ -702,6 +813,113 @@ const Matched = () => {
             color="primary"
           >
             ส่งรายงาน
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* System Report/Suggestion Dialog */}
+      <Dialog
+        open={systemReportDialog}
+        onClose={() => setSystemReportDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          {isSuggestion ? "ข้อเสนอแนะ" : "แจ้งปัญหาการใช้งาน"}
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            {!isSuggestion && (
+              <FormControl fullWidth>
+                <InputLabel>ประเภทปัญหา</InputLabel>
+                <Select
+                  value={systemReportType}
+                  onChange={(e) => setSystemReportType(e.target.value)}
+                  label="ประเภทปัญหา"
+                >
+                  <MenuItem value="bug">ข้อผิดพลาดของระบบ</MenuItem>
+                  <MenuItem value="ui">ปัญหาการแสดงผล</MenuItem>
+                  <MenuItem value="performance">ปัญหาประสิทธิภาพ</MenuItem>
+                  <MenuItem value="feature">ฟีเจอร์ไม่ทำงาน</MenuItem>
+                  <MenuItem value="other">อื่นๆ</MenuItem>
+                </Select>
+              </FormControl>
+            )}
+
+            <TextField
+              multiline
+              rows={4}
+              label={isSuggestion ? "ข้อเสนอแนะ" : "คำอธิบาย"}
+              value={systemDescription}
+              onChange={(e) => setSystemDescription(e.target.value)}
+              fullWidth
+              required
+            />
+
+            {!isSuggestion && (
+              <Box>
+                <input
+                  accept="image/*"
+                  id="report-image"
+                  type="file"
+                  hidden
+                  onChange={handleImageChange}
+                />
+                <label htmlFor="report-image">
+                  <Button variant="outlined" component="span" fullWidth>
+                    แนบรูปภาพ
+                  </Button>
+                </label>
+                {reportImagePreview && (
+                  <Box sx={{ mt: 2 }}>
+                    <img
+                      src={reportImagePreview}
+                      alt="Preview"
+                      style={{
+                        width: "100%",
+                        maxHeight: "200px",
+                        objectFit: "contain",
+                        borderRadius: "4px",
+                      }}
+                    />
+                    <Button
+                      color="error"
+                      onClick={() => {
+                        setReportImage(null);
+                        setReportImagePreview("");
+                      }}
+                      sx={{ mt: 1 }}
+                    >
+                      ลบรูปภาพ
+                    </Button>
+                  </Box>
+                )}
+              </Box>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setSystemReportDialog(false);
+              setSystemReportType("");
+              setSystemDescription("");
+              setReportImage(null);
+              setReportImagePreview("");
+              setIsSuggestion(false);
+            }}
+          >
+            ยกเลิก
+          </Button>
+          <Button
+            onClick={handleSystemReport}
+            variant="contained"
+            color="primary"
+            disabled={
+              (!isSuggestion && !systemReportType) || !systemDescription
+            }
+          >
+            ส่ง{isSuggestion ? "ข้อเสนอแนะ" : "รายงาน"}
           </Button>
         </DialogActions>
       </Dialog>
