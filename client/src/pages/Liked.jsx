@@ -121,6 +121,14 @@ const Liked = () => {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setReportImage(file);
+      setReportImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   // Label and value mappings for user traits
   const labelMapping = {
     type: "บุคลิกภาพ",
@@ -821,6 +829,176 @@ const Liked = () => {
           {alert.message}
         </Alert>
       </Snackbar>
+      {/* Report User Dialog */}
+      <Dialog
+        open={reportDialogOpen}
+        onClose={() => setReportDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>รายงานผู้ใช้</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <FormControl fullWidth>
+              <InputLabel>ประเภทการรายงาน</InputLabel>
+              <Select
+                value={reportType}
+                onChange={(e) => setReportType(e.target.value)}
+                label="ประเภทการรายงาน"
+              >
+                <MenuItem value="harassment">คุกคามทางเพศ</MenuItem>
+                <MenuItem value="fraud">ฉ้อโกง</MenuItem>
+                <MenuItem value="scam">หลอกลวง</MenuItem>
+                <MenuItem value="fake_profile">โปรไฟล์ปลอม</MenuItem>
+                <MenuItem value="inappropriate">เนื้อหาไม่เหมาะสม</MenuItem>
+                <MenuItem value="other">อื่นๆ</MenuItem>
+              </Select>
+            </FormControl>
+
+            <TextField
+              multiline
+              rows={4}
+              label="คำอธิบาย"
+              value={reportDescription}
+              onChange={(e) => setReportDescription(e.target.value)}
+              fullWidth
+              required
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setReportDialogOpen(false)}>ยกเลิก</Button>
+          <Button
+            onClick={async () => {
+              try {
+                await axios.post("/reports/user", {
+                  reporter_id: user.id,
+                  reported_user_id: selectedUser.user_id,
+                  type: reportType,
+                  description: reportDescription,
+                });
+                showAlert("ส่งรายงานเรียบร้อยแล้ว", "success");
+                setReportDialogOpen(false);
+                setReportType("");
+                setReportDescription("");
+              } catch (err) {
+                showAlert("เกิดข้อผิดพลาดในการส่งรายงาน", "error");
+              }
+            }}
+            variant="contained"
+            color="primary"
+          >
+            ส่งรายงาน
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* System Report/Suggestion Dialog */}
+      <Dialog
+        open={systemReportDialog}
+        onClose={() => setSystemReportDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          {isSuggestion ? "ข้อเสนอแนะ" : "แจ้งปัญหาการใช้งาน"}
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            {!isSuggestion && (
+              <FormControl fullWidth>
+                <InputLabel>ประเภทปัญหา</InputLabel>
+                <Select
+                  value={systemReportType}
+                  onChange={(e) => setSystemReportType(e.target.value)}
+                  label="ประเภทปัญหา"
+                >
+                  <MenuItem value="bug">ข้อผิดพลาดของระบบ</MenuItem>
+                  <MenuItem value="ui">ปัญหาการแสดงผล</MenuItem>
+                  <MenuItem value="performance">ปัญหาประสิทธิภาพ</MenuItem>
+                  <MenuItem value="feature">ฟีเจอร์ไม่ทำงาน</MenuItem>
+                  <MenuItem value="other">อื่นๆ</MenuItem>
+                </Select>
+              </FormControl>
+            )}
+
+            <TextField
+              multiline
+              rows={4}
+              label={isSuggestion ? "ข้อเสนอแนะ" : "คำอธิบาย"}
+              value={systemDescription}
+              onChange={(e) => setSystemDescription(e.target.value)}
+              fullWidth
+              required
+            />
+
+            {!isSuggestion && (
+              <Box>
+                <input
+                  accept="image/*"
+                  id="report-image"
+                  type="file"
+                  hidden
+                  onChange={handleImageChange}
+                />
+                <label htmlFor="report-image">
+                  <Button variant="outlined" component="span" fullWidth>
+                    แนบรูปภาพ
+                  </Button>
+                </label>
+                {reportImagePreview && (
+                  <Box sx={{ mt: 2 }}>
+                    <img
+                      src={reportImagePreview}
+                      alt="Preview"
+                      style={{
+                        width: "100%",
+                        maxHeight: "200px",
+                        objectFit: "contain",
+                        borderRadius: "4px",
+                      }}
+                    />
+                    <Button
+                      color="error"
+                      onClick={() => {
+                        setReportImage(null);
+                        setReportImagePreview("");
+                      }}
+                      sx={{ mt: 1 }}
+                    >
+                      ลบรูปภาพ
+                    </Button>
+                  </Box>
+                )}
+              </Box>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setSystemReportDialog(false);
+              setSystemReportType("");
+              setSystemDescription("");
+              setReportImage(null);
+              setReportImagePreview("");
+              setIsSuggestion(false);
+            }}
+          >
+            ยกเลิก
+          </Button>
+          <Button
+            onClick={handleSystemReport}
+            variant="contained"
+            color="primary"
+            disabled={
+              (!isSuggestion && !systemReportType) || !systemDescription
+            }
+          >
+            ส่ง{isSuggestion ? "ข้อเสนอแนะ" : "รายงาน"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AppTheme>
   );
 };
