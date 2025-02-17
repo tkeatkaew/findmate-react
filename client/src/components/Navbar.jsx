@@ -165,7 +165,7 @@ const Navbar = () => {
           {/* Mobile Menu Button */}
           {isMobile && (
             <IconButton
-              color="inherit"
+              color="black"
               aria-label="open drawer"
               edge="start"
               onClick={handleDrawerToggle}
@@ -213,7 +213,7 @@ const Navbar = () => {
                     }}
                   >
                     <img
-                      src={user.profile_picture || "/uploads/anonymous.jpg"}
+                      src={user.profile_picture || "../images/anonymous.jpg"}
                       alt="Profile"
                       style={{
                         width: "100%",
@@ -248,7 +248,7 @@ const Navbar = () => {
               ) : (
                 <Button
                   variant="contained"
-                  color="primary"
+                  color="black"
                   component={Link}
                   to="/login"
                   sx={{
