@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "../services/api";
+import AppTheme from "../AppTheme";
 import { useNavigate, Link } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -7,7 +8,6 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import Modal from "@mui/material/Modal";
-import AppTheme from "../AppTheme";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import Grid from "@mui/material/Grid";
@@ -22,14 +22,60 @@ import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import CircularProgress from "@mui/material/CircularProgress";
+import {
+  Filter,
+  X,
+  Search,
+  Heart,
+  UserPlus2,
+  Bug,
+  MessageSquarePlus,
+} from "lucide-react";
+import { useTheme, useMediaQuery } from "@mui/material";
 
 const Liked = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const menuItems = [
+    { text: "ค้นหารูมเมท", icon: <Search size={20} />, path: "/discovery" },
+    { text: "ชอบ", icon: <Heart size={20} />, path: "/liked" },
+    { text: "จับคู่", icon: <UserPlus2 size={20} />, path: "/matched" },
+  ];
+
+  const footerItems = [
+    {
+      text: "แจ้งปัญหาการใช้งาน",
+      icon: <Bug size={20} />,
+      onClick: () => {
+        setIsSuggestion(false);
+        setSystemReportDialog(true);
+      },
+      color: "error",
+    },
+    {
+      text: "ข้อเสนอแนะ",
+      icon: <MessageSquarePlus size={20} />,
+      onClick: () => {
+        setIsSuggestion(true);
+        setSystemReportDialog(true);
+      },
+    },
+  ];
+
+  const [isSuggestion, setIsSuggestion] = useState(false);
+  const [systemReportDialog, setSystemReportDialog] = useState(false);
+  const [systemReportType, setSystemReportType] = useState("");
+  const [systemDescription, setSystemDescription] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
+  const [reportImage, setReportImage] = useState(null);
+  const [reportImagePreview, setReportImagePreview] = useState("");
+
   const [likedUsers, setLikedUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentUserTraits, setCurrentUserTraits] = useState(null);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [reportType, setReportType] = useState("");
-  const [reportDescription, setReportDescription] = useState("");
   const [dataFetched, setDataFetched] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [alert, setAlert] = useState({
@@ -40,6 +86,40 @@ const Liked = () => {
 
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+
+  const handleSystemReport = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("user_id", user.id);
+      formData.append("type", systemReportType);
+      formData.append("description", systemDescription);
+      if (reportImage) {
+        formData.append("image", reportImage);
+      }
+      if (isSuggestion) {
+        // If it’s just a suggestion
+        await axios.post("/suggestions", {
+          user_id: user.id,
+          content: systemDescription,
+        });
+      } else {
+        // If it’s a system bug report
+        await axios.post("/reports/system", formData);
+      }
+      showAlert(
+        isSuggestion ? "ส่งข้อเสนอแนะเรียบร้อยแล้ว" : "ส่งรายงานเรียบร้อยแล้ว",
+        "success"
+      );
+      setSystemReportDialog(false);
+      setSystemReportType("");
+      setSystemDescription("");
+      setReportImage(null);
+      setReportImagePreview("");
+      setIsSuggestion(false);
+    } catch (err) {
+      showAlert("เกิดข้อผิดพลาดในการส่งข้อมูล", "error");
+    }
+  };
 
   // Label and value mappings for user traits
   const labelMapping = {
@@ -164,7 +244,12 @@ const Liked = () => {
   };
 
   useEffect(() => {
-    if (!user) {
+    // if (!user) {
+    //   navigate("/login");
+    //   return;
+    // }
+
+    if (1 == 0) {
       navigate("/login");
       return;
     }
@@ -305,7 +390,7 @@ const Liked = () => {
         {/* Sidebar */}
         <Box
           sx={{
-            width: "200px",
+            width: isMobile ? "auto" : "200px",
             padding: "0.5rem",
             border: "1px solid #eee",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
@@ -317,23 +402,41 @@ const Liked = () => {
           }}
         >
           <Stack direction="column" spacing={2}>
-            <Button
-              component={Link}
-              to="/discovery"
-              sx={{ textTransform: "none" }}
-            >
-              ค้นหารูมเมท
-            </Button>
-            <Button component={Link} to="/liked" sx={{ textTransform: "none" }}>
-              ชอบ
-            </Button>
-            <Button
-              component={Link}
-              to="/matched"
-              sx={{ textTransform: "none" }}
-            >
-              จับคู่
-            </Button>
+            {menuItems.map((item) => (
+              <Button
+                key={item.text}
+                component={Link}
+                to={item.path}
+                startIcon={!isMobile && item.icon}
+                sx={{
+                  textTransform: "none",
+                  color: "black",
+                  justifyContent: isMobile ? "center" : "flex-start",
+                  minWidth: isMobile ? "48px" : "auto",
+                  p: isMobile ? "8px" : "8px 16px",
+                }}
+              >
+                {isMobile ? item.icon : item.text}
+              </Button>
+            ))}
+            <Divider sx={{ my: 1 }} />
+            {footerItems.map((item) => (
+              <Button
+                key={item.text}
+                onClick={item.onClick}
+                startIcon={!isMobile && item.icon}
+                color={item.color || "primary"}
+                sx={{
+                  textTransform: "none",
+                  color: item.color === "error" ? "error.main" : "black",
+                  justifyContent: isMobile ? "center" : "flex-start",
+                  minWidth: isMobile ? "48px" : "auto",
+                  p: isMobile ? "8px" : "8px 16px",
+                }}
+              >
+                {isMobile ? item.icon : item.text}
+              </Button>
+            ))}
           </Stack>
         </Box>
 
