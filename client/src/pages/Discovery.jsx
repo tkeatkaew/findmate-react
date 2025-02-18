@@ -755,14 +755,7 @@ const Discovery = () => {
                           </Box>
                         </Stack>
                         <Grid container spacing={1}>
-                          {[
-                            "type",
-                            "clean",
-                            "drink",
-                            "smoke",
-                            "expense",
-                            "loud",
-                          ].map((key) => (
+                          {["type", "clean", "drink", "smoke"].map((key) => (
                             <Grid item xs={12} key={key}>
                               <Typography variant="body2">
                                 <strong>{labelMapping[key] || key}:</strong>{" "}
