@@ -499,7 +499,7 @@ const Discovery = () => {
       <Box
         sx={{
           display: "flex",
-          height: "calc(100vh - 87px)", // Subtracting navbar height (67px) and margins (2 * 10px)
+          height: "calc(100vh - 150px)", // Subtracting navbar height (67px) and margins (2 * 10px)
           overflow: "hidden",
         }}
       >
@@ -596,7 +596,7 @@ const Discovery = () => {
                   startIcon={<X size={16} />}
                   fullWidth={isMobile}
                 >
-                  ล้างตัวกรอง ({getActiveFilterCount()})
+                  ตัวกรอง ({getActiveFilterCount()})
                 </Button>
               )}
               <Button
