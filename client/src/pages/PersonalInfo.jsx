@@ -125,16 +125,12 @@ const PersonalInfo = () => {
     setContactError(false);
 
     try {
-      // Upload profile picture if selected
+      // Update profile picture if we have a Cloudinary URL
       if (profilePicture) {
-        const formData = new FormData();
-        formData.append("profile_picture", profilePicture);
-        formData.append("user_id", user_id);
-
-        const { data } = await axios.post("/upload-profile-picture", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+        await axios.post("/update-profile-picture", {
+          user_id,
+          profile_picture: profilePicture,
         });
-        console.log("Profile picture uploaded:", data.profilePictureUrl);
       }
 
       await axios.post("/personalinfo", {
