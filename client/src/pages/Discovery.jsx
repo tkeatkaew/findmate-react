@@ -741,8 +741,8 @@ const Discovery = () => {
                             }
                             alt="Profile"
                             style={{
-                              width: "100px",
-                              height: "100px",
+                              width: "75px",
+                              height: "75px",
                               borderRadius: "10%",
                               objectFit: "cover",
                             }}
@@ -756,7 +756,7 @@ const Discovery = () => {
                             </Typography>
                           </Box>
                         </Stack>
-                        <Grid container spacing={1}>
+                        <Grid container>
                           {["type", "clean", "drink", "smoke"].map((key) => (
                             <Grid item xs={12} key={key}>
                               <Typography variant="body2">
