@@ -1,7 +1,8 @@
+// In src/utils/cloudinary.js
 import axios from "axios";
 
-const CLOUDINARY_UPLOAD_PRESET = "findmate_preset"; // Create this in your Cloudinary settings
-const CLOUDINARY_CLOUD_NAME = "diyrlyktz";
+const CLOUDINARY_UPLOAD_PRESET = "findmate_preset"; // Your preset name
+const CLOUDINARY_CLOUD_NAME = "diyrlyktz"; // Your cloud name
 const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
 export const uploadToCloudinary = async (file) => {
