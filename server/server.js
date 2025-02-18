@@ -699,6 +699,47 @@ app.post("/like", async (req, res) => {
             resolve();
           });
         });
+
+        // Get both users' email addresses
+        const getUserEmailsQuery =
+          "SELECT id, email, name FROM users WHERE id IN (?, ?)";
+        const users = await new Promise((resolve, reject) => {
+          db.query(
+            getUserEmailsQuery,
+            [user_id, liked_user_id],
+            (err, result) => {
+              if (err) reject(err);
+              resolve(result);
+            }
+          );
+        });
+
+        // Send match notification emails to both users
+        for (const user of users) {
+          const otherUser = users.find((u) => u.id !== user.id);
+          const mailOptions = {
+            from: "findmate.official@gmail.com",
+            to: user.email,
+            subject: "Find Mate - You have a new match!",
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2>Congratulations! You have a new match on Find Mate!</h2>
+                <p>คุณจับคู่กับ ${otherUser.name} สำเร็จแล้ว!</p>
+                <p>คุณสามารถดูข้อมูลการติดต่อของรูมเมทได้แล้วในแอปพลิเคชัน</p>
+                <p>หวังว่าคุณจะได้รูมเมทที่ถูกใจ</p>
+                <p>ขอบคุณที่ใช้บริการ Find Mate</p>
+              </div>
+            `,
+          };
+
+          try {
+            await transporter.sendMail(mailOptions);
+          } catch (err) {
+            console.error("Error sending match notification email:", err);
+            // Continue even if email fails
+          }
+        }
+
         return res.status(200).json({ message: "Match created successfully!" });
       }
 
