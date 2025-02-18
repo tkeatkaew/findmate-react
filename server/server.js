@@ -75,7 +75,7 @@ function generateOTP() {
 // Send OTP via email
 async function sendOTP(email, otp) {
   const mailOptions = {
-    from: "your-email@gmail.com",
+    from: '"Find Mate" <findmate.official@gmail.com>',
     to: email,
     subject: "Your Find Mate Verification Code",
     html: `
