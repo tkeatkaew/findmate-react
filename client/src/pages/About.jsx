@@ -26,6 +26,7 @@ import {
   Code,
   Heart,
 } from "lucide-react";
+
 import Promtpay from "../images/Promtpay.jpg";
 
 // Creator component
@@ -165,18 +166,17 @@ const AboutPage = () => {
       links: [
         {
           icon: Github,
-          url: "https://github.com/Vocaloid2048",
+          url: "https://github.com/jschomchoey",
           label: "GitHub",
         },
-        { icon: Globe, url: "https://teerapat-ch.web.app", label: "Website" },
         {
           icon: Linkedin,
-          url: "https://www.linkedin.com/in/teerapat-chomchoey",
+          url: "https://www.linkedin.com/in/teerapat-chomchoey-571150239/",
           label: "LinkedIn",
         },
         {
           icon: Facebook,
-          url: "https://www.facebook.com/jschomchoey",
+          url: "https://www.facebook.com/tpcc.general",
           label: "Facebook",
         },
         {
@@ -196,17 +196,17 @@ const AboutPage = () => {
       links: [
         {
           icon: Github,
-          url: "https://github.com/s6404062610481",
+          url: "https://github.com/Jittapongj",
           label: "GitHub",
         },
         {
           icon: Facebook,
-          url: "https://www.facebook.com/phimwat.sayta",
+          url: "https://www.facebook.com/thiztoon",
           label: "Facebook",
         },
         {
           icon: Instagram,
-          url: "https://www.instagram.com/_thephuuu",
+          url: "https://www.instagram.com/thiztoon/",
           label: "Instagram",
         },
       ],
@@ -216,7 +216,7 @@ const AboutPage = () => {
   const donationMethods = [
     {
       title: "Prompt Pay",
-      icon: QrCode,
+      Image: Promtpay,
       details: "Prompt Pay: 061-698-9385 (Teerapat Chomchoey)",
     },
     {
