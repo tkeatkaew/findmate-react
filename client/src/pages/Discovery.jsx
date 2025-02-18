@@ -795,10 +795,10 @@ const Discovery = () => {
               maxHeight: "75vh",
               overflow: "auto",
               backgroundColor: "white",
-              padding: { xs: "1.5rem", sm: "2.5rem" },
+              padding: { xs: "1rem", sm: "2.5rem" },
               boxShadow: 24,
               borderRadius: "20px",
-              margin: { xs: "0.5rem", sm: "2rem" },
+              margin: { xs: "1rem", sm: "2rem" },
             }}
           >
             {/* Header */}
