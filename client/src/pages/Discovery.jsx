@@ -563,7 +563,7 @@ const Discovery = () => {
               mb: 3,
             }}
           >
-            <Typography variant={isMobile ? "h5" : "h4"}>
+            <Typography variant={isMobile ? "h6" : "h4"}>
               ค้นหารูมเมทที่คล้ายคลึงกับคุณ
             </Typography>
             <Stack

@@ -450,7 +450,7 @@ const Liked = () => {
 
         {/* Main Content */}
         <Box sx={{ flex: 1, padding: "1rem" }}>
-          <Typography variant={isMobile ? "h5" : "h4"}>
+          <Typography variant={isMobile ? "h6" : "h4"}>
             คนที่คุณกดถูกใจ
           </Typography>
           {likedUsers.length > 0 ? (
