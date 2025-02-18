@@ -394,19 +394,27 @@ const Matched = () => {
 
   return (
     <AppTheme>
-      <Box sx={{ display: "flex", minHeight: "90vh" }}>
+      <Box
+        sx={{
+          display: "flex",
+          height: "calc(100vh - 87px)", // Subtracting navbar height (67px) and margins (2 * 10px)
+          overflow: "hidden",
+        }}
+      >
         {/* Sidebar */}
         <Box
           sx={{
             width: isMobile ? "auto" : "200px",
+            height: "95%",
             padding: "0.5rem",
             border: "1px solid #eee",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
             borderRadius: "20px",
-            margin: "10px",
+            margin: "7.5px",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
+            flexShrink: 0, // Prevent sidebar from shrinking
           }}
         >
           <Stack direction="column" spacing={2}>
@@ -449,8 +457,15 @@ const Matched = () => {
         </Box>
 
         {/* Main Content */}
-        <Box sx={{ flex: 1, padding: "1rem" }}>
-          <Typography variant={isMobile ? "h6" : "h4"}>
+        <Box
+          sx={{
+            flex: 1,
+            padding: "0.5rem",
+            overflowY: "auto",
+            height: "100%",
+          }}
+        >
+          <Typography variant={isMobile ? "h6" : "h4"} sx={{ mb: 1 }}>
             คนที่จับคู่กับคุณสำเร็จ
           </Typography>
           {matches.length > 0 ? (

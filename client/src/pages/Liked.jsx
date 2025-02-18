@@ -394,19 +394,27 @@ const Liked = () => {
 
   return (
     <AppTheme>
-      <Box sx={{ display: "flex", minHeight: "90vh" }}>
+      <Box
+        sx={{
+          display: "flex",
+          height: "calc(100vh - 87px)", // Subtracting navbar height (67px) and margins (2 * 10px)
+          overflow: "hidden",
+        }}
+      >
         {/* Sidebar */}
         <Box
           sx={{
             width: isMobile ? "auto" : "200px",
+            height: "95%",
             padding: "0.5rem",
             border: "1px solid #eee",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
             borderRadius: "20px",
-            margin: "10px",
+            margin: "7.5px",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
+            flexShrink: 0, // Prevent sidebar from shrinking
           }}
         >
           <Stack direction="column" spacing={2}>
@@ -449,8 +457,15 @@ const Liked = () => {
         </Box>
 
         {/* Main Content */}
-        <Box sx={{ flex: 1, padding: "1rem" }}>
-          <Typography variant={isMobile ? "h6" : "h4"}>
+        <Box
+          sx={{
+            flex: 1,
+            padding: "0.5rem",
+            overflowY: "auto",
+            height: "100%",
+          }}
+        >
+          <Typography variant={isMobile ? "h6" : "h4"} sx={{ mb: 1 }}>
             คนที่คุณกดถูกใจ
           </Typography>
           {likedUsers.length > 0 ? (
@@ -458,7 +473,6 @@ const Liked = () => {
               sx={{
                 maxHeight: "79vh",
                 overflowY: "auto",
-                paddingRight: "1rem",
                 borderRadius: "20px",
               }}
             >
@@ -478,48 +492,94 @@ const Liked = () => {
                     }}
                     onClick={() => setSelectedUser(likedUser)}
                   >
-                    <Stack
-                      direction="row"
-                      spacing={2}
-                      alignItems="center"
-                      justifyContent="space-between"
-                    >
-                      <Stack direction="row" spacing={2} alignItems="center">
-                        <img
-                          src={
-                            likedUser.profile_picture
-                              ? `http://localhost:3000${likedUser.profile_picture}`
-                              : "http://localhost:3000/uploads/anonymous.jpg"
-                          }
-                          alt="Profile"
-                          style={{
-                            width: "150px",
-                            height: "150px",
-                            borderRadius: "10%",
-                            objectFit: "cover",
-                          }}
-                        />
-                        <Box>
-                          <Typography variant="h6">
-                            {likedUser.nickname || "Anonymous"} - ความคล้าย{" "}
-                            {likedUser.similarity}%
-                          </Typography>
-                          {[
-                            "type",
-                            "clean",
-                            "drink",
-                            "smoke",
-                            "expense",
-                            "loud",
-                          ].map((key) => (
-                            <Typography key={key} variant="body2">
-                              <strong>{labelMapping[key]}:</strong>{" "}
-                              {valueMapping[likedUser[key]] || likedUser[key]}
+                    {isMobile ? (
+                      // Mobile Layout
+                      <Box>
+                        <Stack
+                          direction="row"
+                          spacing={2}
+                          alignItems="center"
+                          sx={{ mb: 2 }}
+                        >
+                          <img
+                            src={
+                              likedUser.profile_picture
+                                ? `http://localhost:3000${likedUser.profile_picture}`
+                                : "http://localhost:3000/uploads/anonymous.jpg"
+                            }
+                            alt="Profile"
+                            style={{
+                              width: "75px",
+                              height: "75px",
+                              borderRadius: "10%",
+                              objectFit: "cover",
+                            }}
+                          />
+                          <Box>
+                            <Typography variant="h6" sx={{ mb: 1 }}>
+                              {likedUser.nickname || "Anonymous"}
                             </Typography>
+                            <Typography variant="subtitle1" color="primary">
+                              ความคล้าย {likedUser.similarity}%
+                            </Typography>
+                          </Box>
+                        </Stack>
+                        <Grid container>
+                          {["type", "clean", "drink", "smoke"].map((key) => (
+                            <Grid item xs={12} key={key}>
+                              <Typography variant="body2">
+                                <strong>{labelMapping[key] || key}:</strong>{" "}
+                                {valueMapping[likedUser[key]] || likedUser[key]}
+                              </Typography>
+                            </Grid>
                           ))}
-                        </Box>
+                        </Grid>
+                      </Box>
+                    ) : (
+                      // Desktop Layout
+                      <Stack
+                        direction="row"
+                        spacing={2}
+                        alignItems="center"
+                        justifyContent="space-between"
+                      >
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <img
+                            src={
+                              likedUser.profile_picture
+                                ? `http://localhost:3000${likedUser.profile_picture}`
+                                : "http://localhost:3000/uploads/anonymous.jpg"
+                            }
+                            alt="Profile"
+                            style={{
+                              width: "150px",
+                              height: "150px",
+                              borderRadius: "10%",
+                              objectFit: "cover",
+                            }}
+                          />
+                          <Box>
+                            <Typography variant="h6">
+                              {likedUser.nickname || "Anonymous"} - ความคล้าย{" "}
+                              {likedUser.similarity}%
+                            </Typography>
+                            {[
+                              "type",
+                              "clean",
+                              "drink",
+                              "smoke",
+                              "expense",
+                              "loud",
+                            ].map((key) => (
+                              <Typography key={key} variant="body2">
+                                <strong>{labelMapping[key]}:</strong>{" "}
+                                {valueMapping[likedUser[key]] || likedUser[key]}
+                              </Typography>
+                            ))}
+                          </Box>
+                        </Stack>
                       </Stack>
-                    </Stack>
+                    )}
                   </Paper>
                 ))}
               </Stack>
