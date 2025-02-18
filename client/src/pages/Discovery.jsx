@@ -575,7 +575,7 @@ const Discovery = () => {
               justifyContent: "space-between",
               alignItems: isMobile ? "stretch" : "center",
               gap: 2,
-              mb: 3,
+              mb: 1,
             }}
           >
             <Typography variant={isMobile ? "h6" : "h4"}>
