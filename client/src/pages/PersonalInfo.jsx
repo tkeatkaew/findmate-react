@@ -15,6 +15,7 @@ import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
 import Checkbox from "@mui/material/Checkbox";
 import InputAdornment from "@mui/material/InputAdornment";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import AppTheme from "../AppTheme";
 
@@ -39,6 +40,8 @@ const PersonalInfo = () => {
   const [gender, setGender] = useState("male");
   const [lgbt, setLGBT] = useState(false);
   const [profilePicture, setProfilePicture] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
   const [province, setProvince] = useState("");
   const [university, setUniversity] = useState("");
   const [facebook, setFacebook] = useState("");
@@ -49,8 +52,6 @@ const PersonalInfo = () => {
   const [vehicle, setVehicle] = useState("none");
   const [selfIntroduction, setSelfIntroduction] = useState("");
   const [monthlyDormFee, setMonthlyDormFee] = useState("");
-
-  const [isUploading, setIsUploading] = useState(false);
   const [alert, setAlert] = useState({
     open: false,
     message: "",
@@ -74,8 +75,7 @@ const PersonalInfo = () => {
   const fileInputRef = useRef(null);
 
   const handleButtonClick = () => {
-    // จำลองการคลิกที่ input file
-    fileInputRef.current.click();
+    fileInputRef.current?.click();
   };
 
   const handleFileChange = async (e) => {
@@ -84,16 +84,13 @@ const PersonalInfo = () => {
       try {
         setIsUploading(true);
 
+        // Create preview immediately for better UX
+        const objectUrl = URL.createObjectURL(file);
+        setPreviewUrl(objectUrl);
+
         // Upload to Cloudinary
         const cloudinaryUrl = await uploadToCloudinary(file);
-
         setProfilePicture(cloudinaryUrl);
-        if (fileInputRef.current) {
-          setPreviewUrl(URL.createObjectURL(file));
-        }
-
-        // Since this is initial profile setup, we don't need to update the server yet
-        // That will happen when the form is submitted
       } catch (error) {
         console.error("Error handling file upload:", error);
         setAlert({
@@ -101,6 +98,8 @@ const PersonalInfo = () => {
           message: "Error uploading profile picture",
           severity: "error",
         });
+        // Reset preview on error
+        setPreviewUrl("");
       } finally {
         setIsUploading(false);
       }
@@ -396,7 +395,7 @@ const PersonalInfo = () => {
                 accept="image/*"
                 onChange={handleFileChange}
                 ref={fileInputRef}
-                style={{ display: "none" }} // ซ่อน input file
+                style={{ display: "none" }}
               />
 
               <Button
