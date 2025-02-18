@@ -798,6 +798,7 @@ const Discovery = () => {
               padding: { xs: "1rem", sm: "2rem" },
               boxShadow: 24,
               borderRadius: "15px",
+              margin: "10px",
             }}
           >
             {/* Header */}
