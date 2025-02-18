@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../services/api";
+import { uploadToCloudinary } from "../utils/cloudinary"; // Add this import
 
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -61,6 +62,8 @@ const EditProfile = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleDeleteAccountClick = () => {
     setDeletePassword("");
@@ -218,31 +221,25 @@ const EditProfile = () => {
     const file = e.target.files?.[0];
     if (file) {
       try {
-        // Show loading state
         setIsUploading(true);
 
         // Upload to Cloudinary
         const cloudinaryUrl = await uploadToCloudinary(file);
 
-        // Update profile picture state with Cloudinary URL
         setProfilePicture(cloudinaryUrl);
         setPreviewUrl(cloudinaryUrl);
 
-        // If this is being used in a profile update
         if (user?.id) {
           await axios.post("/update-profile-picture", {
             user_id: user.id,
             profile_picture: cloudinaryUrl,
           });
         }
+
+        showAlert("Profile picture updated successfully", "success");
       } catch (error) {
         console.error("Error handling file upload:", error);
-        // Show error message to user
-        setAlert({
-          open: true,
-          message: "Error uploading profile picture",
-          severity: "error",
-        });
+        showAlert("Error uploading profile picture", "error");
       } finally {
         setIsUploading(false);
       }

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../services/api";
+import { uploadToCloudinary } from "../utils/cloudinary";
 
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -47,8 +48,14 @@ const PersonalInfo = () => {
   const [dormName, setDormName] = useState("");
   const [vehicle, setVehicle] = useState("none");
   const [selfIntroduction, setSelfIntroduction] = useState("");
-
   const [monthlyDormFee, setMonthlyDormFee] = useState("");
+
+  const [isUploading, setIsUploading] = useState(false);
+  const [alert, setAlert] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const [contactError, setContactError] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -75,26 +82,20 @@ const PersonalInfo = () => {
     const file = e.target.files?.[0];
     if (file) {
       try {
-        // Show loading state
         setIsUploading(true);
 
         // Upload to Cloudinary
         const cloudinaryUrl = await uploadToCloudinary(file);
 
-        // Update profile picture state with Cloudinary URL
         setProfilePicture(cloudinaryUrl);
-        setPreviewUrl(cloudinaryUrl);
-
-        // If this is being used in a profile update
-        if (user?.id) {
-          await axios.post("/update-profile-picture", {
-            user_id: user.id,
-            profile_picture: cloudinaryUrl,
-          });
+        if (fileInputRef.current) {
+          setPreviewUrl(URL.createObjectURL(file));
         }
+
+        // Since this is initial profile setup, we don't need to update the server yet
+        // That will happen when the form is submitted
       } catch (error) {
         console.error("Error handling file upload:", error);
-        // Show error message to user
         setAlert({
           open: true,
           message: "Error uploading profile picture",
