@@ -38,6 +38,8 @@ import { useTheme, useMediaQuery } from "@mui/material";
 
 import ProfilePicture from "../components/ProfilePicture";
 
+import defaultAvatar from "../images/anonymous.jpg";
+
 import AppTheme from "../AppTheme";
 
 const Discovery = () => {
@@ -1425,8 +1427,7 @@ const Discovery = () => {
                         >
                           <img
                             src={
-                              neighbor.traits.profile_picture ||
-                              "/api/placeholder/75/75"
+                              neighbor.traits.profile_picture || defaultAvatar
                             }
                             alt="Profile"
                             style={{
@@ -1468,8 +1469,7 @@ const Discovery = () => {
                         <Stack direction="row" spacing={2} alignItems="center">
                           <img
                             src={
-                              neighbor.traits.profile_picture ||
-                              "/api/placeholder/150/150"
+                              neighbor.traits.profile_picture || defaultAvatar
                             }
                             alt="Profile"
                             style={{
@@ -1546,10 +1546,7 @@ const Discovery = () => {
               sx={{ mb: 3 }}
             >
               <img
-                src={
-                  selectedUser.traits.profile_picture ||
-                  "/api/placeholder/150/150"
-                }
+                src={selectedUser.traits.profile_picture || defaultAvatar}
                 alt="Profile"
                 style={{
                   width: "150px",
