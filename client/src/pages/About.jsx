@@ -246,9 +246,9 @@ const AboutPage = () => {
       details: "Prompt Pay: 061-698-9385 (Teerapat Chomchoei)",
     },
     {
-      title: "True Money",
-      image: TrueMoney,
-      details: "True Money: 061-698-9385 (ธีระภัทร ชมเชย)",
+      title: "Bank Transfer",
+      icon: CreditCard,
+      details: "SCB Bank: 405-984-7085 (Teerapat Chomchoey)",
     },
   ];
 
