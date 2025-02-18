@@ -28,6 +28,9 @@ import {
 } from "lucide-react";
 
 import Promtpay from "../images/Promtpay.jpg";
+import TrueMoney from "../images/TrueMoney.jpg";
+import James from "../images/James.jpg";
+import Toon from "../images/Toon.jpg";
 
 // Creator component
 const CreatorCard = ({ name, role, image, bio, links, education }) => (
@@ -182,8 +185,7 @@ const AboutPage = () => {
     {
       name: "Teerapat Chomchoey",
       role: "Full Stack Developer",
-      image:
-        "https://scontent.fbkk13-1.fna.fbcdn.net/v/t39.30808-6/434360523_2038464119861737_8956847562164730460_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=XlgyEISrINgQ7kNvgGvosb9&_nc_oc=Adj_k_6ZXbFD86DjER_qy6Olr-_8eBo20pcF3uSm9p42Pdv2dckUlDdea_pYw3q_Kj0&_nc_zt=23&_nc_ht=scontent.fbkk13-1.fna&_nc_gid=ACqBSHcYKH8Jp1dxB87QtOH&oh=00_AYBr4tA5JpBnJW8cec8lyOgpf5_bPakeMgvVFMBRisrk6g&oe=67A10406",
+      image: James,
       bio: "Hello! I am a Full Stack Developer with a strong focus on crafting seamless user experiences and robust backend systems. I love building applications that solve real-world problems.",
       education: "Rajamangala University of Technology Lanna Chiang Mai",
       links: [
@@ -212,8 +214,7 @@ const AboutPage = () => {
     {
       name: "Jittapong Jongjai",
       role: "Frontend Developer",
-      image:
-        "https://scontent.fbkk12-4.fna.fbcdn.net/v/t39.30808-1/407671912_3114387742029699_3195186485123866947_n.jpg?stp=dst-jpg_s480x480_tt6&_nc_cat=103&ccb=1-7&_nc_sid=e99d92&_nc_ohc=514wNeVpEEYQ7kNvgF1u0RB&_nc_oc=Adh0xT3_2IPkPBX6Iq_rFrjyK3m-e6I5cIHp4SLuQABwrsRRnvqsjOvkCybRwdZKWY0&_nc_zt=24&_nc_ht=scontent.fbkk12-4.fna&_nc_gid=A9QQYJHosksz2YdI-ksEhRp&oh=00_AYByTtG5c-Q-jby_jYuhz1Uw_QkAI1DHlBGuprbp8DaqkA&oe=67A0EEF9",
+      image: Toon,
       bio: "An enthusiastic Frontend Developer passionate about creating beautiful and intuitive user interfaces. I specialize in React and modern web technologies.",
       education: "Rajamangala University of Technology Lanna Chiang Mai",
       links: [
@@ -240,12 +241,12 @@ const AboutPage = () => {
     {
       title: "Prompt Pay",
       image: Promtpay,
-      details: "Prompt Pay: 061-698-9385 (Teerapat Chomchoey)",
+      details: "Prompt Pay: 061-698-9385 (Teerapat Chomchoei)",
     },
     {
-      title: "Bank Transfer",
-      icon: CreditCard,
-      details: "SCB Bank: 405-984-7085 (Teerapat Chomchoey)",
+      title: "True Money",
+      image: TrueMoney,
+      details: "True Money: 061-698-9385 (ธีระภัทร ชมเชย)",
     },
   ];
 
