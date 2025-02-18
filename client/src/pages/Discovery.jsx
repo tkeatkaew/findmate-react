@@ -750,28 +750,16 @@ const Discovery = () => {
                             }
                             alt="Profile"
                             style={{
-                              width: "100px",
-                              height: "100px",
+                              width: "75px",
+                              height: "75px",
                               borderRadius: "10%",
                               objectFit: "cover",
                             }}
                           />
                           <Box>
-                            <Stack
-                              direction="row"
-                              spacing={1}
-                              alignItems="center"
-                              sx={{ mb: 1 }}
-                            >
-                              <Typography variant="h6">
-                                {neighbor.traits.nickname || "Anonymous"}
-                              </Typography>
-                              {neighbor.traits.gender === "male" ? (
-                                <Male size={20} color="#2196F3" />
-                              ) : (
-                                <Female size={20} color="#E91E63" />
-                              )}
-                            </Stack>
+                            <Typography variant="h6" sx={{ mb: 1 }}>
+                              {neighbor.traits.nickname || "Anonymous"}
+                            </Typography>
                             <Typography variant="subtitle1" color="primary">
                               ความคล้าย {neighbor.similarity}%
                             </Typography>
