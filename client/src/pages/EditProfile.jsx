@@ -268,11 +268,16 @@ const EditProfile = () => {
 
       showAlert("บันทึกโปรไฟล์สำเร็จ!", "success");
       navigate("/discovery");
+
+      // Redirect after successful update
+      setTimeout(() => {
+        navigate("/discovery");
+      }, 2000);
     } catch (error) {
       console.error("Error updating profile:", error);
       showAlert("บันทึกโปรไฟล์ไม่สำเร็จ", "error");
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(true);
     }
   };
 
