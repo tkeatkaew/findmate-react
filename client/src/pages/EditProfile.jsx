@@ -219,30 +219,47 @@ const EditProfile = () => {
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      try {
-        setIsUploading(true);
+    if (!file) return;
 
-        // Upload to Cloudinary
-        const cloudinaryUrl = await uploadToCloudinary(file);
+    try {
+      setIsUploading(true);
 
-        setProfilePicture(cloudinaryUrl);
-        setPreviewUrl(cloudinaryUrl);
+      // Create preview
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewUrl(objectUrl);
 
-        if (user?.id) {
-          await axios.post("/update-profile-picture", {
-            user_id: user.id,
-            profile_picture: cloudinaryUrl,
-          });
-        }
+      // Upload to Cloudinary
+      const cloudinaryUrl = await uploadToCloudinary(file);
+      setProfilePicture(cloudinaryUrl);
 
-        showAlert("Profile picture updated successfully", "success");
-      } catch (error) {
-        console.error("Error handling file upload:", error);
-        showAlert("Error uploading profile picture", "error");
-      } finally {
-        setIsUploading(false);
-      }
+      // Update in database
+      await axios.post("/update-profile-picture", {
+        user_id: user.id,
+        profile_picture: cloudinaryUrl,
+      });
+
+      // Update local storage
+      const updatedUser = {
+        ...user,
+        profile_picture: cloudinaryUrl,
+      };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+
+      setAlert({
+        open: true,
+        message: "Profile picture updated successfully",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error handling file upload:", error);
+      setAlert({
+        open: true,
+        message: "Error uploading profile picture",
+        severity: "error",
+      });
+      setPreviewUrl("");
+    } finally {
+      setIsUploading(false);
     }
   };
 

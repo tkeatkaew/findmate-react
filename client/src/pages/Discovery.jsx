@@ -36,6 +36,8 @@ import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
 import { useTheme, useMediaQuery } from "@mui/material";
 
+import ProfilePicture from "../components/ProfilePicture";
+
 import AppTheme from "../AppTheme";
 
 const Discovery = () => {
@@ -757,19 +759,10 @@ const Discovery = () => {
                           alignItems="center"
                           sx={{ mb: 2 }}
                         >
-                          <img
-                            src={
-                              neighbor.traits.profile_picture
-                                ? `http://localhost:3000${neighbor.traits.profile_picture}`
-                                : "http://localhost:3000/uploads/anonymous.jpg"
-                            }
-                            alt="Profile"
-                            style={{
-                              width: "75px",
-                              height: "75px",
-                              borderRadius: "10%",
-                              objectFit: "cover",
-                            }}
+                          <ProfilePicture
+                            src={neighbor.traits.profile_picture}
+                            alt={neighbor.traits.nickname || "Profile"}
+                            size="lg"
                           />
                           <Box>
                             <Typography variant="h6" sx={{ mb: 1 }}>
@@ -801,19 +794,10 @@ const Discovery = () => {
                         justifyContent="space-between"
                       >
                         <Stack direction="row" spacing={2} alignItems="center">
-                          <img
-                            src={
-                              neighbor.traits.profile_picture
-                                ? `http://localhost:3000${neighbor.traits.profile_picture}`
-                                : "http://localhost:3000/uploads/anonymous.jpg"
-                            }
-                            alt="Profile"
-                            style={{
-                              width: "150px",
-                              height: "150px",
-                              borderRadius: "10%",
-                              objectFit: "cover",
-                            }}
+                          <ProfilePicture
+                            src={neighbor.traits.profile_picture}
+                            alt={neighbor.traits.nickname || "Profile"}
+                            size="lg"
                           />
                           <Box>
                             <Typography variant="h6">
@@ -881,19 +865,10 @@ const Discovery = () => {
               alignItems="center"
               sx={{ mb: 3 }}
             >
-              <img
-                src={
-                  selectedUser.traits.profile_picture
-                    ? `http://localhost:3000${selectedUser.traits.profile_picture}`
-                    : "http://localhost:3000/uploads/anonymous.jpg"
-                }
-                alt="Profile"
-                style={{
-                  width: "150px",
-                  height: "150px",
-                  borderRadius: "10%",
-                  objectFit: "cover",
-                }}
+              <ProfilePicture
+                src={selectedUser.traits.profile_picture}
+                alt={selectedUser.nickname || "Profile"}
+                size="lg"
               />
               <Box>
                 <Typography variant="h5" component="h2">
