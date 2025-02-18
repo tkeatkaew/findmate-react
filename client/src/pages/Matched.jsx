@@ -32,6 +32,7 @@ import {
   Bug,
   MessageSquarePlus,
 } from "lucide-react";
+import { Male, Female } from "lucide-react";
 import { useTheme, useMediaQuery } from "@mui/material";
 
 const Matched = () => {
