@@ -556,21 +556,30 @@ const Discovery = () => {
           <Box
             sx={{
               display: "flex",
+              flexDirection: isMobile ? "column" : "row",
               justifyContent: "space-between",
-              alignItems: "center",
+              alignItems: isMobile ? "stretch" : "center",
+              gap: 2,
               mb: 3,
             }}
           >
             <Typography variant={isMobile ? "h5" : "h4"}>
               ค้นหารูมเมทที่คล้ายคลึงกับคุณ
             </Typography>
-            <Stack direction="row" spacing={1}>
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{
+                width: isMobile ? "100%" : "auto",
+              }}
+            >
               {getActiveFilterCount() > 0 && (
                 <Button
                   variant="outlined"
                   color="error"
                   onClick={clearFilters}
                   startIcon={<X size={16} />}
+                  fullWidth={isMobile}
                 >
                   ล้างตัวกรอง ({getActiveFilterCount()})
                 </Button>
@@ -579,6 +588,7 @@ const Discovery = () => {
                 variant="contained"
                 onClick={handleOpenFilter}
                 startIcon={<Filter size={16} />}
+                fullWidth={isMobile}
               >
                 ตัวกรอง
               </Button>
