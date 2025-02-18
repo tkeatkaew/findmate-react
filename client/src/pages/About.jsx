@@ -124,7 +124,7 @@ const IconButton = ({ icon: Icon, href, label }) => (
 );
 
 // Donation method component
-const DonationMethod = ({ title, details, icon: Icon }) => (
+const DonationMethod = ({ title, details, icon: Icon, image }) => (
   <Paper
     elevation={0}
     sx={{
@@ -136,16 +136,30 @@ const DonationMethod = ({ title, details, icon: Icon }) => (
     }}
   >
     <Stack spacing={2}>
-      <Box
-        sx={{
-          display: "inline-flex",
-          p: 1,
-          borderRadius: "12px",
-          bgcolor: "rgba(0, 0, 0, 0.04)",
-        }}
-      >
-        <Icon size={24} />
-      </Box>
+      {image ? (
+        <Box
+          component="img"
+          src={image}
+          alt={title}
+          sx={{
+            width: 200,
+            height: 200,
+            margin: "0 auto",
+            borderRadius: "12px",
+          }}
+        />
+      ) : (
+        <Box
+          sx={{
+            display: "inline-flex",
+            p: 1,
+            borderRadius: "12px",
+            bgcolor: "rgba(0, 0, 0, 0.04)",
+          }}
+        >
+          <Icon size={24} />
+        </Box>
+      )}
       <Typography variant="h6">{title}</Typography>
       <Typography variant="body2" color="text.secondary">
         {details}
@@ -216,7 +230,7 @@ const AboutPage = () => {
   const donationMethods = [
     {
       title: "Prompt Pay",
-      Image: Promtpay,
+      image: Promtpay,
       details: "Prompt Pay: 061-698-9385 (Teerapat Chomchoey)",
     },
     {
