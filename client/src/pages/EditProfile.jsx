@@ -256,26 +256,22 @@ const EditProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isSubmitting) return; // Prevent multiple submissions
+    if (isSubmitting) return;
 
     setIsSubmitting(true);
     try {
-      // Upload new profile picture if selected
       if (profilePicture) {
-        const formData = new FormData();
-        formData.append("profile_picture", profilePicture);
-        formData.append("user_id", user.id);
-        const uploadResponse = await axios.post(
-          "/upload-profile-picture",
-          formData
-        );
-        if (uploadResponse.data.profilePictureUrl) {
-          const updatedUser = {
-            ...user,
-            profile_picture: uploadResponse.data.profilePictureUrl,
-          };
-          localStorage.setItem("user", JSON.stringify(updatedUser));
-        }
+        await axios.post("/update-profile-picture", {
+          user_id: user.id,
+          profile_picture: profilePicture,
+        });
+
+        // Update local storage with new profile picture
+        const updatedUser = {
+          ...user,
+          profile_picture: profilePicture,
+        };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
       }
 
       // Update personal information
@@ -298,9 +294,9 @@ const EditProfile = () => {
       }, 2000);
     } catch (error) {
       console.error("Error updating profile:", error);
-      showAlert("บันทึกโปรไฟล์ไม่สำเร็จ", "error");
+      showAlert("Update failed", "error");
     } finally {
-      setIsSubmitting(true);
+      setIsSubmitting(false);
     }
   };
 

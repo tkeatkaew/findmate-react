@@ -16,6 +16,8 @@ import FormControl from "@mui/material/FormControl";
 import Checkbox from "@mui/material/Checkbox";
 import InputAdornment from "@mui/material/InputAdornment";
 import CircularProgress from "@mui/material/CircularProgress";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 import AppTheme from "../AppTheme";
 
@@ -80,29 +82,34 @@ const PersonalInfo = () => {
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      try {
-        setIsUploading(true);
+    if (!file) return;
 
-        // Create preview immediately for better UX
-        const objectUrl = URL.createObjectURL(file);
-        setPreviewUrl(objectUrl);
+    try {
+      setIsUploading(true);
 
-        // Upload to Cloudinary
-        const cloudinaryUrl = await uploadToCloudinary(file);
-        setProfilePicture(cloudinaryUrl);
-      } catch (error) {
-        console.error("Error handling file upload:", error);
-        setAlert({
-          open: true,
-          message: "Error uploading profile picture",
-          severity: "error",
-        });
-        // Reset preview on error
-        setPreviewUrl("");
-      } finally {
-        setIsUploading(false);
-      }
+      // Create preview
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewUrl(objectUrl);
+
+      // Upload to Cloudinary
+      const cloudinaryUrl = await uploadToCloudinary(file);
+      setProfilePicture(cloudinaryUrl);
+
+      setAlert({
+        open: true,
+        message: "Profile picture uploaded successfully",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error handling file upload:", error);
+      setAlert({
+        open: true,
+        message: "Error uploading profile picture",
+        severity: "error",
+      });
+      setPreviewUrl("");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -397,6 +404,19 @@ const PersonalInfo = () => {
                 ref={fileInputRef}
                 style={{ display: "none" }}
               />
+              <Snackbar
+                open={alert.open}
+                autoHideDuration={6000}
+                onClose={() => setAlert((prev) => ({ ...prev, open: false }))}
+              >
+                <Alert
+                  onClose={() => setAlert((prev) => ({ ...prev, open: false }))}
+                  severity={alert.severity}
+                  variant="filled"
+                >
+                  {alert.message}
+                </Alert>
+              </Snackbar>
 
               <Button
                 type="submit"

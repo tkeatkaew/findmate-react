@@ -1473,18 +1473,32 @@ app.get("/statistics", async (req, res) => {
 app.post("/update-profile-picture", async (req, res) => {
   const { user_id, profile_picture } = req.body;
 
-  try {
-    await db.query("UPDATE users SET profile_picture = ? WHERE id = ?", [
-      profile_picture,
-      user_id,
-    ]);
+  if (!profile_picture || !user_id) {
+    return res.status(400).json({
+      error: "Missing required fields",
+    });
+  }
 
-    res.status(200).json({
-      message: "Profile picture updated successfully",
-      profilePictureUrl: profile_picture,
+  try {
+    const query = "UPDATE users SET profile_picture = ? WHERE id = ?";
+
+    db.query(query, [profile_picture, user_id], (err, result) => {
+      if (err) {
+        console.error("Error updating profile picture:", err);
+        return res.status(500).json({
+          error: "Failed to update profile picture",
+        });
+      }
+
+      res.status(200).json({
+        message: "Profile picture updated successfully",
+        profilePictureUrl: profile_picture,
+      });
     });
   } catch (error) {
-    console.error("Error updating profile picture:", error);
-    res.status(500).json({ error: "Failed to update profile picture" });
+    console.error("Error in profile picture update:", error);
+    res.status(500).json({
+      error: "Internal server error",
+    });
   }
 });
