@@ -496,11 +496,12 @@ const Discovery = () => {
 
   return (
     <AppTheme>
-      <Box sx={{ display: "flex", minHeight: "87vh" }}>
+      <Box sx={{ display: "flex", height: "100vh" }}>
         {/* Sidebar */}
         <Box
           sx={{
             width: isMobile ? "auto" : "200px",
+            height: "100%",
             padding: "0.5rem",
             border: "1px solid #eee",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
@@ -509,6 +510,8 @@ const Discovery = () => {
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
+            position: "sticky",
+            top: "10px",
           }}
         >
           <Stack direction="column" spacing={2}>
@@ -551,7 +554,14 @@ const Discovery = () => {
         </Box>
 
         {/* Main Content */}
-        <Box sx={{ flex: 1, padding: "0.5rem" }}>
+        <Box
+          sx={{
+            flex: 1,
+            padding: "1rem",
+            maxHeight: "100vh",
+            overflowY: "auto",
+          }}
+        >
           {/* Header with Filter */}
           <Box
             sx={{
