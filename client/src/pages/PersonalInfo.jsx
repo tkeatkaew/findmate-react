@@ -131,7 +131,7 @@ const PersonalInfo = () => {
         formData.append("profile_picture", profilePicture);
         formData.append("user_id", user_id);
 
-        const { data } = await axios.post("/update-profile-picture", formData, {
+        const { data } = await axios.post("/upload-profile-picture", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         console.log("Profile picture uploaded:", data.profilePictureUrl);
