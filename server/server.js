@@ -718,7 +718,7 @@ app.post("/like", async (req, res) => {
         for (const user of users) {
           const otherUser = users.find((u) => u.id !== user.id);
           const mailOptions = {
-            from: '"Find Mate - You have a new match" <findmate.official@gmail.com>',
+            from: '"Find Mate" <findmate.official@gmail.com>',
             to: user.email,
             subject: "Find Mate - You have a new match!",
             html: `
