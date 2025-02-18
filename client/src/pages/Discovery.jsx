@@ -722,56 +722,103 @@ const Discovery = () => {
                     }}
                     onClick={() => setSelectedUser(neighbor)}
                   >
-                    {/* Top section with image and name */}
-                    <Stack
-                      direction="row"
-                      spacing={2}
-                      alignItems="center"
-                      sx={{ mb: 2 }}
-                    >
-                      <img
-                        src={
-                          neighbor.traits.profile_picture
-                            ? `http://localhost:3000${neighbor.traits.profile_picture}`
-                            : "http://localhost:3000/uploads/anonymous.jpg"
-                        }
-                        alt="Profile"
-                        style={{
-                          width: isMobile ? "100px" : "150px",
-                          height: isMobile ? "100px" : "150px",
-                          borderRadius: "10%",
-                          objectFit: "cover",
-                        }}
-                      />
+                    {isMobile ? (
+                      // Mobile Layout
                       <Box>
-                        <Typography variant="h6" sx={{ mb: 1 }}>
-                          {neighbor.traits.nickname || "Anonymous"}
-                        </Typography>
-                        <Typography variant="subtitle1" color="primary">
-                          ความคล้าย {neighbor.similarity}%
-                        </Typography>
-                      </Box>
-                    </Stack>
-
-                    {/* Traits section below */}
-                    <Grid container spacing={1}>
-                      {[
-                        "type",
-                        "clean",
-                        "drink",
-                        "smoke",
-                        "expense",
-                        "loud",
-                      ].map((key) => (
-                        <Grid item xs={12} sm={6} key={key}>
-                          <Typography variant="body2">
-                            <strong>{labelMapping[key] || key}:</strong>{" "}
-                            {valueMapping[neighbor.traits[key]] ||
-                              neighbor.traits[key]}
-                          </Typography>
+                        <Stack
+                          direction="row"
+                          spacing={2}
+                          alignItems="center"
+                          sx={{ mb: 2 }}
+                        >
+                          <img
+                            src={
+                              neighbor.traits.profile_picture
+                                ? `http://localhost:3000${neighbor.traits.profile_picture}`
+                                : "http://localhost:3000/uploads/anonymous.jpg"
+                            }
+                            alt="Profile"
+                            style={{
+                              width: "100px",
+                              height: "100px",
+                              borderRadius: "10%",
+                              objectFit: "cover",
+                            }}
+                          />
+                          <Box>
+                            <Typography variant="h6" sx={{ mb: 1 }}>
+                              {neighbor.traits.nickname || "Anonymous"}
+                            </Typography>
+                            <Typography variant="subtitle1" color="primary">
+                              ความคล้าย {neighbor.similarity}%
+                            </Typography>
+                          </Box>
+                        </Stack>
+                        <Grid container spacing={1}>
+                          {[
+                            "type",
+                            "clean",
+                            "drink",
+                            "smoke",
+                            "expense",
+                            "loud",
+                          ].map((key) => (
+                            <Grid item xs={12} key={key}>
+                              <Typography variant="body2">
+                                <strong>{labelMapping[key] || key}:</strong>{" "}
+                                {valueMapping[neighbor.traits[key]] ||
+                                  neighbor.traits[key]}
+                              </Typography>
+                            </Grid>
+                          ))}
                         </Grid>
-                      ))}
-                    </Grid>
+                      </Box>
+                    ) : (
+                      // Desktop Layout (unchanged)
+                      <Stack
+                        direction="row"
+                        spacing={2}
+                        alignItems="center"
+                        justifyContent="space-between"
+                      >
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <img
+                            src={
+                              neighbor.traits.profile_picture
+                                ? `http://localhost:3000${neighbor.traits.profile_picture}`
+                                : "http://localhost:3000/uploads/anonymous.jpg"
+                            }
+                            alt="Profile"
+                            style={{
+                              width: "150px",
+                              height: "150px",
+                              borderRadius: "10%",
+                              objectFit: "cover",
+                            }}
+                          />
+                          <Box>
+                            <Typography variant="h6">
+                              {neighbor.traits.nickname || "Anonymous"} -{" "}
+                              ความคล้าย {neighbor.similarity}%
+                            </Typography>
+                            {[
+                              "type",
+                              "clean",
+                              "drink",
+                              "smoke",
+                              "expense",
+                              "loud",
+                            ].map((key) => (
+                              <Typography key={key} variant="body2">
+                                <strong>{labelMapping[key] || key}:</strong>{" "}
+                                {valueMapping[neighbor.traits[key]] ||
+                                  neighbor.traits[key]}
+                              </Typography>
+                            ))}
+                          </Box>
+                        </Stack>
+                      </Stack>
+                    )}
                   </Paper>
                 ))}
               </Stack>
