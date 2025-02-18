@@ -814,6 +814,7 @@ app.put("/personalinfo/:userId", (req, res) => {
     dorm_name,
     vehicle,
     self_introduction,
+    monthly_dorm_fee,
   } = req.body;
 
   const query = `
