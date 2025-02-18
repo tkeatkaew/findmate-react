@@ -496,7 +496,7 @@ const Discovery = () => {
 
   return (
     <AppTheme>
-      <Box sx={{ display: "flex", minHeight: "90vh" }}>
+      <Box sx={{ display: "flex", minHeight: "87vh" }}>
         {/* Sidebar */}
         <Box
           sx={{
