@@ -499,7 +499,8 @@ const Discovery = () => {
       <Box
         sx={{
           display: "flex",
-          height: "calc(100vh - 150px)", // Subtracting navbar height (67px) and margins (2 * 10px)
+          minHeight: "calc(100vh - 87px)",
+          maxHeight: "calc(100vh - 87px)",
           overflow: "hidden",
         }}
       >
@@ -507,7 +508,6 @@ const Discovery = () => {
         <Box
           sx={{
             width: isMobile ? "auto" : "200px",
-            height: "100%",
             padding: "0.5rem",
             border: "1px solid #eee",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
@@ -516,7 +516,7 @@ const Discovery = () => {
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
-            flexShrink: 0, // Prevent sidebar from shrinking
+            backgroundColor: "white",
           }}
         >
           <Stack direction="column" spacing={2}>
@@ -578,7 +578,7 @@ const Discovery = () => {
               mb: 3,
             }}
           >
-            <Typography variant={isMobile ? "h6" : "h4"}>
+            <Typography variant={isMobile ? "h5" : "h4"}>
               ค้นหารูมเมทที่คล้ายคลึงกับคุณ
             </Typography>
             <Stack
@@ -596,7 +596,7 @@ const Discovery = () => {
                   startIcon={<X size={16} />}
                   fullWidth={isMobile}
                 >
-                  ตัวกรอง ({getActiveFilterCount()})
+                  ล้างตัวกรอง ({getActiveFilterCount()})
                 </Button>
               )}
               <Button
@@ -725,13 +725,7 @@ const Discovery = () => {
 
           {/* User List */}
           {filteredUsers.length > 0 ? (
-            <Box
-              sx={{
-                maxHeight: "79vh",
-                overflowY: "auto",
-                borderRadius: "20px",
-              }}
-            >
+            <Box sx={{ width: "100%" }}>
               <Stack spacing={2}>
                 {filteredUsers.map((neighbor) => (
                   <Paper
