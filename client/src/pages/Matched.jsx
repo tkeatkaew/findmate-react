@@ -527,7 +527,7 @@ const Matched = () => {
                           </Box>
                         </Stack>
                         <Grid container>
-                          {["type", "clean", "drink", "smoke"].map((key) => (
+                          {["type", "clean", "smoke"].map((key) => (
                             <Grid item xs={12} key={key}>
                               <Typography variant="body2">
                                 <strong>{labelMapping[key] || key}:</strong>{" "}
