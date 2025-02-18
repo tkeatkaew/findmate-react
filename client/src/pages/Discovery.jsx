@@ -500,7 +500,7 @@ const Discovery = () => {
         {/* Sidebar */}
         <Box
           sx={{
-            width: isMobile ? "40px" : "200px",
+            width: isMobile ? "auto" : "200px",
             padding: "0.5rem",
             border: "1px solid #eee",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
@@ -788,7 +788,7 @@ const Discovery = () => {
             sx={{
               position: "absolute",
               top: "50%",
-              left: "50%",
+              left: "45%",
               transform: "translate(-50%, -50%)",
               width: { xs: "85%", sm: "80%", md: "65%" },
               minWidth: { xs: "auto", sm: "500px" },
