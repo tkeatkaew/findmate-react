@@ -759,10 +759,18 @@ const Discovery = () => {
                           alignItems="center"
                           sx={{ mb: 2 }}
                         >
-                          <ProfilePicture
-                            src={neighbor.traits.profile_picture}
-                            alt={neighbor.traits.nickname || "Profile"}
-                            size="lg"
+                          <img
+                            src={
+                              neighbor.traits.profile_picture ||
+                              "/api/placeholder/75/75"
+                            }
+                            alt="Profile"
+                            style={{
+                              width: "75px",
+                              height: "75px",
+                              borderRadius: "10%",
+                              objectFit: "cover",
+                            }}
                           />
                           <Box>
                             <Typography variant="h6" sx={{ mb: 1 }}>
@@ -786,7 +794,7 @@ const Discovery = () => {
                         </Grid>
                       </Box>
                     ) : (
-                      // Desktop Layout (unchanged)
+                      // Desktop Layout
                       <Stack
                         direction="row"
                         spacing={2}
@@ -794,14 +802,22 @@ const Discovery = () => {
                         justifyContent="space-between"
                       >
                         <Stack direction="row" spacing={2} alignItems="center">
-                          <ProfilePicture
-                            src={neighbor.traits.profile_picture}
-                            alt={neighbor.traits.nickname || "Profile"}
-                            size="lg"
+                          <img
+                            src={
+                              neighbor.traits.profile_picture ||
+                              "/api/placeholder/150/150"
+                            }
+                            alt="Profile"
+                            style={{
+                              width: "150px",
+                              height: "150px",
+                              borderRadius: "10%",
+                              objectFit: "cover",
+                            }}
                           />
                           <Box>
                             <Typography variant="h6">
-                              {neighbor.traits.nickname || "Anonymous"} -{" "}
+                              {neighbor.traits.nickname || "Anonymous"} -
                               ความคล้าย {neighbor.similarity}%
                             </Typography>
                             {[
@@ -813,7 +829,7 @@ const Discovery = () => {
                               "loud",
                             ].map((key) => (
                               <Typography key={key} variant="body2">
-                                <strong>{labelMapping[key] || key}:</strong>{" "}
+                                <strong>{labelMapping[key]}:</strong>{" "}
                                 {valueMapping[neighbor.traits[key]] ||
                                   neighbor.traits[key]}
                               </Typography>
@@ -865,16 +881,24 @@ const Discovery = () => {
               alignItems="center"
               sx={{ mb: 3 }}
             >
-              <ProfilePicture
-                src={selectedUser.traits.profile_picture}
-                alt={selectedUser.nickname || "Profile"}
-                size="lg"
+              <img
+                src={
+                  selectedUser.traits.profile_picture ||
+                  "/api/placeholder/150/150"
+                }
+                alt="Profile"
+                style={{
+                  width: "150px",
+                  height: "150px",
+                  borderRadius: "10%",
+                  objectFit: "cover",
+                }}
               />
               <Box>
                 <Typography variant="h5" component="h2">
                   {selectedUser.traits.nickname || "Anonymous"}
                 </Typography>
-                <Typography variant="subtitle1">
+                <Typography variant="subtitle1" color="text.secondary">
                   ความคล้าย {selectedUser.similarity}%
                 </Typography>
               </Box>
