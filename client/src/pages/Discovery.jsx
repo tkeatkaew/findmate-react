@@ -562,7 +562,7 @@ const Discovery = () => {
         <Box
           sx={{
             flex: 1,
-            padding: "1rem",
+            padding: "0.5rem",
             overflowY: "auto",
             height: "100%",
           }}
