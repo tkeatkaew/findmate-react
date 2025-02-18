@@ -602,28 +602,28 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Add route to handle profile picture uploads
-app.post(
-  "/upload-profile-picture",
-  upload.single("profile_picture"),
-  (req, res) => {
-    const { user_id } = req.body;
-    const profilePictureUrl = `/uploads/${req.file.filename}`;
-    const query = "UPDATE users SET profile_picture = ? WHERE id = ?";
+// app.post(
+//   "/upload-profile-picture",
+//   upload.single("profile_picture"),
+//   (req, res) => {
+//     const { user_id } = req.body;
+//     const profilePictureUrl = `/uploads/${req.file.filename}`;
+//     const query = "UPDATE users SET profile_picture = ? WHERE id = ?";
 
-    db.query(query, [profilePictureUrl, user_id], (err) => {
-      if (err) {
-        console.error("Error updating profile picture:", err);
-        return res
-          .status(500)
-          .json({ error: "Failed to update profile picture" });
-      }
-      res.status(200).json({
-        message: "Profile picture uploaded successfully",
-        profilePictureUrl,
-      });
-    });
-  }
-);
+//     db.query(query, [profilePictureUrl, user_id], (err) => {
+//       if (err) {
+//         console.error("Error updating profile picture:", err);
+//         return res
+//           .status(500)
+//           .json({ error: "Failed to update profile picture" });
+//       }
+//       res.status(200).json({
+//         message: "Profile picture uploaded successfully",
+//         profilePictureUrl,
+//       });
+//     });
+//   }
+// );
 
 // Serve uploaded files statically
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
