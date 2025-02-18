@@ -704,7 +704,6 @@ const Discovery = () => {
               sx={{
                 maxHeight: "79vh",
                 overflowY: "auto",
-                paddingRight: "1rem",
                 borderRadius: "20px",
               }}
             >
