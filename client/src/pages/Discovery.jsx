@@ -561,7 +561,9 @@ const Discovery = () => {
               mb: 3,
             }}
           >
-            <Typography variant="h4">ค้นหารูมเมทที่คล้ายคลึงกับคุณ</Typography>
+            <Typography variant={isMobile ? "h5" : "h4"}>
+              ค้นหารูมเมทที่คล้ายคลึงกับคุณ
+            </Typography>
             <Stack direction="row" spacing={1}>
               {getActiveFilterCount() > 0 && (
                 <Button
