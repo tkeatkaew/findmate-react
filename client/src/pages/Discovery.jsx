@@ -792,7 +792,7 @@ const Discovery = () => {
               transform: "translate(-50%, -50%)",
               width: { xs: "85%", sm: "80%", md: "65%" },
               minWidth: { xs: "auto", sm: "500px" },
-              maxHeight: "90vh",
+              maxHeight: "80vh",
               overflow: "auto",
               backgroundColor: "white",
               padding: { xs: "1.5rem", sm: "2.5rem" },
