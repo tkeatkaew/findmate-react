@@ -790,15 +790,15 @@ const Discovery = () => {
               top: "50%",
               left: "50%",
               transform: "translate(-50%, -50%)",
-              width: { xs: "95%", sm: "85%", md: "70%" },
+              width: { xs: "85%", sm: "80%", md: "65%" },
               minWidth: { xs: "auto", sm: "500px" },
               maxHeight: "90vh",
               overflow: "auto",
               backgroundColor: "white",
-              padding: { xs: "1rem", sm: "2rem" },
+              padding: { xs: "1.5rem", sm: "2.5rem" },
               boxShadow: 24,
-              borderRadius: "15px",
-              margin: "10px",
+              borderRadius: "20px",
+              margin: { xs: "1rem", sm: "2rem" },
             }}
           >
             {/* Header */}
