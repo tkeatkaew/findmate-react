@@ -722,12 +722,28 @@ app.post("/like", async (req, res) => {
             to: user.email,
             subject: "Find Mate - You have a new match!",
             html: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2>Congratulations! You have a new match on Find Mate!</h2>
-                <p>คุณจับคู่กับ ${otherUser.name} สำเร็จแล้ว!</p>
-                <p>คุณสามารถดูข้อมูลการติดต่อของรูมเมทได้แล้วในแอปพลิเคชัน</p>
-                <p>หวังว่าคุณจะได้รูมเมทที่ถูกใจ</p>
-                <p>ขอบคุณที่ใช้บริการ Find Mate</p>
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+                <h2 style="color: #27272a; text-align: center;">Congratulations! You have a new match on Find Mate!</h2>
+                <p style="font-size: 16px; line-height: 1.5; color: #333;">คุณจับคู่กับ ${otherUser.name} สำเร็จแล้ว! 🎉</p>
+                <p style="font-size: 16px; line-height: 1.5; color: #333;">คุณสามารถดูข้อมูลการติดต่อของรูมเมทได้แล้วในแอปพลิเคชัน</p>
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="https://findmate-react.vercel.app/matched" 
+                     style="background-color: #27272a; 
+                            color: white; 
+                            padding: 12px 24px; 
+                            text-decoration: none; 
+                            border-radius: 8px; 
+                            font-weight: bold;
+                            display: inline-block;">
+                    ดูข้อมูลการจับคู่
+                  </a>
+                </div>
+                <p style="font-size: 16px; line-height: 1.5; color: #333;">หวังว่าคุณจะได้รูมเมทที่ถูกใจ</p>
+                <p style="font-size: 16px; line-height: 1.5; color: #333;">ขอบคุณที่ใช้บริการ Find Mate</p>
+                <div style="text-align: center; margin-top: 30px; font-size: 12px; color: #666;">
+                  <p>หากคุณไม่สามารถคลิกปุ่มด้านบน กรุณาคัดลอกลิงก์นี้ไปยังเบราว์เซอร์ของคุณ:</p>
+                  <p>https://findmate-react.vercel.app/matched</p>
+                </div>
               </div>
             `,
           };
