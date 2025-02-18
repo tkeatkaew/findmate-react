@@ -267,7 +267,6 @@ const EditProfile = () => {
       });
 
       showAlert("บันทึกโปรไฟล์สำเร็จ!", "success");
-      navigate("/discovery");
 
       // Redirect after successful update
       setTimeout(() => {
