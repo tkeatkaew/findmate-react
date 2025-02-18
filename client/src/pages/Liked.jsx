@@ -33,6 +33,8 @@ import {
 } from "lucide-react";
 import { useTheme, useMediaQuery } from "@mui/material";
 
+import defaultAvatar from "../images/anonymous.jpg";
+
 const Liked = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -502,11 +504,12 @@ const Liked = () => {
                           sx={{ mb: 2 }}
                         >
                           <img
-                            src={
-                              likedUser.profile_picture ||
-                              "/api/placeholder/75/75"
-                            }
+                            src={likedUser.profile_picture || defaultAvatar}
                             alt="Profile"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = defaultAvatar;
+                            }}
                             style={{
                               width: "75px",
                               height: "75px",
@@ -544,11 +547,12 @@ const Liked = () => {
                       >
                         <Stack direction="row" spacing={2} alignItems="center">
                           <img
-                            src={
-                              likedUser.profile_picture ||
-                              "/api/placeholder/150/150"
-                            }
+                            src={likedUser.profile_picture || defaultAvatar}
                             alt="Profile"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = defaultAvatar;
+                            }}
                             style={{
                               width: "150px",
                               height: "150px",
@@ -619,8 +623,12 @@ const Liked = () => {
               sx={{ mb: 3 }}
             >
               <img
-                src={selectedUser.profile_picture || "/api/placeholder/150/150"}
+                src={selectedUser.profile_picture || defaultAvatar}
                 alt="Profile"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = defaultAvatar;
+                }}
                 style={{
                   width: "150px",
                   height: "150px",
