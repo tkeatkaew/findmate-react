@@ -46,6 +46,7 @@ const universitiesByProvince = {
 };
 
 const EditProfile = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   const [activeTab, setActiveTab] = useState(0);
@@ -231,6 +232,9 @@ const EditProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return; // Prevent multiple submissions
+
+    setIsSubmitting(true);
     try {
       // Upload new profile picture if selected
       if (profilePicture) {
@@ -242,7 +246,6 @@ const EditProfile = () => {
           formData
         );
         if (uploadResponse.data.profilePictureUrl) {
-          // Update user in localStorage with new profile picture
           const updatedUser = {
             ...user,
             profile_picture: uploadResponse.data.profilePictureUrl,
@@ -272,6 +275,8 @@ const EditProfile = () => {
     } catch (error) {
       console.error("Error updating profile:", error);
       showAlert("บันทึกโปรไฟล์ไม่สำเร็จ", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1011,9 +1016,34 @@ const EditProfile = () => {
             <Button
               type="submit"
               variant="contained"
-              sx={{ textTransform: "none" }}
+              disabled={isSubmitting}
+              sx={{
+                textTransform: "none",
+                position: "relative",
+                minWidth: "100px",
+                "&:disabled": {
+                  backgroundColor: "primary.main",
+                  color: "white",
+                  opacity: 0.7,
+                },
+              }}
             >
-              บันทึก
+              {isSubmitting ? (
+                <>
+                  <CircularProgress
+                    size={24}
+                    sx={{
+                      position: "absolute",
+                      left: "50%",
+                      marginLeft: "-12px",
+                      color: "white",
+                    }}
+                  />
+                  <span style={{ opacity: 0 }}>บันทึก</span>
+                </>
+              ) : (
+                "บันทึก"
+              )}
             </Button>
           </Box>
         </form>
