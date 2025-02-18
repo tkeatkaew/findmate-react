@@ -551,7 +551,7 @@ const Discovery = () => {
         </Box>
 
         {/* Main Content */}
-        <Box sx={{ flex: 1, padding: "1rem" }}>
+        <Box sx={{ flex: 1, padding: "0.5rem" }}>
           {/* Header with Filter */}
           <Box
             sx={{
