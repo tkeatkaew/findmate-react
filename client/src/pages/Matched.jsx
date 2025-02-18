@@ -468,12 +468,13 @@ const Matched = () => {
           <Typography variant={isMobile ? "h6" : "h4"} sx={{ mb: 1 }}>
             คนที่จับคู่กับคุณสำเร็จ
           </Typography>
+
+          {/* User List */}
           {matches.length > 0 ? (
             <Box
               sx={{
                 maxHeight: "79vh",
                 overflowY: "auto",
-                paddingRight: "1rem",
                 borderRadius: "20px",
               }}
             >
@@ -493,49 +494,94 @@ const Matched = () => {
                     }}
                     onClick={() => setSelectedUser(match)}
                   >
-                    <Stack
-                      direction="row"
-                      spacing={2}
-                      alignItems="center"
-                      justifyContent="space-between"
-                    >
-                      <Stack direction="row" spacing={2} alignItems="center">
-                        <img
-                          src={
-                            match.profile_picture
-                              ? `http://localhost:3000${match.profile_picture}`
-                              : "http://localhost:3000/uploads/anonymous.jpg"
-                          }
-                          alt="Profile"
-                          style={{
-                            width: "150px",
-                            height: "150px",
-                            borderRadius: "10%",
-                            objectFit: "cover",
-                          }}
-                        />
-                        <Box>
-                          <Typography variant="h6">
-                            {match.nickname || "Anonymous"} - ความคล้าย{" "}
-                            {match.similarity}%
-                          </Typography>
-
-                          {[
-                            "type",
-                            "clean",
-                            "drink",
-                            "smoke",
-                            "expense",
-                            "loud",
-                          ].map((key) => (
-                            <Typography key={key} variant="body2">
-                              <strong>{labelMapping[key]}:</strong>{" "}
-                              {valueMapping[match[key]] || match[key]}
+                    {isMobile ? (
+                      // Mobile Layout
+                      <Box>
+                        <Stack
+                          direction="row"
+                          spacing={2}
+                          alignItems="center"
+                          sx={{ mb: 2 }}
+                        >
+                          <img
+                            src={
+                              match.profile_picture
+                                ? `http://localhost:3000${match.profile_picture}`
+                                : "http://localhost:3000/uploads/anonymous.jpg"
+                            }
+                            alt="Profile"
+                            style={{
+                              width: "75px",
+                              height: "75px",
+                              borderRadius: "10%",
+                              objectFit: "cover",
+                            }}
+                          />
+                          <Box>
+                            <Typography variant="h6" sx={{ mb: 1 }}>
+                              {match.nickname || "Anonymous"}
                             </Typography>
+                            <Typography variant="subtitle1" color="primary">
+                              ความคล้าย {match.similarity}%
+                            </Typography>
+                          </Box>
+                        </Stack>
+                        <Grid container>
+                          {["type", "clean", "drink", "smoke"].map((key) => (
+                            <Grid item xs={12} key={key}>
+                              <Typography variant="body2">
+                                <strong>{labelMapping[key] || key}:</strong>{" "}
+                                {valueMapping[match[key]] || match[key]}
+                              </Typography>
+                            </Grid>
                           ))}
-                        </Box>
+                        </Grid>
+                      </Box>
+                    ) : (
+                      // Desktop Layout
+                      <Stack
+                        direction="row"
+                        spacing={2}
+                        alignItems="center"
+                        justifyContent="space-between"
+                      >
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <img
+                            src={
+                              match.profile_picture
+                                ? `http://localhost:3000${match.profile_picture}`
+                                : "http://localhost:3000/uploads/anonymous.jpg"
+                            }
+                            alt="Profile"
+                            style={{
+                              width: "150px",
+                              height: "150px",
+                              borderRadius: "10%",
+                              objectFit: "cover",
+                            }}
+                          />
+                          <Box>
+                            <Typography variant="h6">
+                              {match.nickname || "Anonymous"} - ความคล้าย{" "}
+                              {match.similarity}%
+                            </Typography>
+                            {[
+                              "type",
+                              "clean",
+                              "drink",
+                              "smoke",
+                              "expense",
+                              "loud",
+                            ].map((key) => (
+                              <Typography key={key} variant="body2">
+                                <strong>{labelMapping[key]}:</strong>{" "}
+                                {valueMapping[match[key]] || match[key]}
+                              </Typography>
+                            ))}
+                          </Box>
+                        </Stack>
                       </Stack>
-                    </Stack>
+                    )}
                   </Paper>
                 ))}
               </Stack>
