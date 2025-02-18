@@ -116,6 +116,7 @@ const PersonalInfo = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormSubmitted(true);
+
     // Check if at least one contact method is provided
     const hasContact = facebook || instagram || lineId || phone;
     if (!hasContact) {
@@ -125,7 +126,7 @@ const PersonalInfo = () => {
     setContactError(false);
 
     try {
-      // Update profile picture if we have a Cloudinary URL
+      // First update profile picture if we have one
       if (profilePicture) {
         await axios.post("/update-profile-picture", {
           user_id,
@@ -133,6 +134,7 @@ const PersonalInfo = () => {
         });
       }
 
+      // Then update personal information
       await axios.post("/personalinfo", {
         user_id,
         email,
@@ -154,10 +156,24 @@ const PersonalInfo = () => {
         self_introduction: selfIntroduction,
         monthly_dorm_fee: monthlyDormFee || null,
       });
-      alert("Personal information saved successfully!");
-      navigate("/personalityprofile", { state: { user_id } });
+
+      setAlert({
+        open: true,
+        message: "Personal information saved successfully!",
+        severity: "success",
+      });
+
+      // Navigate after short delay to show the success message
+      setTimeout(() => {
+        navigate("/personalityprofile", { state: { user_id } });
+      }, 1500);
     } catch (err) {
-      alert("Error updating personal info.");
+      console.error("Error updating profile:", err);
+      setAlert({
+        open: true,
+        message: "Error updating personal information",
+        severity: "error",
+      });
     }
   };
 
