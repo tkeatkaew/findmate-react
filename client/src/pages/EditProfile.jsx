@@ -556,6 +556,7 @@ const EditProfile = () => {
                     color="primary"
                     aria-label="upload picture"
                     component="label"
+                    disabled={isUploading}
                     sx={{
                       position: "absolute",
                       bottom: 0,

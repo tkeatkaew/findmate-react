@@ -372,8 +372,24 @@ const PersonalInfo = () => {
                 type="button"
                 onClick={handleButtonClick}
                 variant="outlined"
+                disabled={isUploading}
+                sx={{ position: "relative" }}
               >
-                เลือกรูปภาพโปรไฟล์
+                {isUploading ? (
+                  <>
+                    <CircularProgress
+                      size={24}
+                      sx={{
+                        position: "absolute",
+                        left: "50%",
+                        marginLeft: "-12px",
+                      }}
+                    />
+                    <span style={{ opacity: 0 }}>เลือกรูปภาพโปรไฟล์</span>
+                  </>
+                ) : (
+                  "เลือกรูปภาพโปรไฟล์"
+                )}
               </Button>
               <input
                 type="file"
