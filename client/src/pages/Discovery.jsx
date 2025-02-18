@@ -507,12 +507,12 @@ const Discovery = () => {
         <Box
           sx={{
             width: isMobile ? "auto" : "200px",
-            height: "100%",
+            height: "95%",
             padding: "0.5rem",
             border: "1px solid #eee",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
             borderRadius: "20px",
-            margin: "10px",
+            margin: "7.5px",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
