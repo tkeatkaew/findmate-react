@@ -543,14 +543,15 @@ const Matched = () => {
               top: "50%",
               left: "50%",
               transform: "translate(-50%, -50%)",
-              width: "70%",
-              minWidth: "500px",
-              maxHeight: "90vh",
+              width: { xs: "85%", sm: "80%", md: "65%" },
+              minWidth: { xs: "auto", sm: "500px" },
+              maxHeight: "70vh",
               overflow: "auto",
               backgroundColor: "white",
-              padding: "2rem",
+              padding: { xs: "1.5rem", sm: "2.5rem" },
               boxShadow: 24,
-              borderRadius: "15px",
+              borderRadius: "20px",
+              margin: { xs: "1rem", sm: "2rem" },
             }}
           >
             {/* Header */}
