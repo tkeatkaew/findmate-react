@@ -505,9 +505,7 @@ const Matched = () => {
                         >
                           <img
                             src={
-                              match.profile_picture
-                                ? `http://localhost:3000${match.profile_picture}`
-                                : "http://localhost:3000/uploads/anonymous.jpg"
+                              match.profile_picture || "/api/placeholder/75/75"
                             }
                             alt="Profile"
                             style={{
@@ -548,9 +546,8 @@ const Matched = () => {
                         <Stack direction="row" spacing={2} alignItems="center">
                           <img
                             src={
-                              match.profile_picture
-                                ? `http://localhost:3000${match.profile_picture}`
-                                : "http://localhost:3000/uploads/anonymous.jpg"
+                              match.profile_picture ||
+                              "/api/placeholder/150/150"
                             }
                             alt="Profile"
                             style={{
@@ -616,7 +613,6 @@ const Matched = () => {
               margin: { xs: "1rem", sm: "2rem" },
             }}
           >
-            {/* Header */}
             <Stack
               direction="row"
               spacing={2}
@@ -624,11 +620,7 @@ const Matched = () => {
               sx={{ mb: 3 }}
             >
               <img
-                src={
-                  selectedUser.profile_picture
-                    ? `http://localhost:3000${selectedUser.profile_picture}`
-                    : "http://localhost:3000/uploads/anonymous.jpg"
-                }
+                src={selectedUser.profile_picture || "/api/placeholder/150/150"}
                 alt="Profile"
                 style={{
                   width: "150px",
@@ -641,11 +633,9 @@ const Matched = () => {
                 <Typography variant="h5" component="h2">
                   {selectedUser.nickname || "Anonymous"}
                 </Typography>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="subtitle1" color="text.secondary">
-                    ความคล้าย {selectedUser.similarity}%
-                  </Typography>
-                </Stack>
+                <Typography variant="subtitle1" color="text.secondary">
+                  ความคล้าย {selectedUser.similarity}%
+                </Typography>
               </Box>
             </Stack>
 

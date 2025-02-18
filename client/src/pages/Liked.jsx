@@ -503,9 +503,8 @@ const Liked = () => {
                         >
                           <img
                             src={
-                              likedUser.profile_picture
-                                ? `http://localhost:3000${likedUser.profile_picture}`
-                                : "http://localhost:3000/uploads/anonymous.jpg"
+                              likedUser.profile_picture ||
+                              "/api/placeholder/75/75"
                             }
                             alt="Profile"
                             style={{
@@ -546,9 +545,8 @@ const Liked = () => {
                         <Stack direction="row" spacing={2} alignItems="center">
                           <img
                             src={
-                              likedUser.profile_picture
-                                ? `http://localhost:3000${likedUser.profile_picture}`
-                                : "http://localhost:3000/uploads/anonymous.jpg"
+                              likedUser.profile_picture ||
+                              "/api/placeholder/150/150"
                             }
                             alt="Profile"
                             style={{
@@ -614,7 +612,6 @@ const Liked = () => {
               margin: { xs: "1rem", sm: "2rem" },
             }}
           >
-            {/* Header */}
             <Stack
               direction="row"
               spacing={2}
@@ -622,11 +619,7 @@ const Liked = () => {
               sx={{ mb: 3 }}
             >
               <img
-                src={
-                  selectedUser.profile_picture
-                    ? `http://localhost:3000${selectedUser.profile_picture}`
-                    : "http://localhost:3000/uploads/anonymous.jpg"
-                }
+                src={selectedUser.profile_picture || "/api/placeholder/150/150"}
                 alt="Profile"
                 style={{
                   width: "150px",
