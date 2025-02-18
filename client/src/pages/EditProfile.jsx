@@ -27,6 +27,8 @@ import IconButton from "@mui/material/IconButton";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import Divider from "@mui/material/Divider";
 import InputAdornment from "@mui/material/InputAdornment";
+import { Paper, Stack, Typography } from "@mui/material";
+import { CheckCircle } from "lucide-react";
 import AppTheme from "../AppTheme";
 
 import Dialog from "@mui/material/Dialog";
@@ -401,6 +403,71 @@ const EditProfile = () => {
     );
   }
 
+  const RadioCard = ({ option, selected, onSelect }) => (
+    <Paper
+      onClick={() => onSelect(option.value)}
+      sx={{
+        p: 2,
+        cursor: "pointer",
+        borderRadius: "15px",
+        border: "1px solid",
+        borderColor: selected ? "primary.main" : "white",
+        bgcolor: selected ? "rgba(0, 0, 0, 0.00)" : "background.paper",
+        boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
+        transition: "all 0.2s ease",
+        position: "relative",
+        "&:hover": {
+          borderColor: "primary.main",
+          boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
+        },
+      }}
+    >
+      <Stack direction="row" spacing={2} alignItems="center">
+        <Stack spacing={1} flex={1}>
+          <Typography
+            variant="body1"
+            sx={{ fontWeight: selected ? "600" : "400" }}
+          >
+            {option.label}
+          </Typography>
+        </Stack>
+        {selected && (
+          <CheckCircle
+            size={20}
+            style={{
+              color: "var(--mui-palette-primary-main)",
+            }}
+          />
+        )}
+      </Stack>
+    </Paper>
+  );
+
+  // Radio Card Group component for a set of options
+  const RadioCardGroup = ({
+    options,
+    value,
+    onChange,
+    title,
+    required = true,
+  }) => (
+    <Box sx={{ mb: 4 }}>
+      <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+        {title} {required && <span style={{ color: "red" }}>*</span>}
+      </Typography>
+      <Stack spacing={2}>
+        {options.map((option) => (
+          <RadioCard
+            key={option.value}
+            option={option}
+            selected={value === option.value}
+            onSelect={onChange}
+          />
+        ))}
+      </Stack>
+    </Box>
+  );
+
   return (
     <AppTheme>
       <CssBaseline />
@@ -713,381 +780,223 @@ const EditProfile = () => {
 
           {activeTab === 1 && (
             <Stack spacing={3}>
-              {/* Personality Type */}
-              <FormControl component="fieldset" required>
-                <FormLabel>บุคลิกภาพของคุณเป็นแบบใด?</FormLabel>
-                <RadioGroup
-                  value={traits.type || ""}
-                  onChange={handleTraitsChange("type")}
-                >
-                  <FormControlLabel
-                    value="type_introvert"
-                    control={<Radio />}
-                    label="Introvert ชอบสังเกตและฟัง"
-                  />
-                  <FormControlLabel
-                    value="type_extrovert"
-                    control={<Radio />}
-                    label="Extrovert ชอบพูดและเข้าสังคม"
-                  />
-                  <FormControlLabel
-                    value="type_ambivert"
-                    control={<Radio />}
-                    label="Ambivert สมดุลระหว่างพูดและฟัง"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <RadioCardGroup
+                title="บุคลิกภาพของคุณเป็นแบบใด?"
+                options={[
+                  {
+                    value: "type_introvert",
+                    label: "Introvert ชอบสังเกตและฟัง",
+                  },
+                  {
+                    value: "type_extrovert",
+                    label: "Extrovert ชอบพูดและเข้าสังคม",
+                  },
+                  {
+                    value: "type_ambivert",
+                    label: "Ambivert สมดุลระหว่างพูดและฟัง",
+                  },
+                ]}
+                value={traits.type}
+                onChange={(value) =>
+                  handleTraitsChange("type")({ target: { value } })
+                }
+              />
 
-              {/* Sleep Time */}
-              <FormControl component="fieldset" required>
-                <FormLabel>คุณมักเข้านอนเวลาใด?</FormLabel>
-                <RadioGroup
-                  value={traits.sleep || ""}
-                  onChange={handleTraitsChange("sleep")}
-                >
-                  <FormControlLabel
-                    value="sleep_before_midnight"
-                    control={<Radio />}
-                    label="ก่อนเที่ยงคืน"
-                  />
-                  <FormControlLabel
-                    value="sleep_after_midnight"
-                    control={<Radio />}
-                    label="หลังเที่ยงคืน"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <RadioCardGroup
+                title="คุณมักเข้านอนเวลาใด?"
+                options={[
+                  { value: "sleep_before_midnight", label: "ก่อนเที่ยงคืน" },
+                  { value: "sleep_after_midnight", label: "หลังเที่ยงคืน" },
+                ]}
+                value={traits.sleep}
+                onChange={(value) =>
+                  handleTraitsChange("sleep")({ target: { value } })
+                }
+              />
 
-              {/* Wake Time */}
-              <FormControl component="fieldset" required>
-                <FormLabel>ช่วงเวลาที่คุณตื่นนอนเป็นประจำ?</FormLabel>
-                <RadioGroup
-                  value={traits.wake || ""}
-                  onChange={handleTraitsChange("wake")}
-                >
-                  <FormControlLabel
-                    value="wake_morning"
-                    control={<Radio />}
-                    label="ตื่นตอนเช้า"
-                  />
-                  <FormControlLabel
-                    value="wake_noon"
-                    control={<Radio />}
-                    label="ตื่นตอนบ่าย"
-                  />
-                  <FormControlLabel
-                    value="wake_evening"
-                    control={<Radio />}
-                    label="ตื่นตอนเย็น"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <RadioCardGroup
+                title="ช่วงเวลาที่คุณตื่นนอนเป็นประจำ?"
+                options={[
+                  { value: "wake_morning", label: "ตื่นตอนเช้า" },
+                  { value: "wake_noon", label: "ตื่นตอนบ่าย" },
+                  { value: "wake_evening", label: "ตื่นตอนเย็น" },
+                ]}
+                value={traits.wake}
+                onChange={(value) =>
+                  handleTraitsChange("wake")({ target: { value } })
+                }
+              />
 
-              {/* Cleanliness */}
-              <FormControl component="fieldset" required>
-                <FormLabel>คุณทำความสะอาดพื้นที่ส่วนตัวบ่อยแค่ไหน?</FormLabel>
-                <RadioGroup
-                  value={traits.clean || ""}
-                  onChange={handleTraitsChange("clean")}
-                >
-                  <FormControlLabel
-                    value="clean_every_day"
-                    control={<Radio />}
-                    label="ทำความสะอาดทุกวัน"
-                  />
-                  <FormControlLabel
-                    value="clean_every_other_day"
-                    control={<Radio />}
-                    label="ทำความสะอาดวันเว้นวัน"
-                  />
-                  <FormControlLabel
-                    value="clean_once_a_week"
-                    control={<Radio />}
-                    label="ทำความสะอาดสัปดาห์ละครั้ง"
-                  />
-                  <FormControlLabel
-                    value="clean_dont_really"
-                    control={<Radio />}
-                    label="ไม่ค่อยชอบทำความสะอาด"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <RadioCardGroup
+                title="คุณทำความสะอาดพื้นที่ส่วนตัวบ่อยแค่ไหน?"
+                options={[
+                  { value: "clean_every_day", label: "ทำความสะอาดทุกวัน" },
+                  {
+                    value: "clean_every_other_day",
+                    label: "ทำความสะอาดวันเว้นวัน",
+                  },
+                  {
+                    value: "clean_once_a_week",
+                    label: "ทำความสะอาดสัปดาห์ละครั้ง",
+                  },
+                  {
+                    value: "clean_dont_really",
+                    label: "ไม่ค่อยชอบทำความสะอาด",
+                  },
+                ]}
+                value={traits.clean}
+                onChange={(value) =>
+                  handleTraitsChange("clean")({ target: { value } })
+                }
+              />
 
-              {/* Air Conditioner */}
-              <FormControl component="fieldset" required>
-                <FormLabel>คุณเปิดเครื่องปรับอากาศบ่อยแค่ไหน?</FormLabel>
-                <RadioGroup
-                  value={traits.air_conditioner || ""}
-                  onChange={handleTraitsChange("air_conditioner")}
-                >
-                  <FormControlLabel
-                    value="ac_never"
-                    control={<Radio />}
-                    label="ไม่เปิดเลย"
-                  />
-                  <FormControlLabel
-                    value="ac_only_sleep"
-                    control={<Radio />}
-                    label="เปิดเฉพาะเวลานอน"
-                  />
-                  <FormControlLabel
-                    value="ac_only_hot"
-                    control={<Radio />}
-                    label="เปิดเฉพาะช่วงอากาศร้อน"
-                  />
-                  <FormControlLabel
-                    value="ac_all_day"
-                    control={<Radio />}
-                    label="เปิดทั้งวัน"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <RadioCardGroup
+                title="คุณเปิดเครื่องปรับอากาศบ่อยแค่ไหน?"
+                options={[
+                  { value: "ac_never", label: "ไม่เปิดเลย" },
+                  { value: "ac_only_sleep", label: "เปิดเฉพาะเวลานอน" },
+                  { value: "ac_only_hot", label: "เปิดเฉพาะช่วงอากาศร้อน" },
+                  { value: "ac_all_day", label: "เปิดทั้งวัน" },
+                ]}
+                value={traits.air_conditioner}
+                onChange={(value) =>
+                  handleTraitsChange("air_conditioner")({ target: { value } })
+                }
+              />
 
-              {/* Drinking */}
-              <FormControl component="fieldset" required>
-                <FormLabel>คุณดื่มแอลกอฮอล์บ่อยแค่ไหน?</FormLabel>
-                <RadioGroup
-                  value={traits.drink || ""}
-                  onChange={handleTraitsChange("drink")}
-                >
-                  <FormControlLabel
-                    value="drink_never"
-                    control={<Radio />}
-                    label="ไม่ดื่ม"
-                  />
-                  <FormControlLabel
-                    value="drink_spacial"
-                    control={<Radio />}
-                    label="ดื่มเฉพาะโอกาสพิเศษ"
-                  />
-                  <FormControlLabel
-                    value="drink_weekend"
-                    control={<Radio />}
-                    label="ดื่มช่วงสุดสัปดาห์"
-                  />
-                  <FormControlLabel
-                    value="drink_always"
-                    control={<Radio />}
-                    label="ดื่มเป็นประจำ"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <RadioCardGroup
+                title="คุณดื่มแอลกอฮอล์บ่อยแค่ไหน?"
+                options={[
+                  { value: "drink_never", label: "ไม่ดื่ม" },
+                  { value: "drink_spacial", label: "ดื่มเฉพาะโอกาสพิเศษ" },
+                  { value: "drink_weekend", label: "ดื่มช่วงสุดสัปดาห์" },
+                  { value: "drink_always", label: "ดื่มเป็นประจำ" },
+                ]}
+                value={traits.drink}
+                onChange={(value) =>
+                  handleTraitsChange("drink")({ target: { value } })
+                }
+              />
 
-              {/* Smoking */}
-              <FormControl component="fieldset" required>
-                <FormLabel>คุณสูบบุหรี่หรือไม่?</FormLabel>
-                <RadioGroup
-                  value={traits.smoke || ""}
-                  onChange={handleTraitsChange("smoke")}
-                >
-                  <FormControlLabel
-                    value="smoke_never"
-                    control={<Radio />}
-                    label="ไม่สูบ"
-                  />
-                  <FormControlLabel
-                    value="smoke_spacial"
-                    control={<Radio />}
-                    label="สูบเฉพาะเวลาสังสรรค์"
-                  />
-                  <FormControlLabel
-                    value="smoke_always"
-                    control={<Radio />}
-                    label="สูบเป็นประจำ"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <RadioCardGroup
+                title="คุณสูบบุหรี่หรือไม่?"
+                options={[
+                  { value: "smoke_never", label: "ไม่สูบ" },
+                  { value: "smoke_spacial", label: "สูบเฉพาะเวลาสังสรรค์" },
+                  { value: "smoke_always", label: "สูบเป็นประจำ" },
+                ]}
+                value={traits.smoke}
+                onChange={(value) =>
+                  handleTraitsChange("smoke")({ target: { value } })
+                }
+              />
 
-              {/* Money Payment */}
-              <FormControl component="fieldset" required>
-                <FormLabel>คุณจ่ายค่าหอพักตรงเวลาหรือไม่?</FormLabel>
-                <RadioGroup
-                  value={traits.money || ""}
-                  onChange={handleTraitsChange("money")}
-                >
-                  <FormControlLabel
-                    value="money_on_time"
-                    control={<Radio />}
-                    label="ตรงเวลาเสมอ"
-                  />
-                  <FormControlLabel
-                    value="money_late"
-                    control={<Radio />}
-                    label="อาจคลาดเคลื่อนเล็กน้อย"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <RadioCardGroup
+                title="คุณจ่ายค่าหอพักตรงเวลาหรือไม่?"
+                options={[
+                  { value: "money_on_time", label: "ตรงเวลาเสมอ" },
+                  { value: "money_late", label: "อาจคลาดเคลื่อนเล็กน้อย" },
+                ]}
+                value={traits.money}
+                onChange={(value) =>
+                  handleTraitsChange("money")({ target: { value } })
+                }
+              />
 
-              {/* Expense Sharing */}
-              <FormControl component="fieldset" required>
-                <FormLabel>คุณต้องการแบ่งค่าใช้จ่ายอย่างไร?</FormLabel>
-                <RadioGroup
-                  value={traits.expense || ""}
-                  onChange={handleTraitsChange("expense")}
-                >
-                  <FormControlLabel
-                    value="money_half"
-                    control={<Radio />}
-                    label="แบ่งเท่ากัน (ครึ่งต่อครึ่ง)"
-                  />
-                  <FormControlLabel
-                    value="money_ratio"
-                    control={<Radio />}
-                    label="ตามสัดส่วนการใช้งาน (ใช้มากจ่ายมากกว่า)"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <RadioCardGroup
+                title="คุณต้องการแบ่งค่าใช้จ่ายอย่างไร?"
+                options={[
+                  { value: "money_half", label: "แบ่งเท่ากัน (ครึ่งต่อครึ่ง)" },
+                  {
+                    value: "money_ratio",
+                    label: "ตามสัดส่วนการใช้งาน (ใช้มากจ่ายมากกว่า)",
+                  },
+                ]}
+                value={traits.expense}
+                onChange={(value) =>
+                  handleTraitsChange("expense")({ target: { value } })
+                }
+              />
 
-              {/* Pets */}
-              <FormControl component="fieldset" required>
-                <FormLabel>คุณเลี้ยงสัตว์หรือไม่?</FormLabel>
-                <RadioGroup
-                  value={traits.pet || ""}
-                  onChange={handleTraitsChange("pet")}
-                >
-                  <FormControlLabel
-                    value="pet_dont_have"
-                    control={<Radio />}
-                    label="ไม่เลี้ยง"
-                  />
-                  <FormControlLabel
-                    value="pet_have"
-                    control={<Radio />}
-                    label="เลี้ยง"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <RadioCardGroup
+                title="คุณเลี้ยงสัตว์หรือไม่?"
+                options={[
+                  { value: "pet_dont_have", label: "ไม่เลี้ยง" },
+                  { value: "pet_have", label: "เลี้ยง" },
+                ]}
+                value={traits.pet}
+                onChange={(value) =>
+                  handleTraitsChange("pet")({ target: { value } })
+                }
+              />
 
-              {/* Cooking */}
-              <FormControl component="fieldset" required>
-                <FormLabel>
-                  คุณยอมรับได้หรือไม่หากรูมเมททำอาหารมีกลิ่นแรง?
-                </FormLabel>
-                <RadioGroup
-                  value={traits.cook || ""}
-                  onChange={handleTraitsChange("cook")}
-                >
-                  <FormControlLabel
-                    value="cook_ok"
-                    control={<Radio />}
-                    label="ยอมรับได้"
-                  />
-                  <FormControlLabel
-                    value="cook_tell_first"
-                    control={<Radio />}
-                    label="ได้ถ้าบอกล่วงหน้า"
-                  />
-                  <FormControlLabel
-                    value="cook_no"
-                    control={<Radio />}
-                    label="ไม่ยอมรับ"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <RadioCardGroup
+                title="คุณยอมรับได้หรือไม่หากรูมเมททำอาหารมีกลิ่นแรง?"
+                options={[
+                  { value: "cook_ok", label: "ยอมรับได้" },
+                  { value: "cook_tell_first", label: "ได้ถ้าบอกล่วงหน้า" },
+                  { value: "cook_no", label: "ไม่ยอมรับ" },
+                ]}
+                value={traits.cook}
+                onChange={(value) =>
+                  handleTraitsChange("cook")({ target: { value } })
+                }
+              />
 
-              {/* Noise Level */}
-              <FormControl component="fieldset" required>
-                <FormLabel>คุณใช้เสียงดังแค่ไหน?</FormLabel>
-                <RadioGroup
-                  value={traits.loud || ""}
-                  onChange={handleTraitsChange("loud")}
-                >
-                  <FormControlLabel
-                    value="loud_low"
-                    control={<Radio />}
-                    label="ไม่มาก"
-                  />
-                  <FormControlLabel
-                    value="loud_medium"
-                    control={<Radio />}
-                    label="ปานกลาง"
-                  />
-                  <FormControlLabel
-                    value="loud_high"
-                    control={<Radio />}
-                    label="มาก"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <RadioCardGroup
+                title="คุณใช้เสียงดังแค่ไหน?"
+                options={[
+                  { value: "loud_low", label: "ไม่มาก" },
+                  { value: "loud_medium", label: "ปานกลาง" },
+                  { value: "loud_high", label: "มาก" },
+                ]}
+                value={traits.loud}
+                onChange={(value) =>
+                  handleTraitsChange("loud")({ target: { value } })
+                }
+              />
 
-              {/* Friends Visiting */}
-              <FormControl component="fieldset" required>
-                <FormLabel>คุณโอเคกับการที่รูมเมทพาเพื่อนมาหรือไม่?</FormLabel>
-                <RadioGroup
-                  value={traits.friend || ""}
-                  onChange={handleTraitsChange("friend")}
-                >
-                  <FormControlLabel
-                    value="friend_ok"
-                    control={<Radio />}
-                    label="โอเค"
-                  />
-                  <FormControlLabel
-                    value="friend_tell_first"
-                    control={<Radio />}
-                    label="ได้แต่ต้องบอกล่วงหน้า"
-                  />
-                  <FormControlLabel
-                    value="friend_no"
-                    control={<Radio />}
-                    label="ไม่โอเค"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <RadioCardGroup
+                title="คุณโอเคกับการที่รูมเมทพาเพื่อนมาหรือไม่?"
+                options={[
+                  { value: "friend_ok", label: "โอเค" },
+                  {
+                    value: "friend_tell_first",
+                    label: "ได้แต่ต้องบอกล่วงหน้า",
+                  },
+                  { value: "friend_no", label: "ไม่โอเค" },
+                ]}
+                value={traits.friend}
+                onChange={(value) =>
+                  handleTraitsChange("friend")({ target: { value } })
+                }
+              />
 
-              {/* Religious Differences */}
-              <FormControl component="fieldset" required>
-                <FormLabel>
-                  คุณสะดวกใจกับรูมเมทที่มีความเชื่อทางศาสนาแตกต่างจากคุณหรือไม่?
-                </FormLabel>
-                <RadioGroup
-                  value={traits.religion || ""}
-                  onChange={handleTraitsChange("religion")}
-                >
-                  <FormControlLabel
-                    value="religion_ok"
-                    control={<Radio />}
-                    label="สะดวก"
-                  />
-                  <FormControlLabel
-                    value="religion_no_affect"
-                    control={<Radio />}
-                    label="ได้ถ้าไม่กระทบกัน"
-                  />
-                  <FormControlLabel
-                    value="religion_no"
-                    control={<Radio />}
-                    label="ไม่สะดวก"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <RadioCardGroup
+                title="คุณสะดวกใจกับรูมเมทที่มีความเชื่อทางศาสนาแตกต่างจากคุณหรือไม่?"
+                options={[
+                  { value: "religion_ok", label: "สะดวก" },
+                  { value: "religion_no_affect", label: "ได้ถ้าไม่กระทบกัน" },
+                  { value: "religion_no", label: "ไม่สะดวก" },
+                ]}
+                value={traits.religion}
+                onChange={(value) =>
+                  handleTraitsChange("religion")({ target: { value } })
+                }
+              />
 
-              {/* Long-term Roommate */}
-              <FormControl component="fieldset" required>
-                <FormLabel>
-                  คุณต้องการรูมเมทที่อยู่ร่วมกันระยะยาวหรือไม่?
-                </FormLabel>
-                <RadioGroup
-                  value={traits.period || ""}
-                  onChange={handleTraitsChange("period")}
-                >
-                  <FormControlLabel
-                    value="period_long"
-                    control={<Radio />}
-                    label="ต้องการ"
-                  />
-                  <FormControlLabel
-                    value="period_sometime"
-                    control={<Radio />}
-                    label="ขึ้นอยู่กับสถานการณ์"
-                  />
-                  <FormControlLabel
-                    value="period_no_need"
-                    control={<Radio />}
-                    label="ไม่จำเป็น"
-                  />
-                </RadioGroup>
-              </FormControl>
+              <RadioCardGroup
+                title="คุณต้องการรูมเมทที่อยู่ร่วมกันระยะยาวหรือไม่?"
+                options={[
+                  { value: "period_long", label: "ต้องการ" },
+                  { value: "period_sometime", label: "ขึ้นอยู่กับสถานการณ์" },
+                  { value: "period_no_need", label: "ไม่จำเป็น" },
+                ]}
+                value={traits.period}
+                onChange={(value) =>
+                  handleTraitsChange("period")({ target: { value } })
+                }
+              />
             </Stack>
           )}
 
