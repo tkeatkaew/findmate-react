@@ -135,19 +135,28 @@ const DonationMethod = ({ title, details, icon: Icon, image }) => (
       height: "100%",
     }}
   >
-    <Stack spacing={2}>
+    <Stack spacing={2} alignItems="center">
       {image ? (
         <Box
-          component="img"
-          src={image}
-          alt={title}
           sx={{
-            width: 200,
-            height: 200,
-            margin: "0 auto",
-            borderRadius: "12px",
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
           }}
-        />
+        >
+          <Box
+            component="img"
+            src={image}
+            alt={title}
+            sx={{
+              maxWidth: "300px",
+              width: "100%",
+              height: "auto",
+              borderRadius: "12px",
+            }}
+          />
+        </Box>
       ) : (
         <Box
           sx={{
