@@ -758,14 +758,14 @@ const PersonalInfo = () => {
 
       setAlert({
         open: true,
-        message: "Profile picture uploaded successfully",
+        message: "อัปโหลดรูปสำเร็จ",
         severity: "success",
       });
     } catch (error) {
       console.error("Error handling file upload:", error);
       setAlert({
         open: true,
-        message: "Error uploading profile picture",
+        message: "อัปโหลดรูปไม่สำเร็จ",
         severity: "error",
       });
       setPreviewUrl("");
@@ -820,7 +820,7 @@ const PersonalInfo = () => {
 
       setAlert({
         open: true,
-        message: "Personal information saved successfully!",
+        message: "บันทึกข้อมูลสำเร็จ",
         severity: "success",
       });
 
@@ -832,7 +832,7 @@ const PersonalInfo = () => {
       console.error("Error updating profile:", err);
       setAlert({
         open: true,
-        message: "Error updating personal information",
+        message: "บันทึกข้อมูลไม่สำเร็จ",
         severity: "error",
       });
     }
@@ -1079,7 +1079,7 @@ const PersonalInfo = () => {
               />
               <Snackbar
                 open={alert.open}
-                autoHideDuration={6000}
+                autoHideDuration={1000}
                 onClose={() => setAlert((prev) => ({ ...prev, open: false }))}
               >
                 <Alert
