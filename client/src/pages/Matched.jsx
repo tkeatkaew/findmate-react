@@ -375,6 +375,58 @@ const Matched = () => {
   if (isLoading) {
     return (
       <AppTheme>
+        {/* Sidebar */}
+        <Box
+          sx={{
+            width: isMobile ? "auto" : "200px",
+            padding: "0.5rem",
+            border: "1px solid #eee",
+            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
+            borderRadius: "20px",
+            margin: "10px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+        >
+          <Stack direction="column" spacing={2}>
+            {menuItems.map((item) => (
+              <Button
+                key={item.text}
+                component={Link}
+                to={item.path}
+                startIcon={!isMobile && item.icon}
+                sx={{
+                  textTransform: "none",
+                  color: "black",
+                  justifyContent: isMobile ? "center" : "flex-start",
+                  minWidth: isMobile ? "48px" : "auto",
+                  p: isMobile ? "8px" : "8px 16px",
+                }}
+              >
+                {isMobile ? item.icon : item.text}
+              </Button>
+            ))}
+            <Divider sx={{ my: 1 }} />
+            {footerItems.map((item) => (
+              <Button
+                key={item.text}
+                onClick={item.onClick}
+                startIcon={!isMobile && item.icon}
+                color={item.color || "primary"}
+                sx={{
+                  textTransform: "none",
+                  color: item.color === "error" ? "error.main" : "black",
+                  justifyContent: isMobile ? "center" : "flex-start",
+                  minWidth: isMobile ? "48px" : "auto",
+                  p: isMobile ? "8px" : "8px 16px",
+                }}
+              >
+                {isMobile ? item.icon : item.text}
+              </Button>
+            ))}
+          </Stack>
+        </Box>
         <Box
           sx={{
             display: "flex",
@@ -540,15 +592,15 @@ const Matched = () => {
           <Box
             sx={{
               position: "absolute",
-              top: "50%",
-              left: "50%",
+              top: "47%",
+              left: "46%",
               transform: "translate(-50%, -50%)",
-              width: { xs: "85%", sm: "80%", md: "65%" },
+              width: { xs: "80%", sm: "80%", md: "65%" },
               minWidth: { xs: "auto", sm: "500px" },
-              maxHeight: "70vh",
+              maxHeight: "75vh",
               overflow: "auto",
               backgroundColor: "white",
-              padding: { xs: "1.5rem", sm: "2.5rem" },
+              padding: { xs: "1rem", sm: "2.5rem" },
               boxShadow: 24,
               borderRadius: "20px",
               margin: { xs: "1rem", sm: "2rem" },
