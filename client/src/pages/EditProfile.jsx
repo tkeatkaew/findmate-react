@@ -214,11 +214,38 @@ const EditProfile = () => {
     }));
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
     if (file) {
-      setProfilePicture(file);
-      setPreviewUrl(URL.createObjectURL(file));
+      try {
+        // Show loading state
+        setIsUploading(true);
+
+        // Upload to Cloudinary
+        const cloudinaryUrl = await uploadToCloudinary(file);
+
+        // Update profile picture state with Cloudinary URL
+        setProfilePicture(cloudinaryUrl);
+        setPreviewUrl(cloudinaryUrl);
+
+        // If this is being used in a profile update
+        if (user?.id) {
+          await axios.post("/update-profile-picture", {
+            user_id: user.id,
+            profile_picture: cloudinaryUrl,
+          });
+        }
+      } catch (error) {
+        console.error("Error handling file upload:", error);
+        // Show error message to user
+        setAlert({
+          open: true,
+          message: "Error uploading profile picture",
+          severity: "error",
+        });
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 

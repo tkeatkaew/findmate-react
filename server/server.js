@@ -720,7 +720,7 @@ app.post("/like", async (req, res) => {
           const mailOptions = {
             from: '"Find Mate" <findmate.official@gmail.com>',
             to: user.email,
-            subject: "Find Mate - You have a new match!",
+            subject: "You have a new match!",
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
                 <h2 style="color: #27272a; text-align: center;">Congratulations! You have a new match on Find Mate!</h2>
@@ -1467,5 +1467,24 @@ app.get("/statistics", async (req, res) => {
   } catch (error) {
     console.error("Error fetching statistics:", error);
     res.status(500).json({ error: "Error fetching statistics" });
+  }
+});
+
+app.post("/update-profile-picture", async (req, res) => {
+  const { user_id, profile_picture } = req.body;
+
+  try {
+    await db.query("UPDATE users SET profile_picture = ? WHERE id = ?", [
+      profile_picture,
+      user_id,
+    ]);
+
+    res.status(200).json({
+      message: "Profile picture updated successfully",
+      profilePictureUrl: profile_picture,
+    });
+  } catch (error) {
+    console.error("Error updating profile picture:", error);
+    res.status(500).json({ error: "Failed to update profile picture" });
   }
 });
