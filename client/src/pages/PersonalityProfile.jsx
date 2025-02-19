@@ -10,6 +10,7 @@ import {
   Paper,
   Container,
   CssBaseline,
+  Alert,
 } from "@mui/material";
 import { CheckCircle } from "lucide-react";
 
@@ -29,7 +30,6 @@ const RadioCard = ({ option, selected, onSelect }) => (
       position: "relative",
       "&:hover": {
         borderColor: "primary.main",
-
         boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
       },
     }}
@@ -82,16 +82,48 @@ const RadioCardGroup = ({
 
 const PersonalityProfile = () => {
   const [traits, setTraits] = useState({});
+  const [showError, setShowError] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user_id } = location.state || {};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Check if all questions are answered
+    const requiredTraits = [
+      "type",
+      "sleep",
+      "wake",
+      "clean",
+      "air_conditioner",
+      "drink",
+      "smoke",
+      "money",
+      "expense",
+      "pet",
+      "cook",
+      "loud",
+      "friend",
+      "religion",
+      "period",
+    ];
+
+    const unansweredQuestions = requiredTraits.filter(
+      (trait) => !traits[trait]
+    );
+
+    if (unansweredQuestions.length > 0) {
+      setShowError(true);
+      // Scroll to top where error message is shown
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    setShowError(false);
+
     try {
       await axios.post("/personalitytraits", { user_id, ...traits });
-
-      // No need to removeItem or clear localStorage
       navigate("/discovery");
     } catch (err) {
       alert("Error saving traits");
@@ -100,6 +132,7 @@ const PersonalityProfile = () => {
 
   const handleChange = (trait) => (value) => {
     setTraits({ ...traits, [trait]: value });
+    if (showError) setShowError(false);
   };
 
   const personalityTypes = [
@@ -211,6 +244,12 @@ const PersonalityProfile = () => {
           >
             ลักษณะนิสัย
           </Typography>
+
+          {showError && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              กรุณาตอบคำถามให้ครบทุกข้อ
+            </Alert>
+          )}
 
           <Paper
             elevation={0}
