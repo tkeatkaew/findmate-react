@@ -724,6 +724,8 @@ const PersonalInfo = () => {
   const [contactError, setContactError] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
   const { user_id, email } = location.state || {};
@@ -787,6 +789,8 @@ const PersonalInfo = () => {
     setContactError(false);
 
     try {
+      setIsSubmitting(true);
+
       // First update profile picture if we have one
       if (profilePicture) {
         await axios.post("/update-profile-picture", {
@@ -835,6 +839,8 @@ const PersonalInfo = () => {
         message: "บันทึกข้อมูลไม่สำเร็จ",
         severity: "error",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1095,9 +1101,27 @@ const PersonalInfo = () => {
                 type="submit"
                 variant="contained"
                 fullWidth
-                sx={{ textTransform: "none" }}
+                disabled={isSubmitting}
+                sx={{
+                  textTransform: "none",
+                  position: "relative",
+                }}
               >
-                บันทึก
+                {isSubmitting ? (
+                  <>
+                    <CircularProgress
+                      size={24}
+                      sx={{
+                        position: "absolute",
+                        left: "50%",
+                        marginLeft: "-12px",
+                      }}
+                    />
+                    <span style={{ opacity: 0 }}>บันทึก</span>
+                  </>
+                ) : (
+                  "บันทึก"
+                )}
               </Button>
             </Stack>
           </form>

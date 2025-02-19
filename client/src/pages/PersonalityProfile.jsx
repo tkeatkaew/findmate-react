@@ -87,6 +87,8 @@ const PersonalityProfile = () => {
   const location = useLocation();
   const { user_id } = location.state || {};
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -115,7 +117,6 @@ const PersonalityProfile = () => {
 
     if (unansweredQuestions.length > 0) {
       setShowError(true);
-      // Scroll to top where error message is shown
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
@@ -123,10 +124,13 @@ const PersonalityProfile = () => {
     setShowError(false);
 
     try {
+      setIsSubmitting(true);
       await axios.post("/personalitytraits", { user_id, ...traits });
       navigate("/discovery");
     } catch (err) {
-      alert("Error saving traits");
+      alert("บันทึกข้อมูลไม่สำเร็จ");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -381,9 +385,27 @@ const PersonalityProfile = () => {
                   <Button
                     type="submit"
                     variant="contained"
-                    sx={{ textTransform: "none" }}
+                    disabled={isSubmitting}
+                    sx={{
+                      textTransform: "none",
+                      position: "relative",
+                    }}
                   >
-                    บันทึก
+                    {isSubmitting ? (
+                      <>
+                        <CircularProgress
+                          size={24}
+                          sx={{
+                            position: "absolute",
+                            left: "50%",
+                            marginLeft: "-12px",
+                          }}
+                        />
+                        <span style={{ opacity: 0 }}>บันทึก</span>
+                      </>
+                    ) : (
+                      "บันทึก"
+                    )}
                   </Button>
                 </Box>
               </Stack>
