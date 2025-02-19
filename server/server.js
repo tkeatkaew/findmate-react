@@ -1596,3 +1596,21 @@ app.get("/admin/users/:userId", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+app.delete("/admin/users/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    await new Promise((resolve, reject) => {
+      db.query("DELETE FROM users WHERE id = ?", [userId], (err, result) => {
+        if (err) reject(err);
+        resolve(result);
+      });
+    });
+
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ error: "Error deleting user" });
+  }
+});
