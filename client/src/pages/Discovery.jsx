@@ -1442,7 +1442,7 @@ const Discovery = () => {
                               variant="h6"
                               sx={{
                                 mb: 1,
-                                maxWidth: "200px",
+                                maxWidth: "180px",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
                                 whiteSpace: "nowrap",
