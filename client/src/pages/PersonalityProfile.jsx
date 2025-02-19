@@ -13,6 +13,7 @@ import {
   Alert,
 } from "@mui/material";
 import { CheckCircle } from "lucide-react";
+import CircularProgress from "@mui/material/CircularProgress";
 
 // Radio Card component for selection options
 const RadioCard = ({ option, selected, onSelect }) => (
