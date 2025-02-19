@@ -98,9 +98,27 @@ const Login = () => {
                 type="submit"
                 variant="contained"
                 fullWidth
-                sx={{ textTransform: "none" }}
+                disabled={isLoading} // Disable button while loading
+                sx={{
+                  textTransform: "none",
+                  position: "relative", // Added for loading indicator positioning
+                  minHeight: "36px", // Added to maintain consistent height
+                }}
               >
-                เข้าสู่ระบบ
+                {isLoading ? (
+                  <CircularProgress
+                    size={24}
+                    sx={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      marginTop: "-12px",
+                      marginLeft: "-12px",
+                    }}
+                  />
+                ) : (
+                  "เข้าสู่ระบบ"
+                )}
               </Button>
               <Typography
                 component="div"
