@@ -1421,7 +1421,7 @@ const Discovery = () => {
                       <Box>
                         <Stack
                           direction="row"
-                          spacing={2}
+                          spacing={1}
                           alignItems="center"
                           sx={{ mb: 2 }}
                         >
@@ -1441,7 +1441,6 @@ const Discovery = () => {
                             <Typography
                               variant="h6"
                               sx={{
-                                mb: 1,
                                 maxWidth: "180px",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
