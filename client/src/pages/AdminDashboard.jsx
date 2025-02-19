@@ -33,6 +33,7 @@ import AppTheme from "../AppTheme";
 import axios from "../services/api";
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -53,19 +54,63 @@ const AdminDashboard = () => {
   const [selectedAction, setSelectedAction] = useState("");
   const [actionReason, setActionReason] = useState("");
 
-  const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
-
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user) {
-      navigate("/login");
-    } else if (user.role !== "admin") {
-      navigate("/discovery"); // Redirect non-admin users
-    } else {
-      fetchStats();
-      fetchReports();
-    }
+    let isSubscribed = true;
+
+    const initializeDashboard = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user) {
+          navigate("/login");
+          return;
+        }
+
+        if (user.role !== "admin") {
+          navigate("/discovery");
+          return;
+        }
+
+        if (isSubscribed) {
+          // Reset states
+          setStats({
+            totalUsers: 0,
+            totalMatches: 0,
+            totalReports: 0,
+          });
+          setUserReports([]);
+          setSystemReports([]);
+          setSuggestions([]);
+          setSelectedReport(null);
+          setAlert({
+            open: false,
+            message: "",
+            severity: "success",
+          });
+          setReportDialog(false);
+          setActionDialogOpen(false);
+          setSelectedAction("");
+          setActionReason("");
+
+          // Fetch data
+          await Promise.all([fetchStats(), fetchReports()]);
+        }
+      } catch (error) {
+        console.error("Dashboard initialization error:", error);
+        if (isSubscribed) {
+          setAlert({
+            open: true,
+            message: "เกิดข้อผิดพลาดในการโหลดข้อมูล",
+            severity: "error",
+          });
+        }
+      }
+    };
+
+    initializeDashboard();
+
+    return () => {
+      isSubscribed = false;
+    };
   }, [navigate]);
 
   const fetchStats = async () => {
@@ -74,6 +119,7 @@ const AdminDashboard = () => {
       setStats(response.data);
     } catch (error) {
       console.error("Error fetching stats:", error);
+      throw error;
     }
   };
 
@@ -90,6 +136,7 @@ const AdminDashboard = () => {
       setSuggestions(suggestionsRes.data);
     } catch (error) {
       console.error("Error fetching reports:", error);
+      throw error;
     }
   };
 
@@ -142,7 +189,6 @@ const AdminDashboard = () => {
         severity: "success",
       });
 
-      // Refresh the reports list
       fetchReports();
       setActionDialogOpen(false);
       setActionReason("");
@@ -182,6 +228,7 @@ const AdminDashboard = () => {
           minHeight: "90vh",
           position: "relative",
           zIndex: 0,
+          overflow: "hidden",
         }}
       >
         {/* Main Content */}
@@ -191,6 +238,7 @@ const AdminDashboard = () => {
             padding: "1rem",
             position: "relative",
             zIndex: 1,
+            overflow: "auto",
           }}
         >
           <Typography variant="h4" gutterBottom>
@@ -465,6 +513,8 @@ const AdminDashboard = () => {
           {alert.message}
         </Alert>
       </Snackbar>
+
+      {/* Action Dialog */}
       <Dialog
         open={actionDialogOpen}
         onClose={() => setActionDialogOpen(false)}
