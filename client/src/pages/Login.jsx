@@ -11,6 +11,7 @@ import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 import SvgIcon from "@mui/material/SvgIcon";
 import Divider from "@mui/material/Divider";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import AppTheme from "../AppTheme";
 
@@ -19,6 +20,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -29,13 +31,17 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true); // Set loading to true when submission starts
+    setError(""); // Clear any existing errors
+
     try {
       const { data } = await axios.post("/login", { email, password });
       localStorage.setItem("user", JSON.stringify(data.user));
-      console.log(data.user);
       navigate("/discovery");
     } catch (err) {
       setError("อีเมลหรือรหัสผ่านไม่ถูกต้องหรือบัญชีถูกระงับ");
+    } finally {
+      setIsLoading(true); // Set loading to false when submission completes
     }
   };
 
