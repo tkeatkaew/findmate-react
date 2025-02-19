@@ -53,6 +53,22 @@ const AdminDashboard = () => {
   const [selectedAction, setSelectedAction] = useState("");
   const [actionReason, setActionReason] = useState("");
 
+  const [users, setUsers] = useState([]);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get("/admin/users");
+      setUsers(response.data.filter((user) => user.role !== "admin"));
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setAlert({
+        open: true,
+        message: "เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้",
+        severity: "error",
+      });
+    }
+  };
+
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -65,6 +81,7 @@ const AdminDashboard = () => {
     } else {
       fetchStats();
       fetchReports();
+      fetchUsers();
     }
   }, [navigate]);
 
@@ -123,31 +140,29 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleUserAction = async (action) => {
+  const handleUserAction = async () => {
     try {
-      if (!selectedReport) return;
-
-      await axios.post(
-        `/admin/user-action/${selectedReport.reported_user_id}`,
-        {
-          action,
+      if (selectedAction === "delete") {
+        await axios.delete(`/admin/users/${selectedUser.id}`);
+      } else {
+        await axios.post(`/admin/user-action/${selectedUser.id}`, {
+          action: selectedAction,
           reason: actionReason,
-          report_id: selectedReport.id,
-        }
-      );
+        });
+      }
 
       setAlert({
         open: true,
-        message: "การดำเนินการเสร็จสิ้น",
+        message: "ดำเนินการสำเร็จ",
         severity: "success",
       });
 
-      // Refresh the reports list
-      fetchReports();
+      fetchUsers();
       setActionDialogOpen(false);
       setActionReason("");
       setSelectedAction("");
     } catch (error) {
+      console.error("Error:", error);
       setAlert({
         open: true,
         message: "เกิดข้อผิดพลาดในการดำเนินการ",
@@ -224,6 +239,7 @@ const AdminDashboard = () => {
               <Tab label="รายงานผู้ใช้" />
               <Tab label="รายงานระบบ" />
               <Tab label="ข้อเสนอแนะ" />
+              <Tab label="จัดการผู้ใช้" />
             </Tabs>
 
             <Box sx={{ p: 3 }}>
@@ -387,6 +403,78 @@ const AdminDashboard = () => {
                   </Table>
                 </TableContainer>
               )}
+
+              {activeTab === 4 && (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>ชื่อผู้ใช้</TableCell>
+                        <TableCell>อีเมล</TableCell>
+                        <TableCell>สถานะ</TableCell>
+                        <TableCell>มหาวิทยาลัย</TableCell>
+                        <TableCell>การดำเนินการ</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {users.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell>{user.name}</TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>
+                            {user.is_suspended ? (
+                              <Chip
+                                label="ถูกระงับการใช้งาน"
+                                color="error"
+                                size="small"
+                              />
+                            ) : (
+                              <Chip
+                                label="ใช้งานปกติ"
+                                color="success"
+                                size="small"
+                              />
+                            )}
+                          </TableCell>
+                          <TableCell>{user.universities}</TableCell>
+                          <TableCell>
+                            <Stack direction="row" spacing={1}>
+                              <Button
+                                variant="contained"
+                                size="small"
+                                color={user.is_suspended ? "primary" : "error"}
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setSelectedAction(
+                                    user.is_suspended ? "unsuspend" : "suspend"
+                                  );
+                                  setActionDialogOpen(true);
+                                }}
+                              >
+                                {user.is_suspended
+                                  ? "ยกเลิกระงับ"
+                                  : "ระงับการใช้งาน"}
+                              </Button>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                color="error"
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setSelectedAction("delete");
+                                  setActionDialogOpen(true);
+                                }}
+                              >
+                                ลบบัญชี
+                              </Button>
+                            </Stack>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
             </Box>
           </Paper>
         </Box>
@@ -452,7 +540,7 @@ const AdminDashboard = () => {
         </Alert>
       </Snackbar>
       <Dialog
-        open={actionDialogOpen}
+        open={actionDialogOpen && selectedAction !== "delete"}
         onClose={() => setActionDialogOpen(false)}
         maxWidth="sm"
         fullWidth
@@ -463,27 +551,46 @@ const AdminDashboard = () => {
             : "ยกเลิกการระงับการใช้งานบัญชี"}
         </DialogTitle>
         <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              multiline
-              rows={4}
-              label="เหตุผล"
-              value={actionReason}
-              onChange={(e) => setActionReason(e.target.value)}
-              fullWidth
-              required
-            />
-          </Stack>
+          <TextField
+            multiline
+            rows={4}
+            label="เหตุผล"
+            value={actionReason}
+            onChange={(e) => setActionReason(e.target.value)}
+            fullWidth
+            required
+            sx={{ mt: 2 }}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setActionDialogOpen(false)}>ยกเลิก</Button>
           <Button
-            onClick={() => handleUserAction(selectedAction)}
+            onClick={handleUserAction}
             variant="contained"
             color={selectedAction === "suspend" ? "error" : "primary"}
             disabled={!actionReason}
           >
             ยืนยัน
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={actionDialogOpen && selectedAction === "delete"}
+        onClose={() => setActionDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>ยืนยันการลบบัญชี</DialogTitle>
+        <DialogContent>
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            การดำเนินการนี้ไม่สามารถเรียกคืนได้ และข้อมูลทั้งหมดจะถูกลบถาวร
+          </Alert>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setActionDialogOpen(false)}>ยกเลิก</Button>
+          <Button onClick={handleUserAction} variant="contained" color="error">
+            ยืนยันการลบ
           </Button>
         </DialogActions>
       </Dialog>

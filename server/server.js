@@ -1502,3 +1502,122 @@ app.post("/update-profile-picture", async (req, res) => {
     });
   }
 });
+
+app.get("/admin/users", async (req, res) => {
+  try {
+    const query = `
+      SELECT u.*, GROUP_CONCAT(pi.university) as universities
+      FROM users u 
+      LEFT JOIN personality_infomation pi ON u.id = pi.user_id
+      WHERE u.role = 'user'
+      GROUP BY u.id
+      ORDER BY u.id DESC
+    `;
+
+    db.query(query, (err, results) => {
+      if (err) {
+        console.error("Error fetching users:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
+      res.json(results);
+    });
+  } catch (error) {
+    console.error("Error in /admin/users:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.post("/admin/user-action/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const { action, reason } = req.body;
+
+  try {
+    if (action === "suspend") {
+      await new Promise((resolve, reject) => {
+        db.query(
+          "UPDATE users SET is_suspended = 1, suspension_reason = ? WHERE id = ?",
+          [reason, userId],
+          (err) => {
+            if (err) reject(err);
+            resolve();
+          }
+        );
+      });
+    } else if (action === "unsuspend") {
+      await new Promise((resolve, reject) => {
+        db.query(
+          "UPDATE users SET is_suspended = 0, suspension_reason = NULL WHERE id = ?",
+          [userId],
+          (err) => {
+            if (err) reject(err);
+            resolve();
+          }
+        );
+      });
+    }
+
+    res.json({ message: "User action completed successfully" });
+  } catch (error) {
+    console.error("Error performing user action:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Add delete user route
+app.delete("/admin/users/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    // Start transaction
+    await new Promise((resolve, reject) => {
+      db.beginTransaction((err) => {
+        if (err) reject(err);
+        resolve();
+      });
+    });
+
+    // Delete all related data
+    const tables = [
+      "personality_traits",
+      "personality_infomation",
+      "likes",
+      "matches",
+      "reports",
+      "suggestions",
+    ];
+
+    for (const table of tables) {
+      await new Promise((resolve, reject) => {
+        db.query(`DELETE FROM ${table} WHERE user_id = ?`, [userId], (err) => {
+          if (err) reject(err);
+          resolve();
+        });
+      });
+    }
+
+    // Finally delete the user
+    await new Promise((resolve, reject) => {
+      db.query("DELETE FROM users WHERE id = ?", [userId], (err) => {
+        if (err) reject(err);
+        resolve();
+      });
+    });
+
+    // Commit transaction
+    await new Promise((resolve, reject) => {
+      db.commit((err) => {
+        if (err) reject(err);
+        resolve();
+      });
+    });
+
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    // Rollback on error
+    await new Promise((resolve) => {
+      db.rollback(() => resolve());
+    });
+    console.error("Error deleting user:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
