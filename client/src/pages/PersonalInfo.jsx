@@ -907,7 +907,6 @@ const PersonalInfo = () => {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  mb: 3,
                 }}
               >
                 <Box
