@@ -28,6 +28,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Chip from "@mui/material/Chip";
+import Grid from "@mui/material/Grid";
 
 import AppTheme from "../AppTheme";
 import axios from "../services/api";
@@ -111,12 +112,37 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchUserDetails = async (userId) => {
+    try {
+      const [userInfo, traits] = await Promise.all([
+        axios.get(`/personalinfo/${userId}`),
+        axios.get(`/personalitytraits/${userId}`),
+      ]);
+      return {
+        info: userInfo.data,
+        traits: traits.data,
+      };
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      return null;
+    }
+  };
+
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
 
-  const handleViewReport = (report) => {
+  const handleViewReport = async (report) => {
     setSelectedReport(report);
+    if (report.reported_user_id) {
+      const userDetails = await fetchUserDetails(report.reported_user_id);
+      if (userDetails) {
+        setSelectedReport((prev) => ({
+          ...prev,
+          userDetails,
+        }));
+      }
+    }
     setReportDialog(true);
   };
 
@@ -496,27 +522,119 @@ const AdminDashboard = () => {
       </Box>
 
       {/* Report Detail Dialog */}
+      {/* Report Detail Dialog */}
       <Dialog
         open={reportDialog}
         onClose={() => setReportDialog(false)}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
       >
         <DialogTitle>รายละเอียดรายงาน</DialogTitle>
         <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <Typography>
-              <strong>ประเภท:</strong> {selectedReport?.type}
-            </Typography>
-            <Typography>
-              <strong>คำอธิบาย:</strong> {selectedReport?.description}
-            </Typography>
-            {selectedReport?.image && (
-              <img
-                src={selectedReport.image}
-                alt="Report"
-                style={{ width: "100%", borderRadius: "4px" }}
-              />
+          <Stack spacing={3} sx={{ mt: 1 }}>
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                ข้อมูลการรายงาน
+              </Typography>
+              <Stack spacing={2}>
+                <Typography>
+                  <strong>ประเภท:</strong> {selectedReport?.type}
+                </Typography>
+                <Typography>
+                  <strong>คำอธิบาย:</strong> {selectedReport?.description}
+                </Typography>
+                {selectedReport?.image && (
+                  <img
+                    src={selectedReport.image}
+                    alt="Report"
+                    style={{ width: "100%", borderRadius: "4px" }}
+                  />
+                )}
+              </Stack>
+            </Box>
+
+            {selectedReport?.userDetails && (
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  ข้อมูลผู้ถูกรายงาน
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <Card>
+                      <CardContent>
+                        <Stack spacing={2}>
+                          <Typography>
+                            <strong>ชื่อ:</strong>{" "}
+                            {selectedReport.userDetails.info.firstname}{" "}
+                            {selectedReport.userDetails.info.lastname}
+                          </Typography>
+                          <Typography>
+                            <strong>ชื่อเล่น:</strong>{" "}
+                            {selectedReport.userDetails.info.nickname}
+                          </Typography>
+                          <Typography>
+                            <strong>อายุ:</strong>{" "}
+                            {selectedReport.userDetails.info.age}
+                          </Typography>
+                          <Typography>
+                            <strong>เพศ:</strong>{" "}
+                            {selectedReport.userDetails.info.gender === "male"
+                              ? "ชาย"
+                              : "หญิง"}
+                          </Typography>
+                          <Typography>
+                            <strong>มหาวิทยาลัย:</strong>{" "}
+                            {selectedReport.userDetails.info.university}
+                          </Typography>
+                          <Typography>
+                            <strong>จังหวัด:</strong>{" "}
+                            {selectedReport.userDetails.info.province}
+                          </Typography>
+                        </Stack>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Card>
+                      <CardContent>
+                        <Stack spacing={2}>
+                          <Typography variant="subtitle1" gutterBottom>
+                            <strong>บุคลิกภาพ</strong>
+                          </Typography>
+                          <Typography>
+                            <strong>ประเภท:</strong>{" "}
+                            {selectedReport.userDetails.traits.type}
+                          </Typography>
+                          <Typography>
+                            <strong>การนอน:</strong>{" "}
+                            {selectedReport.userDetails.traits.sleep}
+                          </Typography>
+                          <Typography>
+                            <strong>การตื่น:</strong>{" "}
+                            {selectedReport.userDetails.traits.wake}
+                          </Typography>
+                          <Typography>
+                            <strong>ความสะอาด:</strong>{" "}
+                            {selectedReport.userDetails.traits.clean}
+                          </Typography>
+                          <Typography>
+                            <strong>แอร์:</strong>{" "}
+                            {selectedReport.userDetails.traits.air_conditioner}
+                          </Typography>
+                          <Typography>
+                            <strong>เครื่องดื่มแอลกอฮอล์:</strong>{" "}
+                            {selectedReport.userDetails.traits.drink}
+                          </Typography>
+                          <Typography>
+                            <strong>การสูบบุหรี่:</strong>{" "}
+                            {selectedReport.userDetails.traits.smoke}
+                          </Typography>
+                        </Stack>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                </Grid>
+              </Box>
             )}
           </Stack>
         </DialogContent>
