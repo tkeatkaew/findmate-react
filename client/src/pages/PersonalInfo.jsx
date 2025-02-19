@@ -925,30 +925,6 @@ const PersonalInfo = () => {
                       height: "100%",
                     }}
                   />
-                  <IconButton
-                    color="primary"
-                    aria-label="upload picture"
-                    component="label"
-                    disabled={isUploading}
-                    sx={{
-                      position: "absolute",
-                      bottom: 0,
-                      right: 0,
-                      backgroundColor: "white",
-                      "&:hover": {
-                        backgroundColor: "rgba(255, 255, 255, 0.8)",
-                      },
-                    }}
-                  >
-                    <input
-                      hidden
-                      accept="image/*"
-                      type="file"
-                      onChange={handleFileChange}
-                      ref={fileInputRef}
-                    />
-                    <PhotoCamera />
-                  </IconButton>
                 </Box>
               </Box>
 
