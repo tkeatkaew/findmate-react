@@ -892,7 +892,7 @@ const PersonalInfo = () => {
           maxWidth: "600px",
           minWidth: "400px",
           margin: "auto",
-          marginTop: "10vh",
+          marginTop: "2rem",
           border: "1px solid #eee",
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
           borderRadius: "20px",
