@@ -732,6 +732,8 @@ const PersonalInfo = () => {
     "กรุณากรอกข้อมูลติดต่ออย่างน้อย 1 ช่องทาง"
   );
 
+  const [ageError, setAgeError] = useState("");
+
   const navigate = useNavigate();
   const location = useLocation();
   const { user_id, email } = location.state || {};
@@ -820,6 +822,12 @@ const PersonalInfo = () => {
     e.preventDefault();
     setFormSubmitted(true);
 
+    const ageValidationError = validateAge(age);
+    if (ageValidationError) {
+      setAgeError(ageValidationError);
+      return;
+    }
+
     if (!hasAnySocialContact()) {
       setContactError(true);
       setSocialContactHelperText("โปรดกรอกข้อมูลติดต่ออย่างน้อย 1 ช่องทาง");
@@ -881,6 +889,27 @@ const PersonalInfo = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const validateAge = (age) => {
+    const ageNum = parseInt(age);
+    if (isNaN(ageNum)) {
+      return "กรุณากรอกอายุเป็นตัวเลข";
+    }
+    if (ageNum < 15) {
+      return "อายุต้องมากกว่า 15 ปี";
+    }
+    if (ageNum > 80) {
+      return "กรุณาตรวจสอบอายุอีกครั้ง";
+    }
+    return "";
+  };
+
+  const handleAgeChange = (e) => {
+    const newAge = e.target.value;
+    setAge(newAge);
+    const error = validateAge(newAge);
+    setAgeError(error);
   };
 
   return (
@@ -1003,7 +1032,13 @@ const PersonalInfo = () => {
                 variant="outlined"
                 fullWidth
                 value={age}
-                onChange={(e) => setAge(e.target.value)}
+                onChange={handleAgeChange}
+                error={!!ageError}
+                helperText={ageError}
+                inputProps={{
+                  min: 15,
+                  max: 80,
+                }}
               />
               <FormControl fullWidth required>
                 <InputLabel>สถานะ</InputLabel>
