@@ -915,7 +915,6 @@ const PersonalInfo = () => {
                     position: "relative",
                     width: "150px",
                     height: "150px",
-                    mb: 2,
                   }}
                 >
                   <Avatar
