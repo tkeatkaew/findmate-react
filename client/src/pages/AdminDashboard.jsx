@@ -641,7 +641,8 @@ const AdminDashboard = () => {
                           </Typography>
                         </Stack>
                       </Box>
-                      <Stack spacing={2} sx={{ mt: 2 }}>
+                      <Divider sx={{ my: 2 }} />
+                      <Stack spacing={2}>
                         <Typography>
                           <strong>ชื่อ-นามสกุล:</strong>{" "}
                           {selectedReport.userDetails.info.firstname}{" "}
@@ -666,6 +667,62 @@ const AdminDashboard = () => {
                         <Typography>
                           <strong>จังหวัด:</strong>{" "}
                           {selectedReport.userDetails.info.province}
+                        </Typography>
+                        <Typography>
+                          <strong>สถานภาพ:</strong>{" "}
+                          {selectedReport.userDetails.info.maritalstatus}
+                        </Typography>
+                        <Typography>
+                          <strong>LGBT:</strong>{" "}
+                          {selectedReport.userDetails.info.lgbt
+                            ? "ใช่"
+                            : "ไม่ใช่"}
+                        </Typography>
+                        <Divider />
+                        <Typography variant="subtitle1">
+                          <strong>ข้อมูลการติดต่อ</strong>
+                        </Typography>
+                        <Typography>
+                          <strong>เบอร์โทร:</strong>{" "}
+                          {selectedReport.userDetails.info.phone || "-"}
+                        </Typography>
+                        <Typography>
+                          <strong>Facebook:</strong>{" "}
+                          {selectedReport.userDetails.info.facebook || "-"}
+                        </Typography>
+                        <Typography>
+                          <strong>Instagram:</strong>{" "}
+                          {selectedReport.userDetails.info.instagram || "-"}
+                        </Typography>
+                        <Typography>
+                          <strong>Line ID:</strong>{" "}
+                          {selectedReport.userDetails.info.line_id || "-"}
+                        </Typography>
+                        <Divider />
+                        <Typography variant="subtitle1">
+                          <strong>ข้อมูลที่พัก</strong>
+                        </Typography>
+                        <Typography>
+                          <strong>ชื่อหอพัก:</strong>{" "}
+                          {selectedReport.userDetails.info.dorm_name || "-"}
+                        </Typography>
+                        <Typography>
+                          <strong>ค่าหอพักต่อเดือน:</strong>{" "}
+                          {selectedReport.userDetails.info.monthly_dorm_fee
+                            ? `${selectedReport.userDetails.info.monthly_dorm_fee} บาท`
+                            : "-"}
+                        </Typography>
+                        <Typography>
+                          <strong>ยานพาหนะ:</strong>{" "}
+                          {selectedReport.userDetails.info.vehicle || "-"}
+                        </Typography>
+                        <Divider />
+                        <Typography>
+                          <strong>แนะนำตัว:</strong>
+                        </Typography>
+                        <Typography sx={{ whiteSpace: "pre-line" }}>
+                          {selectedReport.userDetails.info.self_introduction ||
+                            "-"}
                         </Typography>
                       </Stack>
                     </Stack>
@@ -706,7 +763,6 @@ const AdminDashboard = () => {
           <Button onClick={() => setReportDialog(false)}>ปิด</Button>
         </DialogActions>
       </Dialog>
-
       {/* Alert */}
       <Snackbar
         open={alert.open}
