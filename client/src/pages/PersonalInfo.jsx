@@ -887,7 +887,7 @@ const PersonalInfo = () => {
         severity: "error",
       });
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(true);
     }
   };
 

@@ -376,14 +376,6 @@ const PersonalityProfile = () => {
                   sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}
                 >
                   <Button
-                    type="button"
-                    variant="outlined"
-                    onClick={() => navigate(-1)}
-                    sx={{ textTransform: "none" }}
-                  >
-                    ย้อนกลับ
-                  </Button>
-                  <Button
                     type="submit"
                     variant="contained"
                     disabled={isSubmitting}
