@@ -19,6 +19,7 @@ import {
   useTheme,
   useMediaQuery,
 } from "@mui/material";
+import defaultAvatar from "../images/anonymous.jpg";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -113,7 +114,7 @@ const Navbar = () => {
     if (currentUser?.profile_picture) {
       return currentUser.profile_picture;
     }
-    return "/src/images/anonymous.jpg";
+    return defaultAvatar;
   };
 
   const drawer = (
