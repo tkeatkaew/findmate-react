@@ -1034,7 +1034,7 @@ const PersonalInfo = () => {
                 value={age}
                 onChange={handleAgeChange}
                 error={!!ageError}
-                //helperText={ageError}
+                helperText={ageError}
                 inputProps={{
                   min: 15,
                   max: 80,
