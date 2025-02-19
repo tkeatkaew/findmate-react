@@ -42,6 +42,8 @@ import defaultAvatar from "../images/anonymous.jpg";
 
 import AppTheme from "../AppTheme";
 
+import { checkProfileCompleteness } from "../utils/profileCheck";
+
 const Discovery = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -98,6 +100,8 @@ const Discovery = () => {
   const [systemReportType, setSystemReportType] = useState("");
   const [systemDescription, setSystemDescription] = useState("");
   const [isSuggestion, setIsSuggestion] = useState(false);
+
+  const [profileAlert, setProfileAlert] = useState(null);
 
   const [alert, setAlert] = useState({
     open: false,
@@ -903,23 +907,53 @@ const Discovery = () => {
     other: "อื่นๆ",
   };
 
-  // ----------------------------------------------------
-  // ONLY FETCH ONCE WHEN COMPONENT MOUNTS
-  // ----------------------------------------------------
   useEffect(() => {
-    // If not logged in, or if admin, redirect.
-    // Otherwise fetch the needed data only once.
     if (!user) {
       navigate("/login");
+      return;
     } else if (user.role === "admin") {
       navigate("/admin/dashboard");
-    } else {
-      fetchUsers();
-      fetchCurrentUserTraits();
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  // ----------------------------------------------------
+
+    const checkProfile = async () => {
+      try {
+        const [personalInfoResponse, traitsResponse] = await Promise.all([
+          axios.get(`/personalinfo/${user.id}`),
+          axios.get(`/personalitytraits/${user.id}`),
+        ]);
+
+        const profileStatus = checkProfileCompleteness(
+          personalInfoResponse.data,
+          traitsResponse.data
+        );
+
+        if (!profileStatus.isComplete) {
+          if (profileStatus.hasIncompleteInfo) {
+            setProfileAlert({
+              message: "กรุณากรอกข้อมูลส่วนตัวให้ครบถ้วน",
+              path: "/personalInfo",
+            });
+          } else if (profileStatus.hasIncompleteTraits) {
+            setProfileAlert({
+              message: "กรุณากรอกข้อมูลลักษณะนิสัยให้ครบถ้วน",
+              path: "/personalityprofile",
+            });
+          }
+          return;
+        }
+
+        // If profile is complete, proceed with fetching users
+        fetchUsers();
+        fetchCurrentUserTraits();
+      } catch (err) {
+        console.error("Error checking profile:", err);
+        showAlert("เกิดข้อผิดพลาดในการตรวจสอบข้อมูล", "error");
+      }
+    };
+
+    checkProfile();
+  }, [user, navigate]);
 
   const fetchCurrentUserTraits = async () => {
     try {
@@ -1164,6 +1198,34 @@ const Discovery = () => {
 
   return (
     <AppTheme>
+      <Box
+        sx={{
+          p: 4,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 2,
+        }}
+      >
+        <Alert
+          severity="warning"
+          sx={{
+            width: "100%",
+            maxWidth: 600,
+            mb: 2,
+          }}
+        >
+          {profileAlert.message}
+        </Alert>
+        <Button
+          variant="contained"
+          onClick={() =>
+            navigate(profileAlert.path, { state: { user_id: user.id } })
+          }
+        >
+          ไปกรอกข้อมูล
+        </Button>
+      </Box>
       <Box
         sx={{
           display: "flex",
