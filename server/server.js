@@ -1568,55 +1568,16 @@ app.delete("/admin/users/:userId", async (req, res) => {
   const { userId } = req.params;
 
   try {
-    // Start transaction
+    // Simply delete the user - CASCADE will handle related records
     await new Promise((resolve, reject) => {
-      db.beginTransaction((err) => {
+      db.query("DELETE FROM users WHERE id = ?", [userId], (err, result) => {
         if (err) reject(err);
-        resolve();
-      });
-    });
-
-    // Delete all related data
-    const tables = [
-      "personality_traits",
-      "personality_infomation",
-      "likes",
-      "matches",
-      "reports",
-      "suggestions",
-    ];
-
-    for (const table of tables) {
-      await new Promise((resolve, reject) => {
-        db.query(`DELETE FROM ${table} WHERE user_id = ?`, [userId], (err) => {
-          if (err) reject(err);
-          resolve();
-        });
-      });
-    }
-
-    // Finally delete the user
-    await new Promise((resolve, reject) => {
-      db.query("DELETE FROM users WHERE id = ?", [userId], (err) => {
-        if (err) reject(err);
-        resolve();
-      });
-    });
-
-    // Commit transaction
-    await new Promise((resolve, reject) => {
-      db.commit((err) => {
-        if (err) reject(err);
-        resolve();
+        resolve(result);
       });
     });
 
     res.json({ message: "User deleted successfully" });
   } catch (error) {
-    // Rollback on error
-    await new Promise((resolve) => {
-      db.rollback(() => resolve());
-    });
     console.error("Error deleting user:", error);
     res.status(500).json({ error: "Internal server error" });
   }

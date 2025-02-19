@@ -425,7 +425,7 @@ const AdminDashboard = () => {
                           <TableCell>
                             {user.is_suspended ? (
                               <Chip
-                                label="ถูกระงับการใช้งาน"
+                                label="ถูกระงับ"
                                 color="error"
                                 size="small"
                               />
