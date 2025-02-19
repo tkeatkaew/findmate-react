@@ -28,6 +28,10 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Chip from "@mui/material/Chip";
+import Grid from "@mui/material/Grid";
+import Divider from "@mui/material/Divider";
+
+import defaultAvatar from "../images/anonymous.jpg";
 
 import AppTheme from "../AppTheme";
 import axios from "../services/api";
@@ -95,6 +99,43 @@ const AdminDashboard = () => {
     }
   };
 
+  const traitOptions = {
+    gender: [
+      { value: "male", label: "ชาย" },
+      { value: "female", label: "หญิง" },
+    ],
+    type: [
+      { value: "type_introvert", label: "Introvert" },
+      { value: "type_extrovert", label: "Extrovert" },
+      { value: "type_ambivert", label: "Ambivert" },
+    ],
+    sleep: [
+      { value: "sleep_before_midnight", label: "ก่อนเที่ยงคืน" },
+      { value: "sleep_after_midnight", label: "หลังเที่ยงคืน" },
+    ],
+    clean: [
+      { value: "clean_every_day", label: "ทำความสะอาดทุกวัน" },
+      { value: "clean_every_other_day", label: "ทำความสะอาดวันเว้นวัน" },
+      { value: "clean_once_a_week", label: "ทำความสะอาดสัปดาห์ละครั้ง" },
+    ],
+    smoke: [
+      { value: "smoke_never", label: "ไม่สูบ" },
+      { value: "smoke_spacial", label: "สูบเฉพาะเวลาสังสรรค์" },
+      { value: "smoke_always", label: "สูบเป็นประจำ" },
+    ],
+    drink: [
+      { value: "drink_never", label: "ไม่ดื่ม" },
+      { value: "drink_spacial", label: "ดื่มเฉพาะโอกาสพิเศษ" },
+      { value: "drink_weekend", label: "ดื่มช่วงสุดสัปดาห์" },
+      { value: "drink_always", label: "ดื่มเป็นประจำ" },
+    ],
+    period: [
+      { value: "period_long", label: "ต้องการรูมเมทระยะยาว" },
+      { value: "period_sometime", label: "ขึ้นอยู่กับสถานการณ์" },
+      { value: "period_no_need", label: "ไม่จำเป็น" },
+    ],
+  };
+
   const fetchReports = async () => {
     try {
       const [userReportsRes, systemReportsRes, suggestionsRes] =
@@ -111,12 +152,39 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchUserDetails = async (userId) => {
+    try {
+      const [userInfo, traits, userData] = await Promise.all([
+        axios.get(`/personalinfo/${userId}`),
+        axios.get(`/personalitytraits/${userId}`),
+        axios.get(`/admin/users/${userId}`), // Add this to get user data including profile picture
+      ]);
+      return {
+        info: userInfo.data,
+        traits: traits.data,
+        profile: userData.data,
+      };
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      return null;
+    }
+  };
+
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
 
-  const handleViewReport = (report) => {
+  const handleViewReport = async (report) => {
     setSelectedReport(report);
+    if (report.reported_user_id) {
+      const userDetails = await fetchUserDetails(report.reported_user_id);
+      if (userDetails) {
+        setSelectedReport((prev) => ({
+          ...prev,
+          userDetails,
+        }));
+      }
+    }
     setReportDialog(true);
   };
 
@@ -143,13 +211,29 @@ const AdminDashboard = () => {
 
   const handleUserAction = async () => {
     try {
-      if (selectedAction === "delete") {
-        await axios.delete(`/admin/users/${selectedUser.id}`);
-      } else {
-        await axios.post(`/admin/user-action/${selectedUser.id}`, {
-          action: selectedAction,
-          reason: actionReason,
-        });
+      if (!selectedUser && !selectedReport) return;
+
+      // If coming from a report
+      if (selectedReport) {
+        await axios.post(
+          `/admin/user-action/${selectedReport.reported_user_id}`,
+          {
+            action: selectedAction,
+            reason: actionReason,
+            report_id: selectedReport.id,
+          }
+        );
+      }
+      // If coming from user management
+      else if (selectedUser) {
+        if (selectedAction === "delete") {
+          await axios.delete(`/admin/users/${selectedUser.id}`);
+        } else {
+          await axios.post(`/admin/user-action/${selectedUser.id}`, {
+            action: selectedAction,
+            reason: actionReason,
+          });
+        }
       }
 
       setAlert({
@@ -158,10 +242,14 @@ const AdminDashboard = () => {
         severity: "success",
       });
 
+      // Refresh data
       fetchUsers();
+      fetchReports();
       setActionDialogOpen(false);
       setActionReason("");
       setSelectedAction("");
+      setSelectedReport(null);
+      setSelectedUser(null);
     } catch (error) {
       console.error("Error:", error);
       setAlert({
@@ -240,7 +328,7 @@ const AdminDashboard = () => {
               <Tab label="รายงานผู้ใช้" />
               <Tab label="รายงานระบบ" />
               <Tab label="ข้อเสนอแนะ" />
-              <Tab label="จัดการผู้ใช้" />
+              <Tab label="จัดการผู้ใช้ทั้งหมด" />
             </Tabs>
 
             <Box sx={{ p: 3 }}>
@@ -288,26 +376,20 @@ const AdminDashboard = () => {
                               >
                                 ดูรายละเอียด
                               </Button>
-                              <Button
-                                variant="contained"
-                                size="small"
-                                color={
-                                  report.is_suspended ? "primary" : "error"
-                                }
-                                onClick={() => {
-                                  setSelectedReport(report);
-                                  setSelectedAction(
-                                    report.is_suspended
-                                      ? "unsuspend"
-                                      : "suspend"
-                                  );
-                                  setActionDialogOpen(true);
-                                }}
-                              >
-                                {report.is_suspended
-                                  ? "ยกเลิกระงับ"
-                                  : "ระงับการใช้งาน"}
-                              </Button>
+                              {!report.is_suspended && (
+                                <Button
+                                  variant="contained"
+                                  size="small"
+                                  color="error"
+                                  onClick={() => {
+                                    setSelectedReport(report);
+                                    setSelectedAction("suspend");
+                                    setActionDialogOpen(true);
+                                  }}
+                                >
+                                  ระงับการใช้งาน
+                                </Button>
+                              )}
                               <Button
                                 variant="outlined"
                                 size="small"
@@ -485,28 +567,164 @@ const AdminDashboard = () => {
       <Dialog
         open={reportDialog}
         onClose={() => setReportDialog(false)}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
       >
         <DialogTitle>รายละเอียดรายงาน</DialogTitle>
         <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <Typography>
-              <strong>ประเภท:</strong> {selectedReport?.type}
-            </Typography>
-            <Typography>
-              <strong>คำอธิบาย:</strong> {selectedReport?.description}
-            </Typography>
-            {selectedReport?.image && (
-              <img
-                src={selectedReport.image}
-                alt="Report"
-                style={{ width: "100%", borderRadius: "4px" }}
-              />
+          <Stack spacing={3} sx={{ mt: 1 }}>
+            {/* Report Information */}
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                ข้อมูลการรายงาน
+              </Typography>
+              <Card>
+                <CardContent>
+                  <Stack spacing={2}>
+                    <Typography>
+                      <strong>ประเภท:</strong> {selectedReport?.type}
+                    </Typography>
+                    <Typography>
+                      <strong>คำอธิบาย:</strong> {selectedReport?.description}
+                    </Typography>
+                    {selectedReport?.image && (
+                      <Box sx={{ mt: 2 }}>
+                        <img
+                          src={selectedReport.image}
+                          alt="Report"
+                          style={{
+                            width: "100%",
+                            maxHeight: "400px",
+                            objectFit: "contain",
+                            borderRadius: "8px",
+                          }}
+                        />
+                      </Box>
+                    )}
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Box>
+
+            {/* User Information */}
+            {selectedReport?.userDetails && (
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  ข้อมูลผู้ถูกรายงาน
+                </Typography>
+                <Card>
+                  <CardContent>
+                    <Stack spacing={2}>
+                      {/* User Header with Profile Picture */}
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                      >
+                        <Box
+                          sx={{
+                            width: 120,
+                            height: 120,
+                            borderRadius: "10%",
+                            overflow: "hidden",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <img
+                            src={
+                              selectedReport.profile_picture || defaultAvatar
+                            }
+                            alt="Profile"
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                        </Box>
+                        <Stack spacing={1}>
+                          <Typography variant="h6">
+                            {selectedReport.reported_user_name}
+                            {selectedReport.is_suspended && (
+                              <Chip
+                                label="ถูกระงับการใช้งาน"
+                                color="error"
+                                size="small"
+                                sx={{ ml: 1 }}
+                              />
+                            )}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            {selectedReport.userDetails.info.email}
+                          </Typography>
+                        </Stack>
+                      </Box>
+
+                      <Divider />
+
+                      {/* Basic Information */}
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                          <Typography>
+                            <strong>ชื่อ-นามสกุล:</strong>{" "}
+                            {selectedReport.userDetails.info.firstname}{" "}
+                            {selectedReport.userDetails.info.lastname}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Typography>
+                            <strong>ชื่อเล่น:</strong>{" "}
+                            {selectedReport.userDetails.info.nickname}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Typography>
+                            <strong>อายุ:</strong>{" "}
+                            {selectedReport.userDetails.info.age}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Typography>
+                            <strong>เพศ:</strong>{" "}
+                            {traitOptions.gender.find(
+                              (option) =>
+                                option.value ===
+                                selectedReport.userDetails.info.gender
+                            )?.label || selectedReport.userDetails.info.gender}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Typography>
+                            <strong>มหาวิทยาลัย:</strong>{" "}
+                            {selectedReport.userDetails.info.university}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Typography>
+                            <strong>จังหวัด:</strong>{" "}
+                            {selectedReport.userDetails.info.province}
+                          </Typography>
+                        </Grid>
+                      </Grid>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Box>
             )}
           </Stack>
         </DialogContent>
         <DialogActions>
+          {!selectedReport?.is_suspended && (
+            <Button
+              onClick={() => {
+                setSelectedAction("suspend");
+                setActionDialogOpen(true);
+                setReportDialog(false);
+              }}
+              variant="contained"
+              color="error"
+            >
+              ระงับการใช้งาน
+            </Button>
+          )}
           <Button
             onClick={() => handleReportAction("resolved")}
             variant="contained"
