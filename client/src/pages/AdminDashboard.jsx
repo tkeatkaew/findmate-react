@@ -596,10 +596,10 @@ const AdminDashboard = () => {
                 <Typography variant="h6" gutterBottom>
                   ข้อมูลผู้ถูกรายงาน
                 </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <Card>
-                      <CardContent
+                <Card>
+                  <CardContent>
+                    <Stack spacing={2}>
+                      <Box
                         sx={{ display: "flex", alignItems: "center", gap: 2 }}
                       >
                         <Box
@@ -624,118 +624,53 @@ const AdminDashboard = () => {
                             }}
                           />
                         </Box>
-                        <Typography variant="h6">
-                          {selectedReport.reported_user_name}
-                          {selectedReport.is_suspended && (
-                            <Chip
-                              label="ถูกระงับการใช้งาน"
-                              color="error"
-                              size="small"
-                              sx={{ ml: 1 }}
-                            />
-                          )}
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Card>
-                      <CardContent>
-                        <Stack spacing={2}>
-                          <Typography>
-                            <strong>ชื่อ:</strong>{" "}
-                            {selectedReport.userDetails.info.firstname}{" "}
-                            {selectedReport.userDetails.info.lastname}
+                        <Stack spacing={1}>
+                          <Typography variant="h6">
+                            {selectedReport.reported_user_name}
+                            {selectedReport.is_suspended && (
+                              <Chip
+                                label="ถูกระงับการใช้งาน"
+                                color="error"
+                                size="small"
+                                sx={{ ml: 1 }}
+                              />
+                            )}
                           </Typography>
-                          <Typography>
-                            <strong>ชื่อเล่น:</strong>{" "}
-                            {selectedReport.userDetails.info.nickname}
-                          </Typography>
-                          <Typography>
-                            <strong>อายุ:</strong>{" "}
-                            {selectedReport.userDetails.info.age}
-                          </Typography>
-                          <Typography>
-                            <strong>เพศ:</strong>{" "}
-                            {traitOptions.gender.find(
-                              (option) =>
-                                option.value ===
-                                selectedReport.userDetails.info.gender
-                            )?.label || selectedReport.userDetails.info.gender}
-                          </Typography>
-                          <Typography>
-                            <strong>มหาวิทยาลัย:</strong>{" "}
+                          <Typography color="textSecondary">
                             {selectedReport.userDetails.info.university}
                           </Typography>
-                          <Typography>
-                            <strong>จังหวัด:</strong>{" "}
-                            {selectedReport.userDetails.info.province}
-                          </Typography>
                         </Stack>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Card>
-                      <CardContent>
-                        <Stack spacing={2}>
-                          <Typography variant="subtitle1" gutterBottom>
-                            <strong>บุคลิกภาพ</strong>
-                          </Typography>
-                          <Typography>
-                            <strong>ประเภท:</strong>{" "}
-                            {traitOptions.type.find(
-                              (option) =>
-                                option.value ===
-                                selectedReport.userDetails.traits.type
-                            )?.label || selectedReport.userDetails.traits.type}
-                          </Typography>
-                          <Typography>
-                            <strong>การนอน:</strong>{" "}
-                            {traitOptions.sleep.find(
-                              (option) =>
-                                option.value ===
-                                selectedReport.userDetails.traits.sleep
-                            )?.label || selectedReport.userDetails.traits.sleep}
-                          </Typography>
-                          <Typography>
-                            <strong>ความสะอาด:</strong>{" "}
-                            {traitOptions.clean.find(
-                              (option) =>
-                                option.value ===
-                                selectedReport.userDetails.traits.clean
-                            )?.label || selectedReport.userDetails.traits.clean}
-                          </Typography>
-                          <Typography>
-                            <strong>การสูบบุหรี่:</strong>{" "}
-                            {traitOptions.smoke.find(
-                              (option) =>
-                                option.value ===
-                                selectedReport.userDetails.traits.smoke
-                            )?.label || selectedReport.userDetails.traits.smoke}
-                          </Typography>
-                          <Typography>
-                            <strong>เครื่องดื่มแอลกอฮอล์:</strong>{" "}
-                            {traitOptions.drink.find(
-                              (option) =>
-                                option.value ===
-                                selectedReport.userDetails.traits.drink
-                            )?.label || selectedReport.userDetails.traits.drink}
-                          </Typography>
-                          <Typography>
-                            <strong>ระยะเวลาการอยู่:</strong>{" "}
-                            {traitOptions.period.find(
-                              (option) =>
-                                option.value ===
-                                selectedReport.userDetails.traits.period
-                            )?.label ||
-                              selectedReport.userDetails.traits.period}
-                          </Typography>
-                        </Stack>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                </Grid>
+                      </Box>
+                      <Stack spacing={2} sx={{ mt: 2 }}>
+                        <Typography>
+                          <strong>ชื่อ-นามสกุล:</strong>{" "}
+                          {selectedReport.userDetails.info.firstname}{" "}
+                          {selectedReport.userDetails.info.lastname}
+                        </Typography>
+                        <Typography>
+                          <strong>ชื่อเล่น:</strong>{" "}
+                          {selectedReport.userDetails.info.nickname}
+                        </Typography>
+                        <Typography>
+                          <strong>อายุ:</strong>{" "}
+                          {selectedReport.userDetails.info.age}
+                        </Typography>
+                        <Typography>
+                          <strong>เพศ:</strong>{" "}
+                          {traitOptions.gender.find(
+                            (option) =>
+                              option.value ===
+                              selectedReport.userDetails.info.gender
+                          )?.label || selectedReport.userDetails.info.gender}
+                        </Typography>
+                        <Typography>
+                          <strong>จังหวัด:</strong>{" "}
+                          {selectedReport.userDetails.info.province}
+                        </Typography>
+                      </Stack>
+                    </Stack>
+                  </CardContent>
+                </Card>
               </Box>
             )}
           </Stack>
