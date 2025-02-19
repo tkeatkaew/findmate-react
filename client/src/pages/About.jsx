@@ -244,9 +244,9 @@ const AboutPage = () => {
       details: "Prompt Pay: 061-698-9385 (Teerapat Chomchoei)",
     },
     {
-      title: "True Money",
+      title: "TrueMoney",
       image: TrueMoney,
-      details: "True Money: 061-698-9385 (ธีระภัทร ชมเชย)",
+      details: "TrueMoney: 061-698-9385 (ธีระภัทร ชมเชย)",
     },
   ];
 

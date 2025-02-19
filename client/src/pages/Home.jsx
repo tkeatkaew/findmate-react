@@ -182,7 +182,7 @@ const HomePage = () => {
             <Grid item xs={12} md={4}>
               <StatsCard
                 icon={<School size={32} />}
-                value={stats.totalUniversities}
+                value="250"
                 label="รองรับมหาลัยทั่วประเทศ"
               />
             </Grid>
