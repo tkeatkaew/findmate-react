@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
+import Modal from "@mui/material/Modal";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import Tabs from "@mui/material/Tabs";
@@ -18,6 +19,10 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -28,7 +33,6 @@ import AppTheme from "../AppTheme";
 import axios from "../services/api";
 
 const AdminDashboard = () => {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -49,64 +53,19 @@ const AdminDashboard = () => {
   const [selectedAction, setSelectedAction] = useState("");
   const [actionReason, setActionReason] = useState("");
 
-  // Initialize dashboard and fetch data
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user"));
+
   useEffect(() => {
-    let isSubscribed = true;
-
-    const initializeDashboard = async () => {
-      try {
-        const user = JSON.parse(localStorage.getItem("user"));
-        if (!user) {
-          navigate("/login");
-          return;
-        }
-
-        if (user.role !== "admin") {
-          navigate("/discovery");
-          return;
-        }
-
-        if (isSubscribed) {
-          // Reset states
-          setStats({
-            totalUsers: 0,
-            totalMatches: 0,
-            totalReports: 0,
-          });
-          setUserReports([]);
-          setSystemReports([]);
-          setSuggestions([]);
-          setSelectedReport(null);
-          setAlert({
-            open: false,
-            message: "",
-            severity: "success",
-          });
-          setReportDialog(false);
-          setActionDialogOpen(false);
-          setSelectedAction("");
-          setActionReason("");
-
-          // Fetch fresh data
-          await Promise.all([fetchStats(), fetchReports()]);
-        }
-      } catch (error) {
-        console.error("Dashboard initialization error:", error);
-        if (isSubscribed) {
-          setAlert({
-            open: true,
-            message: "เกิดข้อผิดพลาดในการโหลดข้อมูล",
-            severity: "error",
-          });
-        }
-      }
-    };
-
-    initializeDashboard();
-
-    return () => {
-      isSubscribed = false;
-    };
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) {
+      navigate("/login");
+    } else if (user.role !== "admin") {
+      navigate("/discovery"); // Redirect non-admin users
+    } else {
+      fetchStats();
+      fetchReports();
+    }
   }, [navigate]);
 
   const fetchStats = async () => {
@@ -115,7 +74,6 @@ const AdminDashboard = () => {
       setStats(response.data);
     } catch (error) {
       console.error("Error fetching stats:", error);
-      throw error;
     }
   };
 
@@ -132,7 +90,6 @@ const AdminDashboard = () => {
       setSuggestions(suggestionsRes.data);
     } catch (error) {
       console.error("Error fetching reports:", error);
-      throw error;
     }
   };
 
@@ -185,6 +142,7 @@ const AdminDashboard = () => {
         severity: "success",
       });
 
+      // Refresh the reports list
       fetchReports();
       setActionDialogOpen(false);
       setActionReason("");
@@ -217,117 +175,165 @@ const AdminDashboard = () => {
   };
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        minHeight: "100vh",
-        backgroundColor: "#f5f5f5",
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          padding: "20px",
-          gap: "20px",
-          position: "relative",
-        }}
-      >
-        <Typography variant="h4" gutterBottom>
-          แดชบอร์ดผู้ดูแลระบบ
-        </Typography>
+    <AppTheme>
+      <Box sx={{ display: "flex", minHeight: "90vh" }}>
+        {/* Main Content */}
+        <Box sx={{ flex: 1, padding: "1rem" }}>
+          <Typography variant="h4" gutterBottom>
+            แดชบอร์ดผู้ดูแลระบบ
+          </Typography>
 
-        {/* Statistics Cards */}
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "1rem",
-          }}
-        >
-          <Card>
-            <CardContent>
-              <Typography variant="h6">{stats.totalUsers}</Typography>
-              <Typography color="textSecondary">จำนวนผู้ใช้ทั้งหมด</Typography>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">{stats.totalMatches}</Typography>
-              <Typography color="textSecondary">
-                จำนวนการจับคู่ทั้งหมด
-              </Typography>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">{stats.totalReports}</Typography>
-              <Typography color="textSecondary">จำนวนรายงานทั้งหมด</Typography>
-            </CardContent>
-          </Card>
-        </Box>
-
-        {/* Reports Section */}
-        <Paper
-          sx={{
-            width: "100%",
-            overflow: "hidden",
-            position: "relative",
-          }}
-        >
-          <Tabs
-            value={activeTab}
-            onChange={handleTabChange}
-            centered
+          {/* Statistics Cards */}
+          <Box
             sx={{
-              borderBottom: 1,
-              borderColor: "divider",
-              backgroundColor: "white",
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "1rem",
+              mb: 3,
             }}
           >
-            <Tab label="รายงานผู้ใช้" />
-            <Tab label="รายงานระบบ" />
-            <Tab label="ข้อเสนอแนะ" />
-          </Tabs>
+            <Card>
+              <CardContent>
+                <Typography variant="h6">{stats.totalUsers}</Typography>
+                <Typography color="textSecondary">
+                  จำนวนผู้ใช้ทั้งหมด
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent>
+                <Typography variant="h6">{stats.totalMatches}</Typography>
+                <Typography color="textSecondary">
+                  จำนวนการจับคู่ทั้งหมด
+                </Typography>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent>
+                <Typography variant="h6">{stats.totalReports}</Typography>
+                <Typography color="textSecondary">
+                  จำนวนรายงานทั้งหมด
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
 
-          <Box sx={{ p: 3, backgroundColor: "white" }}>
-            {activeTab === 0 && (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>ผู้รายงาน</TableCell>
-                      <TableCell>ผู้ถูกรายงาน</TableCell>
-                      <TableCell>ประเภท</TableCell>
-                      <TableCell>สถานะ</TableCell>
-                      <TableCell>วันที่</TableCell>
-                      <TableCell>การจัดการ</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {userReports.map((report) => (
-                      <TableRow key={report.id}>
-                        <TableCell>{report.reporter_name}</TableCell>
-                        <TableCell>
-                          {report.reported_user_name}
-                          {report.is_suspended && (
-                            <Chip
-                              label="ถูกระงับการใช้งาน"
-                              color="error"
-                              size="small"
-                              sx={{ ml: 1 }}
-                            />
-                          )}
-                        </TableCell>
-                        <TableCell>{report.type}</TableCell>
-                        <TableCell>{report.status}</TableCell>
-                        <TableCell>
-                          {new Date(report.created_at).toLocaleDateString(
-                            "th-TH"
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Stack direction="row" spacing={1}>
+          {/* Reports Tabs */}
+          <Paper sx={{ width: "100%", mb: 2 }}>
+            <Tabs value={activeTab} onChange={handleTabChange} centered>
+              <Tab label="รายงานผู้ใช้" />
+              <Tab label="รายงานระบบ" />
+              <Tab label="ข้อเสนอแนะ" />
+            </Tabs>
+
+            <Box sx={{ p: 3 }}>
+              {activeTab === 0 && (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>ผู้รายงาน</TableCell>
+                        <TableCell>ผู้ถูกรายงาน</TableCell>
+                        <TableCell>ประเภท</TableCell>
+                        <TableCell>สถานะ</TableCell>
+                        <TableCell>วันที่</TableCell>
+                        <TableCell>การจัดการ</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {userReports.map((report) => (
+                        <TableRow key={report.id}>
+                          <TableCell>{report.reporter_name}</TableCell>
+                          <TableCell>
+                            {report.reported_user_name}
+                            {report.is_suspended && (
+                              <Chip
+                                label="ถูกระงับการใช้งาน"
+                                color="error"
+                                size="small"
+                                sx={{ ml: 1 }}
+                              />
+                            )}
+                          </TableCell>
+                          <TableCell>{report.type}</TableCell>
+                          <TableCell>{report.status}</TableCell>
+                          <TableCell>
+                            {new Date(report.created_at).toLocaleDateString(
+                              "th-TH"
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Stack direction="row" spacing={1}>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={() => handleViewReport(report)}
+                              >
+                                ดูรายละเอียด
+                              </Button>
+                              <Button
+                                variant="contained"
+                                size="small"
+                                color={
+                                  report.is_suspended ? "primary" : "error"
+                                }
+                                onClick={() => {
+                                  setSelectedReport(report);
+                                  setSelectedAction(
+                                    report.is_suspended
+                                      ? "unsuspend"
+                                      : "suspend"
+                                  );
+                                  setActionDialogOpen(true);
+                                }}
+                              >
+                                {report.is_suspended
+                                  ? "ยกเลิกระงับ"
+                                  : "ระงับการใช้งาน"}
+                              </Button>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                color="error"
+                                onClick={() => handleDeleteReport(report.id)}
+                              >
+                                ลบรายงาน
+                              </Button>
+                            </Stack>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+
+              {activeTab === 1 && (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>ผู้รายงาน</TableCell>
+                        <TableCell>ประเภท</TableCell>
+                        <TableCell>คำอธิบาย</TableCell>
+                        <TableCell>สถานะ</TableCell>
+                        <TableCell>วันที่</TableCell>
+                        <TableCell>การจัดการ</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {systemReports.map((report) => (
+                        <TableRow key={report.id}>
+                          <TableCell>{report.reporter_name}</TableCell>
+                          <TableCell>{report.type}</TableCell>
+                          <TableCell>{report.description}</TableCell>
+                          <TableCell>{report.status}</TableCell>
+                          <TableCell>
+                            {new Date(report.created_at).toLocaleDateString(
+                              "th-TH"
+                            )}
+                          </TableCell>
+                          <TableCell>
                             <Button
                               variant="outlined"
                               size="small"
@@ -335,120 +341,55 @@ const AdminDashboard = () => {
                             >
                               ดูรายละเอียด
                             </Button>
-                            <Button
-                              variant="contained"
-                              size="small"
-                              color={report.is_suspended ? "primary" : "error"}
-                              onClick={() => {
-                                setSelectedReport(report);
-                                setSelectedAction(
-                                  report.is_suspended ? "unsuspend" : "suspend"
-                                );
-                                setActionDialogOpen(true);
-                              }}
-                            >
-                              {report.is_suspended
-                                ? "ยกเลิกระงับ"
-                                : "ระงับการใช้งาน"}
-                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+
+              {activeTab === 2 && (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>ผู้เสนอแนะ</TableCell>
+                        <TableCell>ข้อเสนอแนะ</TableCell>
+                        <TableCell>วันที่</TableCell>
+                        <TableCell>สถานะ</TableCell>
+                        <TableCell>การจัดการ</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {suggestions.map((suggestion) => (
+                        <TableRow key={suggestion.id}>
+                          <TableCell>{suggestion.user_name}</TableCell>
+                          <TableCell>{suggestion.content}</TableCell>
+                          <TableCell>
+                            {new Date(suggestion.created_at).toLocaleDateString(
+                              "th-TH"
+                            )}
+                          </TableCell>
+                          <TableCell>{suggestion.status}</TableCell>
+                          <TableCell>
                             <Button
                               variant="outlined"
                               size="small"
-                              color="error"
-                              onClick={() => handleDeleteReport(report.id)}
+                              onClick={() => handleViewReport(suggestion)}
                             >
-                              ลบรายงาน
+                              ดูรายละเอียด
                             </Button>
-                          </Stack>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-
-            {activeTab === 1 && (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>ผู้รายงาน</TableCell>
-                      <TableCell>ประเภท</TableCell>
-                      <TableCell>คำอธิบาย</TableCell>
-                      <TableCell>สถานะ</TableCell>
-                      <TableCell>วันที่</TableCell>
-                      <TableCell>การจัดการ</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {systemReports.map((report) => (
-                      <TableRow key={report.id}>
-                        <TableCell>{report.reporter_name}</TableCell>
-                        <TableCell>{report.type}</TableCell>
-                        <TableCell>{report.description}</TableCell>
-                        <TableCell>{report.status}</TableCell>
-                        <TableCell>
-                          {new Date(report.created_at).toLocaleDateString(
-                            "th-TH"
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            onClick={() => handleViewReport(report)}
-                          >
-                            ดูรายละเอียด
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-
-            {activeTab === 2 && (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>ผู้เสนอแนะ</TableCell>
-                      <TableCell>ข้อเสนอแนะ</TableCell>
-                      <TableCell>วันที่</TableCell>
-                      <TableCell>สถานะ</TableCell>
-                      <TableCell>การจัดการ</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {suggestions.map((suggestion) => (
-                      <TableRow key={suggestion.id}>
-                        <TableCell>{suggestion.user_name}</TableCell>
-                        <TableCell>{suggestion.content}</TableCell>
-                        <TableCell>
-                          {new Date(suggestion.created_at).toLocaleDateString(
-                            "th-TH"
-                          )}
-                        </TableCell>
-                        <TableCell>{suggestion.status}</TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            onClick={() => handleViewReport(suggestion)}
-                          >
-                            ดูรายละเอียด
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-          </Box>
-        </Paper>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </Box>
+          </Paper>
+        </Box>
       </Box>
 
       {/* Report Detail Dialog */}
@@ -457,11 +398,6 @@ const AdminDashboard = () => {
         onClose={() => setReportDialog(false)}
         maxWidth="sm"
         fullWidth
-        sx={{
-          "& .MuiDialog-paper": {
-            pointerEvents: "auto",
-          },
-        }}
       >
         <DialogTitle>รายละเอียดรายงาน</DialogTitle>
         <DialogContent>
@@ -500,17 +436,26 @@ const AdminDashboard = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Action Dialog */}
+      {/* Alert */}
+      <Snackbar
+        open={alert.open}
+        autoHideDuration={6000}
+        onClose={() => setAlert({ ...alert, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setAlert({ ...alert, open: false })}
+          severity={alert.severity}
+          variant="filled"
+        >
+          {alert.message}
+        </Alert>
+      </Snackbar>
       <Dialog
         open={actionDialogOpen}
         onClose={() => setActionDialogOpen(false)}
         maxWidth="sm"
         fullWidth
-        sx={{
-          "& .MuiDialog-paper": {
-            pointerEvents: "auto",
-          },
-        }}
       >
         <DialogTitle>
           {selectedAction === "suspend"
@@ -542,23 +487,7 @@ const AdminDashboard = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Alert */}
-      <Snackbar
-        open={alert.open}
-        autoHideDuration={6000}
-        onClose={() => setAlert({ ...alert, open: false })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert
-          onClose={() => setAlert({ ...alert, open: false })}
-          severity={alert.severity}
-          variant="filled"
-        >
-          {alert.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+    </AppTheme>
   );
 };
 
