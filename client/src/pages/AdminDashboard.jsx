@@ -522,7 +522,6 @@ const AdminDashboard = () => {
       </Box>
 
       {/* Report Detail Dialog */}
-      {/* Report Detail Dialog */}
       <Dialog
         open={reportDialog}
         onClose={() => setReportDialog(false)}
@@ -578,9 +577,11 @@ const AdminDashboard = () => {
                           </Typography>
                           <Typography>
                             <strong>เพศ:</strong>{" "}
-                            {selectedReport.userDetails.info.gender === "male"
-                              ? "ชาย"
-                              : "หญิง"}
+                            {traitOptions.gender.find(
+                              (option) =>
+                                option.value ===
+                                selectedReport.userDetails.info.gender
+                            )?.label || selectedReport.userDetails.info.gender}
                           </Typography>
                           <Typography>
                             <strong>มหาวิทยาลัย:</strong>{" "}
@@ -603,31 +604,52 @@ const AdminDashboard = () => {
                           </Typography>
                           <Typography>
                             <strong>ประเภท:</strong>{" "}
-                            {selectedReport.userDetails.traits.type}
+                            {traitOptions.type.find(
+                              (option) =>
+                                option.value ===
+                                selectedReport.userDetails.traits.type
+                            )?.label || selectedReport.userDetails.traits.type}
                           </Typography>
                           <Typography>
                             <strong>การนอน:</strong>{" "}
-                            {selectedReport.userDetails.traits.sleep}
-                          </Typography>
-                          <Typography>
-                            <strong>การตื่น:</strong>{" "}
-                            {selectedReport.userDetails.traits.wake}
+                            {traitOptions.sleep.find(
+                              (option) =>
+                                option.value ===
+                                selectedReport.userDetails.traits.sleep
+                            )?.label || selectedReport.userDetails.traits.sleep}
                           </Typography>
                           <Typography>
                             <strong>ความสะอาด:</strong>{" "}
-                            {selectedReport.userDetails.traits.clean}
-                          </Typography>
-                          <Typography>
-                            <strong>แอร์:</strong>{" "}
-                            {selectedReport.userDetails.traits.air_conditioner}
-                          </Typography>
-                          <Typography>
-                            <strong>เครื่องดื่มแอลกอฮอล์:</strong>{" "}
-                            {selectedReport.userDetails.traits.drink}
+                            {traitOptions.clean.find(
+                              (option) =>
+                                option.value ===
+                                selectedReport.userDetails.traits.clean
+                            )?.label || selectedReport.userDetails.traits.clean}
                           </Typography>
                           <Typography>
                             <strong>การสูบบุหรี่:</strong>{" "}
-                            {selectedReport.userDetails.traits.smoke}
+                            {traitOptions.smoke.find(
+                              (option) =>
+                                option.value ===
+                                selectedReport.userDetails.traits.smoke
+                            )?.label || selectedReport.userDetails.traits.smoke}
+                          </Typography>
+                          <Typography>
+                            <strong>เครื่องดื่มแอลกอฮอล์:</strong>{" "}
+                            {traitOptions.drink.find(
+                              (option) =>
+                                option.value ===
+                                selectedReport.userDetails.traits.drink
+                            )?.label || selectedReport.userDetails.traits.drink}
+                          </Typography>
+                          <Typography>
+                            <strong>ระยะเวลาการอยู่:</strong>{" "}
+                            {traitOptions.period.find(
+                              (option) =>
+                                option.value ===
+                                selectedReport.userDetails.traits.period
+                            )?.label ||
+                              selectedReport.userDetails.traits.period}
                           </Typography>
                         </Stack>
                       </CardContent>
@@ -639,6 +661,19 @@ const AdminDashboard = () => {
           </Stack>
         </DialogContent>
         <DialogActions>
+          {!selectedReport?.is_suspended && (
+            <Button
+              onClick={() => {
+                setSelectedAction("suspend");
+                setActionDialogOpen(true);
+                setReportDialog(false);
+              }}
+              variant="contained"
+              color="error"
+            >
+              ระงับการใช้งาน
+            </Button>
+          )}
           <Button
             onClick={() => handleReportAction("resolved")}
             variant="contained"
