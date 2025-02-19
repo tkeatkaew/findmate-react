@@ -1536,41 +1536,41 @@ app.get("/admin/users", async (req, res) => {
   }
 });
 
-app.post("/admin/user-action/:userId", async (req, res) => {
-  const { userId } = req.params;
-  const { action, reason } = req.body;
+// app.post("/admin/user-action/:userId", async (req, res) => {
+//   const { userId } = req.params;
+//   const { action, reason } = req.body;
 
-  try {
-    if (action === "suspend") {
-      await new Promise((resolve, reject) => {
-        db.query(
-          "UPDATE users SET is_suspended = 1, suspension_reason = ? WHERE id = ?",
-          [reason, userId],
-          (err) => {
-            if (err) reject(err);
-            resolve();
-          }
-        );
-      });
-    } else if (action === "unsuspend") {
-      await new Promise((resolve, reject) => {
-        db.query(
-          "UPDATE users SET is_suspended = 0, suspension_reason = NULL WHERE id = ?",
-          [userId],
-          (err) => {
-            if (err) reject(err);
-            resolve();
-          }
-        );
-      });
-    }
+//   try {
+//     if (action === "suspend") {
+//       await new Promise((resolve, reject) => {
+//         db.query(
+//           "UPDATE users SET is_suspended = 1, suspension_reason = ? WHERE id = ?",
+//           [reason, userId],
+//           (err) => {
+//             if (err) reject(err);
+//             resolve();
+//           }
+//         );
+//       });
+//     } else if (action === "unsuspend") {
+//       await new Promise((resolve, reject) => {
+//         db.query(
+//           "UPDATE users SET is_suspended = 0, suspension_reason = NULL WHERE id = ?",
+//           [userId],
+//           (err) => {
+//             if (err) reject(err);
+//             resolve();
+//           }
+//         );
+//       });
+//     }
 
-    res.json({ message: "User action completed successfully" });
-  } catch (error) {
-    console.error("Error performing user action:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+//     res.json({ message: "User action completed successfully" });
+//   } catch (error) {
+//     console.error("Error performing user action:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
 
 // Add delete user route
 app.get("/admin/users/:userId", async (req, res) => {
