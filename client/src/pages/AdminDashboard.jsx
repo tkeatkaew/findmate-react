@@ -50,10 +50,11 @@ const AdminDashboard = () => {
   });
   const [reportDialog, setReportDialog] = useState(false);
   const [actionDialogOpen, setActionDialogOpen] = useState(false);
-  const [selectedAction, setSelectedAction] = useState("");
-  const [actionReason, setActionReason] = useState("");
 
+  const [selectedUser, setSelectedUser] = useState(null);
   const [users, setUsers] = useState([]);
+  const [actionReason, setActionReason] = useState("");
+  const [selectedAction, setSelectedAction] = useState("");
 
   const fetchUsers = async () => {
     try {
