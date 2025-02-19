@@ -37,9 +37,6 @@ const FeatureCard = ({ icon, title, description }) => (
       boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
       border: "1px solid #eee",
       transition: "transform 0.2s",
-      "&:hover": {
-        transform: "translateY(-5px)",
-      },
     }}
   >
     <CardContent sx={{ flexGrow: 1, textAlign: "center" }}>
