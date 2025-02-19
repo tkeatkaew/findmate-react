@@ -726,6 +726,14 @@ const PersonalInfo = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [socialContactHelperText, setSocialContactHelperText] = useState(
+    "กรุณากรอกข้อมูลติดต่ออย่างน้อย 1 ช่องทาง"
+  );
+
+  const hasAnySocialContact = () => {
+    return Boolean(facebook || instagram || lineId || phone);
+  };
+
   const navigate = useNavigate();
   const location = useLocation();
   const { user_id, email } = location.state || {};
@@ -735,6 +743,29 @@ const PersonalInfo = () => {
     const selectedProvince = event.target.value;
     setProvince(selectedProvince);
     setUniversity(""); // Reset university when province changes
+  };
+
+  const handleSocialContactChange = (field, value) => {
+    switch (field) {
+      case "facebook":
+        setFacebook(value);
+        break;
+      case "instagram":
+        setInstagram(value);
+        break;
+      case "lineId":
+        setLineId(value);
+        break;
+      case "phone":
+        setPhone(value);
+        break;
+    }
+
+    // Clear error if at least one field is filled
+    if (value || hasAnySocialContact()) {
+      setContactError(false);
+      setSocialContactHelperText("กรุณากรอกข้อมูลติดต่ออย่างน้อย 1 ช่องทาง");
+    }
   };
 
   const fileInputRef = useRef(null);
@@ -781,12 +812,16 @@ const PersonalInfo = () => {
     setFormSubmitted(true);
 
     // Check if at least one contact method is provided
-    const hasContact = facebook || instagram || lineId || phone;
-    if (!hasContact) {
+    if (!hasAnySocialContact()) {
       setContactError(true);
+      setSocialContactHelperText("โปรดกรอกข้อมูลติดต่ออย่างน้อย 1 ช่องทาง");
+      // Scroll to social contact section
+      const socialSection = document.getElementById("social-contact-section");
+      if (socialSection) {
+        socialSection.scrollIntoView({ behavior: "smooth" });
+      }
       return;
     }
-    setContactError(false);
 
     try {
       setIsSubmitting(true);
@@ -1009,8 +1044,20 @@ const PersonalInfo = () => {
                 onChange={(e) => setSelfIntroduction(e.target.value)}
               />
 
-              <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
+              <Typography
+                variant="h6"
+                sx={{ mt: 2, mb: 1 }}
+                id="social-contact-section"
+              >
                 โซเชียลมีเดียและข้อมูลติดต่อ
+              </Typography>
+
+              <Typography
+                variant="body2"
+                color={contactError ? "error" : "text.secondary"}
+                sx={{ mb: 2 }}
+              >
+                {socialContactHelperText}
               </Typography>
 
               <TextField
@@ -1020,7 +1067,11 @@ const PersonalInfo = () => {
                 variant="outlined"
                 fullWidth
                 value={facebook}
-                onChange={(e) => setFacebook(e.target.value)}
+                onChange={(e) =>
+                  handleSocialContactChange("facebook", e.target.value)
+                }
+                error={formSubmitted && contactError}
+                sx={{ mb: 2 }}
               />
 
               <TextField
@@ -1030,7 +1081,11 @@ const PersonalInfo = () => {
                 variant="outlined"
                 fullWidth
                 value={instagram}
-                onChange={(e) => setInstagram(e.target.value)}
+                onChange={(e) =>
+                  handleSocialContactChange("instagram", e.target.value)
+                }
+                error={formSubmitted && contactError}
+                sx={{ mb: 2 }}
               />
 
               <TextField
@@ -1040,7 +1095,11 @@ const PersonalInfo = () => {
                 variant="outlined"
                 fullWidth
                 value={lineId}
-                onChange={(e) => setLineId(e.target.value)}
+                onChange={(e) =>
+                  handleSocialContactChange("lineId", e.target.value)
+                }
+                error={formSubmitted && contactError}
+                sx={{ mb: 2 }}
               />
 
               <TextField
@@ -1050,7 +1109,11 @@ const PersonalInfo = () => {
                 variant="outlined"
                 fullWidth
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) =>
+                  handleSocialContactChange("phone", e.target.value)
+                }
+                error={formSubmitted && contactError}
+                sx={{ mb: 2 }}
               />
 
               <Button
