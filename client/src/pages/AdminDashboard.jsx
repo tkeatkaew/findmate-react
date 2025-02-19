@@ -29,6 +29,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Chip from "@mui/material/Chip";
 import Grid from "@mui/material/Grid";
+import Divider from "@mui/material/Divider";
 
 import AppTheme from "../AppTheme";
 import axios from "../services/api";
