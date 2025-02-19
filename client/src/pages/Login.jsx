@@ -55,6 +55,8 @@ const Login = () => {
           minWidth: "400px",
           margin: "auto",
           marginTop: "3rem",
+          marginLeft: "10px",
+          marginRight: "10px",
           border: "1px solid #eee",
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
           borderRadius: "20px",
