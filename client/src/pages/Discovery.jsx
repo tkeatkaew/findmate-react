@@ -1232,7 +1232,7 @@ const Discovery = () => {
             flex: 1,
             padding: "0.5rem",
             overflowY: "auto",
-            height: "100%",
+            height: "100vh",
           }}
         >
           {/* Header with Filter */}
