@@ -19,26 +19,51 @@ import {
   useTheme,
   useMediaQuery,
 } from "@mui/material";
-import defaultAvatar from "../images/anonymous.jpg";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const isAuthenticated = !!localStorage.getItem("user");
-  const user = isAuthenticated
-    ? JSON.parse(localStorage.getItem("user"))
-    : null;
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      if (isAuthenticated) {
+        const storedUser = JSON.parse(localStorage.getItem("user"));
+        if (storedUser?.id) {
+          try {
+            // Fetch the latest user data including profile picture
+            const userResponse = await axios.get(
+              `/admin/users/${storedUser.id}`
+            );
+            const updatedUser = {
+              ...storedUser,
+              profile_picture: userResponse.data.profile_picture,
+            };
+            setCurrentUser(updatedUser);
+            // Update localStorage with the latest user data
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+          } catch (error) {
+            console.error("Error fetching current user:", error);
+            setCurrentUser(storedUser);
+          }
+        }
+      }
+    };
+
+    fetchCurrentUser();
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
-      if (isAuthenticated && user?.id) {
+      if (isAuthenticated && currentUser?.id) {
         try {
-          const response = await axios.get(`/personalinfo/${user.id}`);
+          const response = await axios.get(`/personalinfo/${currentUser.id}`);
           setUserInfo(response.data);
         } catch (error) {
           console.error("Error fetching user info:", error);
@@ -46,8 +71,10 @@ const Navbar = () => {
       }
     };
 
-    fetchUserInfo();
-  }, [isAuthenticated, user?.id]);
+    if (currentUser) {
+      fetchUserInfo();
+    }
+  }, [isAuthenticated, currentUser]);
 
   const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -59,6 +86,8 @@ const Navbar = () => {
 
   const handleSignOut = () => {
     localStorage.removeItem("user");
+    setCurrentUser(null);
+    setUserInfo(null);
     handleClose();
     setMobileOpen(false);
     navigate("/");
@@ -77,15 +106,14 @@ const Navbar = () => {
     if (userInfo?.nickname) {
       return userInfo.nickname;
     }
-    return user?.name || "";
+    return currentUser?.name || "";
   };
 
   const getProfileImage = () => {
-    if (user?.profile_picture) {
-      return user.profile_picture;
+    if (currentUser?.profile_picture) {
+      return currentUser.profile_picture;
     }
-    // Use the local anonymous image as fallback
-    return defaultAvatar;
+    return "/src/images/anonymous.jpg";
   };
 
   const drawer = (
@@ -181,7 +209,6 @@ const Navbar = () => {
             alignItems: "center",
           }}
         >
-          {/* Logo */}
           <Typography
             variant="p"
             component={Link}
@@ -196,7 +223,6 @@ const Navbar = () => {
             Find Mate
           </Typography>
 
-          {/* Mobile Menu Button */}
           {isMobile && (
             <IconButton
               color="inherit"
@@ -209,7 +235,6 @@ const Navbar = () => {
             </IconButton>
           )}
 
-          {/* Desktop Menu */}
           {!isMobile && (
             <>
               <Stack
@@ -232,7 +257,6 @@ const Navbar = () => {
                 ))}
               </Stack>
 
-              {/* Desktop Auth Section */}
               {isAuthenticated ? (
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                   <Typography variant="body1" sx={{ color: "black" }}>
@@ -255,6 +279,9 @@ const Navbar = () => {
                         width: "100%",
                         height: "100%",
                         objectFit: "cover",
+                      }}
+                      onError={(e) => {
+                        e.target.src = "/src/images/anonymous.jpg";
                       }}
                     />
                   </Box>
@@ -302,7 +329,6 @@ const Navbar = () => {
           )}
         </Box>
 
-        {/* Mobile Drawer */}
         <Drawer
           variant="temporary"
           anchor="right"

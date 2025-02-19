@@ -23,7 +23,7 @@ import IconButton from "@mui/material/IconButton";
 import Avatar from "@mui/material/Avatar";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
 
-import anonymousImg from "../images/anonymous.jpg";
+import defaultAvatar from "../images/anonymous.jpg";
 
 import AppTheme from "../AppTheme";
 
@@ -947,7 +947,7 @@ const PersonalInfo = () => {
                   }}
                 >
                   <Avatar
-                    src={previewUrl || anonymousImg}
+                    src={previewUrl || defaultAvatar}
                     alt="Profile"
                     sx={{
                       width: "100%",
