@@ -36,7 +36,6 @@ const FeatureCard = ({ icon, title, description }) => (
       borderRadius: "20px",
       boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
       border: "1px solid #eee",
-      transition: "transform 0.2s",
     }}
   >
     <CardContent sx={{ flexGrow: 1, textAlign: "center" }}>
@@ -204,6 +203,13 @@ const HomePage = () => {
                 description="แสดงตัวตนของคุณผ่านโปรไฟล์ที่ละเอียด ทั้งไลฟ์สไตล์ ความชอบ และนิสัยการใช้ชีวิต"
               />
             </Grid>
+            <Grid item xs={12} md={4}>
+              <FeatureCard
+                icon={<MessagesSquare size={24} />}
+                title="การติดต่อที่เรียบง่าย"
+                description="เชื่อมต่อกับรูมเมทที่คุณสนใจผ่านคอนแท็ก Social Network"
+              />
+            </Grid>
           </Grid>
 
           {/* Benefits */}
@@ -226,7 +232,7 @@ const HomePage = () => {
                 </Typography>
                 <List>
                   {[
-                    "วิเคราะห์ความเข้ากันได้จาก 15 ปัจจัยสำคัญ",
+                    "วิเคราะห์ความเข้ากันได้จากหลายปัจจัยสำคัญ",
                     "พิจารณาทั้งนิสัย ไลฟ์สไตล์ และความชอบ",
                     "แสดงเปอร์เซ็นต์ความเข้ากันได้",
                   ].map((text, index) => (
