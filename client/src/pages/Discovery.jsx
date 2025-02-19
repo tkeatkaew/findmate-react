@@ -1438,7 +1438,16 @@ const Discovery = () => {
                             }}
                           />
                           <Box>
-                            <Typography variant="h6" sx={{ mb: 1 }}>
+                            <Typography
+                              variant="h6"
+                              sx={{
+                                mb: 1,
+                                maxWidth: "200px",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
                               {neighbor.traits.nickname || "Anonymous"}
                             </Typography>
                             <Typography variant="subtitle1" color="primary">
