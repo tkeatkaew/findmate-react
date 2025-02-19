@@ -143,13 +143,29 @@ const AdminDashboard = () => {
 
   const handleUserAction = async () => {
     try {
-      if (selectedAction === "delete") {
-        await axios.delete(`/admin/users/${selectedUser.id}`);
-      } else {
-        await axios.post(`/admin/user-action/${selectedUser.id}`, {
-          action: selectedAction,
-          reason: actionReason,
-        });
+      if (!selectedUser && !selectedReport) return;
+
+      // If coming from a report
+      if (selectedReport) {
+        await axios.post(
+          `/admin/user-action/${selectedReport.reported_user_id}`,
+          {
+            action: selectedAction,
+            reason: actionReason,
+            report_id: selectedReport.id,
+          }
+        );
+      }
+      // If coming from user management
+      else if (selectedUser) {
+        if (selectedAction === "delete") {
+          await axios.delete(`/admin/users/${selectedUser.id}`);
+        } else {
+          await axios.post(`/admin/user-action/${selectedUser.id}`, {
+            action: selectedAction,
+            reason: actionReason,
+          });
+        }
       }
 
       setAlert({
@@ -158,10 +174,14 @@ const AdminDashboard = () => {
         severity: "success",
       });
 
+      // Refresh data
       fetchUsers();
+      fetchReports();
       setActionDialogOpen(false);
       setActionReason("");
       setSelectedAction("");
+      setSelectedReport(null);
+      setSelectedUser(null);
     } catch (error) {
       console.error("Error:", error);
       setAlert({
@@ -240,7 +260,7 @@ const AdminDashboard = () => {
               <Tab label="รายงานผู้ใช้" />
               <Tab label="รายงานระบบ" />
               <Tab label="ข้อเสนอแนะ" />
-              <Tab label="จัดการผู้ใช้" />
+              <Tab label="จัดการผู้ใช้ทั้งหมด" />
             </Tabs>
 
             <Box sx={{ p: 3 }}>
@@ -288,26 +308,20 @@ const AdminDashboard = () => {
                               >
                                 ดูรายละเอียด
                               </Button>
-                              <Button
-                                variant="contained"
-                                size="small"
-                                color={
-                                  report.is_suspended ? "primary" : "error"
-                                }
-                                onClick={() => {
-                                  setSelectedReport(report);
-                                  setSelectedAction(
-                                    report.is_suspended
-                                      ? "unsuspend"
-                                      : "suspend"
-                                  );
-                                  setActionDialogOpen(true);
-                                }}
-                              >
-                                {report.is_suspended
-                                  ? "ยกเลิกระงับ"
-                                  : "ระงับการใช้งาน"}
-                              </Button>
+                              {!report.is_suspended && (
+                                <Button
+                                  variant="contained"
+                                  size="small"
+                                  color="error"
+                                  onClick={() => {
+                                    setSelectedReport(report);
+                                    setSelectedAction("suspend");
+                                    setActionDialogOpen(true);
+                                  }}
+                                >
+                                  ระงับการใช้งาน
+                                </Button>
+                              )}
                               <Button
                                 variant="outlined"
                                 size="small"
