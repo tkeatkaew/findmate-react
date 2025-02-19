@@ -20,6 +20,10 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import IconButton from "@mui/material/IconButton";
+import Avatar from "@mui/material/Avatar";
+import PhotoCamera from "@mui/icons-material/PhotoCamera";
+
+import anonymousImg from "../images/anonymous.jpg";
 
 import AppTheme from "../AppTheme";
 
@@ -898,48 +902,56 @@ const PersonalInfo = () => {
           <Typography variant="h4">ประวัติส่วนตัว</Typography>
           <form onSubmit={handleSubmit}>
             <Stack spacing={2} useFlexGap>
-              {/* Image Preview Section */}
-              {previewUrl && (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  mb: 3,
+                }}
+              >
                 <Box
                   sx={{
                     position: "relative",
-                    width: "fit-content",
-                    margin: "0 auto",
+                    width: "150px",
+                    height: "150px",
                     mb: 2,
                   }}
                 >
-                  <Box
-                    component="img"
-                    src={previewUrl}
-                    alt="Profile preview"
+                  <Avatar
+                    src={previewUrl || anonymousImg}
+                    alt="Profile"
                     sx={{
-                      width: "200px",
-                      height: "200px",
-                      objectFit: "cover",
-                      borderRadius: "50%",
-                      border: "2px solid #eee",
+                      width: "100%",
+                      height: "100%",
                     }}
                   />
                   <IconButton
-                    onClick={() => {
-                      setPreviewUrl("");
-                      setProfilePicture(null);
-                    }}
+                    color="primary"
+                    aria-label="upload picture"
+                    component="label"
+                    disabled={isUploading}
                     sx={{
                       position: "absolute",
-                      top: -8,
-                      right: -8,
-                      bgcolor: "background.paper",
-                      boxShadow: 1,
+                      bottom: 0,
+                      right: 0,
+                      backgroundColor: "white",
                       "&:hover": {
-                        bgcolor: "background.paper",
+                        backgroundColor: "rgba(255, 255, 255, 0.8)",
                       },
                     }}
                   >
-                    <XCircle size={24} />
+                    <input
+                      hidden
+                      accept="image/*"
+                      type="file"
+                      onChange={handleFileChange}
+                      ref={fileInputRef}
+                    />
+                    <PhotoCamera />
                   </IconButton>
                 </Box>
-              )}
+              </Box>
 
               <Button
                 type="button"
@@ -1135,7 +1147,6 @@ const PersonalInfo = () => {
               <Typography
                 variant="body2"
                 color={contactError ? "error" : "text.secondary"}
-                sx={{ mb: 2 }}
               >
                 {socialContactHelperText}
               </Typography>
@@ -1151,7 +1162,6 @@ const PersonalInfo = () => {
                   handleSocialContactChange("facebook", e.target.value)
                 }
                 error={formSubmitted && contactError}
-                sx={{ mb: 2 }}
               />
 
               <TextField
@@ -1165,7 +1175,6 @@ const PersonalInfo = () => {
                   handleSocialContactChange("instagram", e.target.value)
                 }
                 error={formSubmitted && contactError}
-                sx={{ mb: 2 }}
               />
 
               <TextField
@@ -1179,7 +1188,6 @@ const PersonalInfo = () => {
                   handleSocialContactChange("lineId", e.target.value)
                 }
                 error={formSubmitted && contactError}
-                sx={{ mb: 2 }}
               />
 
               <TextField
@@ -1193,7 +1201,6 @@ const PersonalInfo = () => {
                   handleSocialContactChange("phone", e.target.value)
                 }
                 error={formSubmitted && contactError}
-                sx={{ mb: 2 }}
               />
 
               <Button
