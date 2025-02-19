@@ -41,7 +41,7 @@ const Login = () => {
     } catch (err) {
       setError("อีเมลหรือรหัสผ่านไม่ถูกต้องหรือบัญชีถูกระงับ");
     } finally {
-      setIsLoading(true); // Set loading to false when submission completes
+      setIsLoading(false); // Set loading to false when submission completes
     }
   };
 
