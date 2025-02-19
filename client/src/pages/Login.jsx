@@ -108,20 +108,6 @@ const Login = () => {
                   </Link>
                 </span>
               </Typography>
-              <Divider sx={{ fontSize: "0.785rem" }}>หรือ</Divider>
-              <Button
-                startIcon={<GoogleIcon />}
-                variant="outlined"
-                fullWidth
-                sx={{
-                  "& .MuiSvgIcon-root": {
-                    fontSize: "1rem",
-                  },
-                  textTransform: "none",
-                }}
-              >
-                เข้าสู่ระบบด้วย Google
-              </Button>
             </Stack>
           </form>
         </Stack>

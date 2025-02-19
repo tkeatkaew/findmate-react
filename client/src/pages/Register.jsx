@@ -169,21 +169,6 @@ const Register = () => {
                   เข้าสู่ระบบ
                 </Link>
               </Typography>
-              <Divider sx={{ fontSize: "0.785rem" }}>หรือ</Divider>
-              <Button
-                startIcon={<GoogleIcon />}
-                variant="outlined"
-                fullWidth
-                disabled={isLoading}
-                sx={{
-                  "& .MuiSvgIcon-root": {
-                    fontSize: "1rem",
-                  },
-                  textTransform: "none",
-                }}
-              >
-                สมัครใช้งานด้วย Google
-              </Button>
             </Stack>
           </form>
         </Stack>
