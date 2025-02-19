@@ -259,7 +259,7 @@ const PersonalityProfile = () => {
           <Paper
             elevation={0}
             sx={{
-              p: 4,
+              padding: 1,
               borderRadius: "15px",
               border: "1px solid #eee",
               boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
