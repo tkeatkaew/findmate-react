@@ -1573,21 +1573,26 @@ app.get("/admin/users", async (req, res) => {
 // });
 
 // Add delete user route
-app.delete("/admin/users/:userId", async (req, res) => {
+app.get("/admin/users/:userId", async (req, res) => {
   const { userId } = req.params;
 
   try {
-    // Simply delete the user - CASCADE will handle related records
-    await new Promise((resolve, reject) => {
-      db.query("DELETE FROM users WHERE id = ?", [userId], (err, result) => {
-        if (err) reject(err);
-        resolve(result);
-      });
-    });
-
-    res.json({ message: "User deleted successfully" });
+    db.query(
+      "SELECT id, name, email, profile_picture, is_suspended, suspension_reason FROM users WHERE id = ?",
+      [userId],
+      (err, result) => {
+        if (err) {
+          console.error("Error fetching user:", err);
+          return res.status(500).json({ error: "Database error" });
+        }
+        if (result.length === 0) {
+          return res.status(404).json({ error: "User not found" });
+        }
+        res.json(result[0]);
+      }
+    );
   } catch (error) {
-    console.error("Error deleting user:", error);
+    console.error("Error in /admin/users/:userId:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });

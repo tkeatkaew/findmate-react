@@ -151,13 +151,15 @@ const AdminDashboard = () => {
 
   const fetchUserDetails = async (userId) => {
     try {
-      const [userInfo, traits] = await Promise.all([
+      const [userInfo, traits, userData] = await Promise.all([
         axios.get(`/personalinfo/${userId}`),
         axios.get(`/personalitytraits/${userId}`),
+        axios.get(`/admin/users/${userId}`), // Add this to get user data including profile picture
       ]);
       return {
         info: userInfo.data,
         traits: traits.data,
+        profile: userData.data,
       };
     } catch (error) {
       console.error("Error fetching user details:", error);
@@ -595,6 +597,47 @@ const AdminDashboard = () => {
                   ข้อมูลผู้ถูกรายงาน
                 </Typography>
                 <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <Card>
+                      <CardContent
+                        sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                      >
+                        <Box
+                          sx={{
+                            width: 120,
+                            height: 120,
+                            borderRadius: "50%",
+                            overflow: "hidden",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <img
+                            src={
+                              selectedReport.profile_picture ||
+                              "/uploads/anonymous.jpg"
+                            }
+                            alt="Profile"
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                        </Box>
+                        <Typography variant="h6">
+                          {selectedReport.reported_user_name}
+                          {selectedReport.is_suspended && (
+                            <Chip
+                              label="ถูกระงับการใช้งาน"
+                              color="error"
+                              size="small"
+                              sx={{ ml: 1 }}
+                            />
+                          )}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
                   <Grid item xs={6}>
                     <Card>
                       <CardContent>
