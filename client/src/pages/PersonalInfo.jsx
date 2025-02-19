@@ -1055,7 +1055,6 @@ const PersonalInfo = () => {
               <Typography
                 variant="body2"
                 color={contactError ? "error" : "text.secondary"}
-                sx={{ mb: 2 }}
               >
                 {socialContactHelperText}
               </Typography>
@@ -1071,7 +1070,6 @@ const PersonalInfo = () => {
                   handleSocialContactChange("facebook", e.target.value)
                 }
                 error={formSubmitted && contactError}
-                sx={{ mb: 2 }}
               />
 
               <TextField
@@ -1085,7 +1083,6 @@ const PersonalInfo = () => {
                   handleSocialContactChange("instagram", e.target.value)
                 }
                 error={formSubmitted && contactError}
-                sx={{ mb: 2 }}
               />
 
               <TextField
@@ -1099,7 +1096,6 @@ const PersonalInfo = () => {
                   handleSocialContactChange("lineId", e.target.value)
                 }
                 error={formSubmitted && contactError}
-                sx={{ mb: 2 }}
               />
 
               <TextField
@@ -1113,7 +1109,6 @@ const PersonalInfo = () => {
                   handleSocialContactChange("phone", e.target.value)
                 }
                 error={formSubmitted && contactError}
-                sx={{ mb: 2 }}
               />
 
               <Button
