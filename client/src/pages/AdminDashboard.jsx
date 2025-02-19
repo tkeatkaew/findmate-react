@@ -176,9 +176,23 @@ const AdminDashboard = () => {
 
   return (
     <AppTheme>
-      <Box sx={{ display: "flex", minHeight: "90vh" }}>
+      <Box
+        sx={{
+          display: "flex",
+          minHeight: "90vh",
+          position: "relative",
+          zIndex: 0,
+        }}
+      >
         {/* Main Content */}
-        <Box sx={{ flex: 1, padding: "1rem" }}>
+        <Box
+          sx={{
+            flex: 1,
+            padding: "1rem",
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
           <Typography variant="h4" gutterBottom>
             แดชบอร์ดผู้ดูแลระบบ
           </Typography>
