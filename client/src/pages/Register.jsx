@@ -77,7 +77,7 @@ const Register = () => {
           padding: "2rem",
           maxWidth: "400px",
           margin: "auto",
-          marginTop: "2rem",
+          marginTop: "3rem",
           border: "1px solid #eee",
           borderRadius: "20px",
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
