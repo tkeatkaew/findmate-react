@@ -96,6 +96,43 @@ const AdminDashboard = () => {
     }
   };
 
+  const traitOptions = {
+    gender: [
+      { value: "male", label: "ชาย" },
+      { value: "female", label: "หญิง" },
+    ],
+    type: [
+      { value: "type_introvert", label: "Introvert" },
+      { value: "type_extrovert", label: "Extrovert" },
+      { value: "type_ambivert", label: "Ambivert" },
+    ],
+    sleep: [
+      { value: "sleep_before_midnight", label: "ก่อนเที่ยงคืน" },
+      { value: "sleep_after_midnight", label: "หลังเที่ยงคืน" },
+    ],
+    clean: [
+      { value: "clean_every_day", label: "ทำความสะอาดทุกวัน" },
+      { value: "clean_every_other_day", label: "ทำความสะอาดวันเว้นวัน" },
+      { value: "clean_once_a_week", label: "ทำความสะอาดสัปดาห์ละครั้ง" },
+    ],
+    smoke: [
+      { value: "smoke_never", label: "ไม่สูบ" },
+      { value: "smoke_spacial", label: "สูบเฉพาะเวลาสังสรรค์" },
+      { value: "smoke_always", label: "สูบเป็นประจำ" },
+    ],
+    drink: [
+      { value: "drink_never", label: "ไม่ดื่ม" },
+      { value: "drink_spacial", label: "ดื่มเฉพาะโอกาสพิเศษ" },
+      { value: "drink_weekend", label: "ดื่มช่วงสุดสัปดาห์" },
+      { value: "drink_always", label: "ดื่มเป็นประจำ" },
+    ],
+    period: [
+      { value: "period_long", label: "ต้องการรูมเมทระยะยาว" },
+      { value: "period_sometime", label: "ขึ้นอยู่กับสถานการณ์" },
+      { value: "period_no_need", label: "ไม่จำเป็น" },
+    ],
+  };
+
   const fetchReports = async () => {
     try {
       const [userReportsRes, systemReportsRes, suggestionsRes] =
