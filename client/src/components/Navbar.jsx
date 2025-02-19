@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu as MenuIcon, X } from "lucide-react";
 import AppTheme from "../AppTheme";
+import axios from "../services/api";
 import {
   Box,
   Button,
@@ -15,7 +16,6 @@ import {
   ListItem,
   ListItemText,
   Avatar,
-  Divider,
   useTheme,
   useMediaQuery,
 } from "@mui/material";
@@ -23,6 +23,7 @@ import {
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -31,6 +32,21 @@ const Navbar = () => {
   const user = isAuthenticated
     ? JSON.parse(localStorage.getItem("user"))
     : null;
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (isAuthenticated && user?.id) {
+        try {
+          const response = await axios.get(`/personalinfo/${user.id}`);
+          setUserInfo(response.data);
+        } catch (error) {
+          console.error("Error fetching user info:", error);
+        }
+      }
+    };
+
+    fetchUserInfo();
+  }, [isAuthenticated, user?.id]);
 
   const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -56,17 +72,32 @@ const Navbar = () => {
     { text: "เกี่ยวกับเรา", path: "/about" },
   ];
 
+  const getDisplayName = () => {
+    if (userInfo?.nickname) {
+      return userInfo.nickname;
+    }
+    return user?.name || "";
+  };
+
+  const getProfileImage = () => {
+    if (user?.profile_picture) {
+      return user.profile_picture;
+    }
+    // Use the local anonymous image as fallback
+    return "/src/images/anonymous.jpg";
+  };
+
   const drawer = (
     <Box sx={{ width: 250, p: 2 }}>
       <Stack spacing={2}>
         {isAuthenticated && (
           <Box sx={{ textAlign: "center", mb: 2 }}>
             <Avatar
-              src={user.profile_picture || "/uploads/anonymous.jpg"}
+              src={getProfileImage()}
               sx={{ width: 64, height: 64, mx: "auto", mb: 1 }}
             />
             <Typography variant="subtitle1" sx={{ color: "black" }}>
-              {user.name}
+              {getDisplayName()}
             </Typography>
           </Box>
         )}
@@ -204,7 +235,7 @@ const Navbar = () => {
               {isAuthenticated ? (
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                   <Typography variant="body1" sx={{ color: "black" }}>
-                    {user.name}
+                    {getDisplayName()}
                   </Typography>
                   <Box
                     onClick={handleProfileClick}
@@ -217,7 +248,7 @@ const Navbar = () => {
                     }}
                   >
                     <img
-                      src={user.profile_picture || "/uploads/anonymous.jpg"}
+                      src={getProfileImage()}
                       alt="Profile"
                       style={{
                         width: "100%",
@@ -277,7 +308,7 @@ const Navbar = () => {
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better mobile performance
+            keepMounted: true,
           }}
           sx={{
             display: { xs: "block", md: "none" },
