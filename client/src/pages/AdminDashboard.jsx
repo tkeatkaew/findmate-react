@@ -571,27 +571,40 @@ const AdminDashboard = () => {
         <DialogTitle>รายละเอียดรายงาน</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 1 }}>
+            {/* Report Information */}
             <Box>
               <Typography variant="h6" gutterBottom>
                 ข้อมูลการรายงาน
               </Typography>
-              <Stack spacing={2}>
-                <Typography>
-                  <strong>ประเภท:</strong> {selectedReport?.type}
-                </Typography>
-                <Typography>
-                  <strong>คำอธิบาย:</strong> {selectedReport?.description}
-                </Typography>
-                {selectedReport?.image && (
-                  <img
-                    src={selectedReport.image}
-                    alt="Report"
-                    style={{ width: "100%", borderRadius: "4px" }}
-                  />
-                )}
-              </Stack>
+              <Card>
+                <CardContent>
+                  <Stack spacing={2}>
+                    <Typography>
+                      <strong>ประเภท:</strong> {selectedReport?.type}
+                    </Typography>
+                    <Typography>
+                      <strong>คำอธิบาย:</strong> {selectedReport?.description}
+                    </Typography>
+                    {selectedReport?.image && (
+                      <Box sx={{ mt: 2 }}>
+                        <img
+                          src={selectedReport.image}
+                          alt="Report"
+                          style={{
+                            width: "100%",
+                            maxHeight: "400px",
+                            objectFit: "contain",
+                            borderRadius: "8px",
+                          }}
+                        />
+                      </Box>
+                    )}
+                  </Stack>
+                </CardContent>
+              </Card>
             </Box>
 
+            {/* User Information */}
             {selectedReport?.userDetails && (
               <Box>
                 <Typography variant="h6" gutterBottom>
@@ -600,6 +613,7 @@ const AdminDashboard = () => {
                 <Card>
                   <CardContent>
                     <Stack spacing={2}>
+                      {/* User Header with Profile Picture */}
                       <Box
                         sx={{ display: "flex", alignItems: "center", gap: 2 }}
                       >
@@ -637,95 +651,58 @@ const AdminDashboard = () => {
                               />
                             )}
                           </Typography>
-                          <Typography color="textSecondary">
-                            {selectedReport.userDetails.info.university}
+                          <Typography variant="body2" color="textSecondary">
+                            {selectedReport.userDetails.info.email}
                           </Typography>
                         </Stack>
                       </Box>
-                      <Divider sx={{ my: 2 }} />
-                      <Stack spacing={2}>
-                        <Typography>
-                          <strong>ชื่อ-นามสกุล:</strong>{" "}
-                          {selectedReport.userDetails.info.firstname}{" "}
-                          {selectedReport.userDetails.info.lastname}
-                        </Typography>
-                        <Typography>
-                          <strong>ชื่อเล่น:</strong>{" "}
-                          {selectedReport.userDetails.info.nickname}
-                        </Typography>
-                        <Typography>
-                          <strong>อายุ:</strong>{" "}
-                          {selectedReport.userDetails.info.age}
-                        </Typography>
-                        <Typography>
-                          <strong>เพศ:</strong>{" "}
-                          {traitOptions.gender.find(
-                            (option) =>
-                              option.value ===
-                              selectedReport.userDetails.info.gender
-                          )?.label || selectedReport.userDetails.info.gender}
-                        </Typography>
-                        <Typography>
-                          <strong>จังหวัด:</strong>{" "}
-                          {selectedReport.userDetails.info.province}
-                        </Typography>
-                        <Typography>
-                          <strong>สถานภาพ:</strong>{" "}
-                          {selectedReport.userDetails.info.maritalstatus}
-                        </Typography>
-                        <Typography>
-                          <strong>LGBT:</strong>{" "}
-                          {selectedReport.userDetails.info.lgbt
-                            ? "ใช่"
-                            : "ไม่ใช่"}
-                        </Typography>
-                        <Divider />
-                        <Typography variant="subtitle1">
-                          <strong>ข้อมูลการติดต่อ</strong>
-                        </Typography>
-                        <Typography>
-                          <strong>เบอร์โทร:</strong>{" "}
-                          {selectedReport.userDetails.info.phone || "-"}
-                        </Typography>
-                        <Typography>
-                          <strong>Facebook:</strong>{" "}
-                          {selectedReport.userDetails.info.facebook || "-"}
-                        </Typography>
-                        <Typography>
-                          <strong>Instagram:</strong>{" "}
-                          {selectedReport.userDetails.info.instagram || "-"}
-                        </Typography>
-                        <Typography>
-                          <strong>Line ID:</strong>{" "}
-                          {selectedReport.userDetails.info.line_id || "-"}
-                        </Typography>
-                        <Divider />
-                        <Typography variant="subtitle1">
-                          <strong>ข้อมูลที่พัก</strong>
-                        </Typography>
-                        <Typography>
-                          <strong>ชื่อหอพัก:</strong>{" "}
-                          {selectedReport.userDetails.info.dorm_name || "-"}
-                        </Typography>
-                        <Typography>
-                          <strong>ค่าหอพักต่อเดือน:</strong>{" "}
-                          {selectedReport.userDetails.info.monthly_dorm_fee
-                            ? `${selectedReport.userDetails.info.monthly_dorm_fee} บาท`
-                            : "-"}
-                        </Typography>
-                        <Typography>
-                          <strong>ยานพาหนะ:</strong>{" "}
-                          {selectedReport.userDetails.info.vehicle || "-"}
-                        </Typography>
-                        <Divider />
-                        <Typography>
-                          <strong>แนะนำตัว:</strong>
-                        </Typography>
-                        <Typography sx={{ whiteSpace: "pre-line" }}>
-                          {selectedReport.userDetails.info.self_introduction ||
-                            "-"}
-                        </Typography>
-                      </Stack>
+
+                      <Divider />
+
+                      {/* Basic Information */}
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                          <Typography>
+                            <strong>ชื่อ-นามสกุล:</strong>{" "}
+                            {selectedReport.userDetails.info.firstname}{" "}
+                            {selectedReport.userDetails.info.lastname}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Typography>
+                            <strong>ชื่อเล่น:</strong>{" "}
+                            {selectedReport.userDetails.info.nickname}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Typography>
+                            <strong>อายุ:</strong>{" "}
+                            {selectedReport.userDetails.info.age}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Typography>
+                            <strong>เพศ:</strong>{" "}
+                            {traitOptions.gender.find(
+                              (option) =>
+                                option.value ===
+                                selectedReport.userDetails.info.gender
+                            )?.label || selectedReport.userDetails.info.gender}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Typography>
+                            <strong>มหาวิทยาลัย:</strong>{" "}
+                            {selectedReport.userDetails.info.university}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Typography>
+                            <strong>จังหวัด:</strong>{" "}
+                            {selectedReport.userDetails.info.province}
+                          </Typography>
+                        </Grid>
+                      </Grid>
                     </Stack>
                   </CardContent>
                 </Card>
@@ -764,6 +741,7 @@ const AdminDashboard = () => {
           <Button onClick={() => setReportDialog(false)}>ปิด</Button>
         </DialogActions>
       </Dialog>
+
       {/* Alert */}
       <Snackbar
         open={alert.open}
