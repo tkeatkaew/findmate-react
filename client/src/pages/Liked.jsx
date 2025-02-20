@@ -478,12 +478,12 @@ const Liked = () => {
                 borderRadius: "20px",
               }}
             >
-              <Stack spacing={2}>
+              <Stack spacing={{ xs: 1, sm: 2 }}>
                 {likedUsers.map((likedUser) => (
                   <Paper
                     key={likedUser.id}
                     sx={{
-                      padding: "1rem",
+                      padding: { xs: "0.75rem", sm: "1rem" },
                       border: "1px solid #eee",
                       boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
                       borderRadius: "20px",
@@ -499,9 +499,9 @@ const Liked = () => {
                       <Box>
                         <Stack
                           direction="row"
-                          spacing={2}
+                          spacing={1}
                           alignItems="center"
-                          sx={{ mb: 2 }}
+                          sx={{ mb: 1 }}
                         >
                           <img
                             src={likedUser.profile_picture || defaultAvatar}
@@ -513,7 +513,7 @@ const Liked = () => {
                             style={{
                               width: "75px",
                               height: "75px",
-                              borderRadius: "10%",
+                              borderRadius: "15%",
                               objectFit: "cover",
                             }}
                           />
