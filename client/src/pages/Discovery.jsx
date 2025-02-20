@@ -1423,7 +1423,7 @@ const Discovery = () => {
                           direction="row"
                           spacing={1}
                           alignItems="center"
-                          sx={{ mb: 2 }}
+                          sx={{ mb: 1 }}
                         >
                           <img
                             src={
@@ -1441,6 +1441,7 @@ const Discovery = () => {
                             <Typography
                               variant="h6"
                               sx={{
+                                mb: 0.5,
                                 maxWidth: "180px",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
@@ -1454,7 +1455,7 @@ const Discovery = () => {
                             </Typography>
                           </Box>
                         </Stack>
-                        <Grid container>
+                        <Grid container spacing={0.5}>
                           {["type", "clean", "smoke"].map((key) => (
                             <Grid item xs={12} key={key}>
                               <Typography variant="body2">
