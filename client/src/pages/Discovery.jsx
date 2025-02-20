@@ -1417,11 +1417,10 @@ const Discovery = () => {
                     onClick={() => setSelectedUser(neighbor)}
                   >
                     {isMobile ? (
-                      // Mobile Layout
                       <Box>
                         <Stack
                           direction="row"
-                          spacing={1}
+                          spacing={1.5}
                           alignItems="center"
                           sx={{ mb: 1 }}
                         >
@@ -1439,26 +1438,37 @@ const Discovery = () => {
                           />
                           <Box>
                             <Typography
-                              variant="h6"
+                              variant="subtitle1"
                               sx={{
-                                mb: 0.5,
                                 maxWidth: "180px",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
                                 whiteSpace: "nowrap",
+                                fontWeight: 500,
+                                mb: 0.5,
                               }}
                             >
                               {neighbor.traits.nickname || "Anonymous"}
                             </Typography>
-                            <Typography variant="subtitle1" color="primary">
+                            <Typography
+                              variant="body2"
+                              color="primary"
+                              sx={{ fontWeight: 500 }}
+                            >
                               ความคล้าย {neighbor.similarity}%
                             </Typography>
                           </Box>
                         </Stack>
-                        <Grid container spacing={0.5}>
+                        <Grid container spacing={0.5} sx={{ px: 0.5 }}>
                           {["type", "clean", "smoke"].map((key) => (
                             <Grid item xs={12} key={key}>
-                              <Typography variant="body2">
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  fontSize: "0.8rem",
+                                  color: "text.secondary",
+                                }}
+                              >
                                 <strong>{labelMapping[key] || key}:</strong>{" "}
                                 {valueMapping[neighbor.traits[key]] ||
                                   neighbor.traits[key]}
