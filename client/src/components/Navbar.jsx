@@ -141,17 +141,9 @@ const Navbar = () => {
               sx={{
                 borderRadius: 2,
                 "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
-                justifyContent: "center", // Center the list item content
-                textAlign: "center", // Center the text
               }}
             >
-              <ListItemText
-                primary={item.text}
-                sx={{
-                  color: "black",
-                  textAlign: "center", // Center the text
-                }}
-              />
+              <ListItemText primary={item.text} sx={{ color: "black" }} />
             </ListItem>
           ))}
           {isAuthenticated && (
@@ -163,17 +155,9 @@ const Navbar = () => {
                 sx={{
                   borderRadius: 2,
                   "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
-                  justifyContent: "center", // Center the list item content
-                  textAlign: "center", // Center the text
                 }}
               >
-                <ListItemText
-                  primary="แก้ไขโปรไฟล์"
-                  sx={{
-                    color: "black",
-                    textAlign: "center", // Center the text
-                  }}
-                />
+                <ListItemText primary="แก้ไขโปรไฟล์" sx={{ color: "black" }} />
               </ListItem>
               <ListItem
                 button
@@ -181,16 +165,11 @@ const Navbar = () => {
                 sx={{
                   borderRadius: 2,
                   "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
-                  justifyContent: "center", // Center the list item content
-                  textAlign: "center", // Center the text
                 }}
               >
                 <ListItemText
                   primary="ออกจากระบบ"
-                  sx={{
-                    color: "error.main",
-                    textAlign: "center", // Center the text
-                  }}
+                  sx={{ color: "error.main" }}
                 />
               </ListItem>
             </>
@@ -203,17 +182,9 @@ const Navbar = () => {
               sx={{
                 borderRadius: 2,
                 "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
-                justifyContent: "center", // Center the list item content
-                textAlign: "center", // Center the text
               }}
             >
-              <ListItemText
-                primary="เข้าสู่ระบบ"
-                sx={{
-                  color: "black",
-                  textAlign: "center", // Center the text
-                }}
-              />
+              <ListItemText primary="เข้าสู่ระบบ" sx={{ color: "black" }} />
             </ListItem>
           )}
         </List>
