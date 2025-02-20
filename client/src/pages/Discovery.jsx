@@ -1175,7 +1175,7 @@ const Discovery = () => {
         <Box
           sx={{
             width: isMobile ? "auto" : "200px",
-            height: "95%",
+            height: isMobile ? "90%" : "96%",
             padding: "0.5rem",
             border: "1px solid #eee",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
