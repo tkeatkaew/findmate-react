@@ -1174,17 +1174,17 @@ const Discovery = () => {
         {/* Sidebar */}
         <Box
           sx={{
-            width: isMobile ? "48px" : "200px",
+            width: isMobile ? "40px" : "200px", // Changed from "48px" to "40px" for mobile
             height: "95%",
-            padding: "0.5rem",
+            padding: isMobile ? "0.25rem" : "0.5rem", // Also reducing padding on mobile
             border: "1px solid #eee",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
             borderRadius: "20px",
-            margin: "7.5px",
+            margin: isMobile ? "4px" : "7.5px", // Reducing margin on mobile too
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
-            flexShrink: 0, // Prevent sidebar from shrinking
+            flexShrink: 0,
           }}
         >
           <Stack direction="column" spacing={2}>
