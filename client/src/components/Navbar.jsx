@@ -199,7 +199,7 @@ const Navbar = () => {
           border: "1px solid #eee",
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
           borderRadius: "20px",
-          margin: "10px",
+          margin: { xs: "10px 8px 5px 8px", sm: "10px" },
         }}
       >
         <Box
