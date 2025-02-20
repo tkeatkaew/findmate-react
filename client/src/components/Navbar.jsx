@@ -141,9 +141,17 @@ const Navbar = () => {
               sx={{
                 borderRadius: 2,
                 "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
+                justifyContent: "center", // Center the list item content
+                textAlign: "center", // Center the text
               }}
             >
-              <ListItemText primary={item.text} sx={{ color: "black" }} />
+              <ListItemText
+                primary={item.text}
+                sx={{
+                  color: "black",
+                  textAlign: "center", // Center the text
+                }}
+              />
             </ListItem>
           ))}
           {isAuthenticated && (
@@ -155,9 +163,17 @@ const Navbar = () => {
                 sx={{
                   borderRadius: 2,
                   "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
+                  justifyContent: "center", // Center the list item content
+                  textAlign: "center", // Center the text
                 }}
               >
-                <ListItemText primary="แก้ไขโปรไฟล์" sx={{ color: "black" }} />
+                <ListItemText
+                  primary="แก้ไขโปรไฟล์"
+                  sx={{
+                    color: "black",
+                    textAlign: "center", // Center the text
+                  }}
+                />
               </ListItem>
               <ListItem
                 button
@@ -165,9 +181,17 @@ const Navbar = () => {
                 sx={{
                   borderRadius: 2,
                   "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
+                  justifyContent: "center", // Center the list item content
+                  textAlign: "center", // Center the text
                 }}
               >
-                <ListItemText primary="ออกจากระบบ" sx={{ color: "black" }} />
+                <ListItemText
+                  primary="ออกจากระบบ"
+                  sx={{
+                    color: "error.main",
+                    textAlign: "center", // Center the text
+                  }}
+                />
               </ListItem>
             </>
           )}
@@ -179,9 +203,17 @@ const Navbar = () => {
               sx={{
                 borderRadius: 2,
                 "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
+                justifyContent: "center", // Center the list item content
+                textAlign: "center", // Center the text
               }}
             >
-              <ListItemText primary="เข้าสู่ระบบ" sx={{ color: "black" }} />
+              <ListItemText
+                primary="เข้าสู่ระบบ"
+                sx={{
+                  color: "black",
+                  textAlign: "center", // Center the text
+                }}
+              />
             </ListItem>
           )}
         </List>
@@ -195,7 +227,7 @@ const Navbar = () => {
         sx={{
           minWidth: "320px",
           padding: { xs: "0.25rem", sm: "0.5rem" },
-          paddingLeft: { xs: "0.75rem", sm: "1.5rem" },
+          paddingLeft: { xs: "1rem", sm: "1.5rem" },
           border: "1px solid #eee",
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
           borderRadius: "20px",
@@ -307,7 +339,10 @@ const Navbar = () => {
                     >
                       แก้ไขโปรไฟล์
                     </MenuItem>
-                    <MenuItem onClick={handleSignOut} sx={{ color: "black" }}>
+                    <MenuItem
+                      onClick={handleSignOut}
+                      sx={{ color: "error.main" }}
+                    >
                       ออกจากระบบ
                     </MenuItem>
                   </Menu>
