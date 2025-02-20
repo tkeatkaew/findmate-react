@@ -1197,12 +1197,16 @@ const Discovery = () => {
                 sx={{
                   textTransform: "none",
                   color: "black",
-                  justifyContent: isMobile ? "center" : "flex-start",
-                  minWidth: isMobile ? "48px" : "auto",
-                  p: isMobile ? "8px" : "8px 16px",
+                  justifyContent: "center", // Changed to always center
+                  minWidth: isMobile ? "40px" : "auto", // Match the width of the sidebar
+                  padding: isMobile ? "6px 0" : "8px 16px", // Remove horizontal padding on mobile
+                  width: isMobile ? "40px" : "auto", // Force width on mobile to match sidebar
                 }}
               >
-                {isMobile ? item.icon : item.text}
+                {isMobile
+                  ? React.cloneElement(item.icon, { size: 18 })
+                  : item.text}{" "}
+                // Reduced icon size
               </Button>
             ))}
             <Divider sx={{ my: 1 }} />
