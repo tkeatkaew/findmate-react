@@ -1405,7 +1405,7 @@ const Discovery = () => {
                   <Paper
                     key={neighbor.user_id}
                     sx={{
-                      padding: "1rem",
+                      padding: { xs: "0.5rem 0.75rem", sm: "1rem" }, // Reduced padding on mobile
                       border: "1px solid #eee",
                       boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
                       borderRadius: "20px",
@@ -1417,12 +1417,13 @@ const Discovery = () => {
                     onClick={() => setSelectedUser(neighbor)}
                   >
                     {isMobile ? (
+                      // Mobile Layout
                       <Box>
                         <Stack
                           direction="row"
-                          spacing={1.5}
+                          spacing={2}
                           alignItems="center"
-                          sx={{ mb: 1 }}
+                          sx={{ mb: 2 }}
                         >
                           <img
                             src={
@@ -1438,37 +1439,26 @@ const Discovery = () => {
                           />
                           <Box>
                             <Typography
-                              variant="subtitle1"
+                              variant="h6"
                               sx={{
+                                mb: 1,
                                 maxWidth: "180px",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
                                 whiteSpace: "nowrap",
-                                fontWeight: 500,
-                                mb: 0.5,
                               }}
                             >
                               {neighbor.traits.nickname || "Anonymous"}
                             </Typography>
-                            <Typography
-                              variant="body2"
-                              color="primary"
-                              sx={{ fontWeight: 500 }}
-                            >
+                            <Typography variant="subtitle1" color="primary">
                               ความคล้าย {neighbor.similarity}%
                             </Typography>
                           </Box>
                         </Stack>
-                        <Grid container spacing={0.5} sx={{ px: 0.5 }}>
+                        <Grid container>
                           {["type", "clean", "smoke"].map((key) => (
                             <Grid item xs={12} key={key}>
-                              <Typography
-                                variant="body2"
-                                sx={{
-                                  fontSize: "0.8rem",
-                                  color: "text.secondary",
-                                }}
-                              >
+                              <Typography variant="body2">
                                 <strong>{labelMapping[key] || key}:</strong>{" "}
                                 {valueMapping[neighbor.traits[key]] ||
                                   neighbor.traits[key]}
