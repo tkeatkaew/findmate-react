@@ -194,8 +194,8 @@ const Navbar = () => {
       <Box
         sx={{
           minWidth: "320px",
-          padding: "0.5rem",
-          paddingLeft: "1.5rem",
+          padding: { xs: "0.25rem", sm: "0.5rem" },
+          paddingLeft: { xs: "0.75rem", sm: "1.5rem" },
           border: "1px solid #eee",
           boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
           borderRadius: "20px",
