@@ -1174,17 +1174,17 @@ const Discovery = () => {
         {/* Sidebar */}
         <Box
           sx={{
-            width: isMobile ? "40px" : "200px", // Changed from "48px" to "40px" for mobile
+            width: isMobile ? "auto" : "200px",
             height: "95%",
-            padding: isMobile ? "0.25rem" : "0.5rem", // Also reducing padding on mobile
+            padding: "0.5rem",
             border: "1px solid #eee",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
             borderRadius: "20px",
-            margin: isMobile ? "4px" : "7.5px", // Reducing margin on mobile too
+            margin: "7.5px",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
-            flexShrink: 0,
+            flexShrink: 0, // Prevent sidebar from shrinking
           }}
         >
           <Stack direction="column" spacing={2}>
@@ -1197,16 +1197,12 @@ const Discovery = () => {
                 sx={{
                   textTransform: "none",
                   color: "black",
-                  justifyContent: "center", // Changed to always center
-                  minWidth: isMobile ? "40px" : "auto", // Match the width of the sidebar
-                  padding: isMobile ? "6px 0" : "8px 16px", // Remove horizontal padding on mobile
-                  width: isMobile ? "40px" : "auto", // Force width on mobile to match sidebar
+                  justifyContent: isMobile ? "center" : "flex-start",
+                  minWidth: isMobile ? "48px" : "auto",
+                  p: isMobile ? "8px" : "8px 16px",
                 }}
               >
-                {isMobile
-                  ? React.cloneElement(item.icon, { size: 18 })
-                  : item.text}{" "}
-                // Reduced icon size
+                {isMobile ? item.icon : item.text}
               </Button>
             ))}
             <Divider sx={{ my: 1 }} />
