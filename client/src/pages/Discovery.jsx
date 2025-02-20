@@ -1400,12 +1400,12 @@ const Discovery = () => {
                 borderRadius: "20px",
               }}
             >
-              <Stack spacing={2}>
+              <Stack spacing={{ xs: 1, sm: 2 }}>
                 {filteredUsers.map((neighbor) => (
                   <Paper
                     key={neighbor.user_id}
                     sx={{
-                      padding: { xs: "0.5rem", sm: "1rem" }, // Reduced padding on mobile
+                      padding: { xs: "0.75rem", sm: "1rem" }, // Reduced padding on mobile
                       border: "1px solid #eee",
                       boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
                       borderRadius: "20px",
