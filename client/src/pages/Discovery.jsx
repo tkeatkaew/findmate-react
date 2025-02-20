@@ -1405,7 +1405,7 @@ const Discovery = () => {
                   <Paper
                     key={neighbor.user_id}
                     sx={{
-                      padding: { xs: "0.5rem 0.75rem", sm: "1rem" }, // Reduced padding on mobile
+                      padding: { xs: "0.5rem", sm: "1rem" }, // Reduced padding on mobile
                       border: "1px solid #eee",
                       boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
                       borderRadius: "20px",
@@ -1421,9 +1421,9 @@ const Discovery = () => {
                       <Box>
                         <Stack
                           direction="row"
-                          spacing={2}
+                          spacing={1}
                           alignItems="center"
-                          sx={{ mb: 2 }}
+                          sx={{ mb: 1 }}
                         >
                           <img
                             src={
@@ -1433,7 +1433,7 @@ const Discovery = () => {
                             style={{
                               width: "75px",
                               height: "75px",
-                              borderRadius: "10%",
+                              borderRadius: "15%",
                               objectFit: "cover",
                             }}
                           />
