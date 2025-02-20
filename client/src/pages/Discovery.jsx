@@ -1174,7 +1174,7 @@ const Discovery = () => {
         {/* Sidebar */}
         <Box
           sx={{
-            width: isMobile ? "auto" : "200px",
+            width: isMobile ? "48px" : "200px",
             height: "95%",
             padding: "0.5rem",
             border: "1px solid #eee",
