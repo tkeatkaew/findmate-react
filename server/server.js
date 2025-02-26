@@ -304,15 +304,60 @@ app.post("/personalinfo", async (req, res) => {
   } = req.body;
 
   try {
-    // Check if the user exists in the `users` table
-    const [result] = await promisePool.query(
+    // First check if user exists in the users table
+    const [userResult] = await promisePool.query(
       "SELECT id FROM users WHERE email = ?",
       [email]
     );
 
-    if (result.length > 0) {
-      // User exists, insert data into the personality_infomation table
-      const insertPersonalInfoQuery = `
+    if (userResult.length === 0) {
+      return res.status(400).json({ error: "User not found" });
+    }
+
+    // Check if user already has personal info in the personality_infomation table
+    const [existingInfo] = await promisePool.query(
+      "SELECT id FROM personality_infomation WHERE user_id = ?",
+      [user_id]
+    );
+
+    if (existingInfo.length > 0) {
+      // User already has info, so UPDATE
+      const updateQuery = `
+        UPDATE personality_infomation 
+        SET firstname = ?, lastname = ?, nickname = ?, age = ?, 
+            maritalstatus = ?, gender = ?, lgbt = ?, province = ?, 
+            university = ?, facebook = ?, instagram = ?, line_id = ?, 
+            phone = ?, dorm_name = ?, vehicle = ?, self_introduction = ?, monthly_dorm_fee = ?
+        WHERE user_id = ?
+      `;
+
+      await promisePool.query(updateQuery, [
+        firstname,
+        lastname,
+        nickname,
+        age,
+        maritalstatus,
+        gender,
+        lgbt,
+        province,
+        university,
+        facebook,
+        instagram,
+        line_id,
+        phone,
+        dorm_name,
+        vehicle,
+        self_introduction,
+        monthly_dorm_fee || null,
+        user_id,
+      ]);
+
+      return res
+        .status(200)
+        .json({ message: "User information updated successfully!" });
+    } else {
+      // No existing info, so INSERT
+      const insertQuery = `
         INSERT INTO personality_infomation (
           user_id, firstname, lastname, nickname, age, maritalstatus, 
           gender, lgbt, province, university, facebook, instagram, 
@@ -320,7 +365,7 @@ app.post("/personalinfo", async (req, res) => {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
-      await promisePool.query(insertPersonalInfoQuery, [
+      await promisePool.query(insertQuery, [
         user_id,
         firstname,
         lastname,
@@ -342,14 +387,12 @@ app.post("/personalinfo", async (req, res) => {
       ]);
 
       return res
-        .status(200)
-        .json({ message: "User information updated successfully!" });
-    } else {
-      return res.status(400).json({ error: "User not found" });
+        .status(201)
+        .json({ message: "User information created successfully!" });
     }
   } catch (err) {
     console.error("Error in personal info:", err);
-    return res.status(500).json({ error: "Error inserting user information" });
+    return res.status(500).json({ error: "Error processing user information" });
   }
 });
 
@@ -375,36 +418,80 @@ app.post("/personalitytraits", async (req, res) => {
   } = req.body;
 
   try {
-    const insertTraitsQuery = `
-      INSERT INTO personality_traits (
-        user_id, type, sleep, wake, clean, air_conditioner, drink, 
-        smoke, money, expense, pet, cook, loud, friend, religion, period
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
+    // Check if user already has personality traits
+    const [existingTraits] = await promisePool.query(
+      "SELECT id FROM personality_traits WHERE user_id = ?",
+      [user_id]
+    );
 
-    await promisePool.query(insertTraitsQuery, [
-      user_id,
-      type,
-      sleep,
-      wake,
-      clean,
-      air_conditioner,
-      drink,
-      smoke,
-      money,
-      expense,
-      pet,
-      cook,
-      loud,
-      friend,
-      religion,
-      period,
-    ]);
+    if (existingTraits.length > 0) {
+      // User already has traits, so UPDATE
+      const updateQuery = `
+        UPDATE personality_traits 
+        SET type = ?, sleep = ?, wake = ?, clean = ?, 
+            air_conditioner = ?, drink = ?, smoke = ?, 
+            money = ?, expense = ?, pet = ?, cook = ?, 
+            loud = ?, friend = ?, religion = ?, period = ?
+        WHERE user_id = ?
+      `;
 
-    res.status(200).json({ message: "Personality traits saved successfully!" });
+      await promisePool.query(updateQuery, [
+        type,
+        sleep,
+        wake,
+        clean,
+        air_conditioner,
+        drink,
+        smoke,
+        money,
+        expense,
+        pet,
+        cook,
+        loud,
+        friend,
+        religion,
+        period,
+        user_id,
+      ]);
+
+      res
+        .status(200)
+        .json({ message: "Personality traits updated successfully!" });
+    } else {
+      // No existing traits, so INSERT
+      const insertQuery = `
+        INSERT INTO personality_traits (
+          user_id, type, sleep, wake, clean, air_conditioner, drink, 
+          smoke, money, expense, pet, cook, loud, friend, religion, period
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+
+      await promisePool.query(insertQuery, [
+        user_id,
+        type,
+        sleep,
+        wake,
+        clean,
+        air_conditioner,
+        drink,
+        smoke,
+        money,
+        expense,
+        pet,
+        cook,
+        loud,
+        friend,
+        religion,
+        period,
+      ]);
+
+      res
+        .status(201)
+        .json({ message: "Personality traits created successfully!" });
+    }
   } catch (err) {
     console.error("Error saving personality traits:", err);
-    res.status(500).json({ error: "Error saving personality traits" });
+    res.status(500).json({ error: "Error processing personality traits" });
   }
 });
 
