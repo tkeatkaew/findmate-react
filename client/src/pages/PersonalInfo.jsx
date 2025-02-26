@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../services/api";
 import { uploadToCloudinary } from "../utils/cloudinary";
 import { CheckCircle, XCircle } from "lucide-react";
-import RequiredInfoBanner from "../components/RequiredInfoBanner";
+//import RequiredInfoBanner from "../components/RequiredInfoBanner";
 
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
