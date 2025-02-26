@@ -99,8 +99,8 @@ const Register = () => {
               <TextField
                 required
                 type="text"
-                label="ชื่อเล่น"
-                placeholder="ชื่อเล่นของคุณ"
+                label="ยูสเซอร์เนม"
+                placeholder="ยูสเซอร์เนมของคุณ"
                 variant="outlined"
                 fullWidth
                 value={name}
