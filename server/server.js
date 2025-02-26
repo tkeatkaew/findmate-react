@@ -13,27 +13,28 @@ const knn = require("ml-knn");
 
 const nodemailer = require("nodemailer");
 
-// MySQL Connection
-// const db = mysql.createConnection({
-//   host: "localhost",
-//   user: "root",
-//   password: "root",
-//   database: "findmatev3",
-// });
-
-const db = mysql.createConnection({
+// MySQL Connection Pool instead of single connection
+const pool = mysql.createPool({
   host: "mysql.railway.internal",
   user: "root",
   password: "hAGSisGocpxGJpFQzPDLxdyZxOlaJGsG",
   database: "railway",
+  waitForConnections: true,
+  connectionLimit: 10, // Adjust based on your application needs
+  queueLimit: 0,
 });
 
-db.connect((err) => {
+// Convert callbacks to promises for easier async/await usage
+const promisePool = pool.promise();
+
+// Test connection
+pool.getConnection((err, connection) => {
   if (err) {
     console.error("Database connection failed:", err);
     process.exit(1);
   }
   console.log("Connected to MySQL database.");
+  connection.release(); // Release connection when done with test
 });
 
 // Middleware
@@ -98,16 +99,10 @@ app.post("/register", async (req, res) => {
 
   try {
     // Check if email exists
-    const emailCheckResult = await new Promise((resolve, reject) => {
-      db.query(
-        "SELECT * FROM users WHERE email = ?",
-        [email],
-        (err, result) => {
-          if (err) reject(err);
-          resolve(result);
-        }
-      );
-    });
+    const [emailCheckResult] = await promisePool.query(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    );
 
     if (emailCheckResult.length > 0) {
       return res.status(400).json({ error: "Email already registered" });
@@ -151,9 +146,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// Add OTP verification endpoint
-// In server.js - Update the /verify-otp endpoint
-
+// Verify OTP endpoint
 app.post("/verify-otp", async (req, res) => {
   const { registration_id, otp } = req.body;
   const registrationData = pendingRegistrations.get(registration_id);
@@ -186,21 +179,10 @@ app.post("/verify-otp", async (req, res) => {
   if (otpData.code === otp) {
     try {
       // Insert verified user into database
-      const result = await new Promise((resolve, reject) => {
-        db.query(
-          "INSERT INTO users (name, email, password, role, email_verified) VALUES (?, ?, ?, ?, true)",
-          [
-            userData.name,
-            userData.email,
-            userData.hashedPassword,
-            userData.role,
-          ],
-          (err, result) => {
-            if (err) reject(err);
-            resolve(result);
-          }
-        );
-      });
+      const [result] = await promisePool.query(
+        "INSERT INTO users (name, email, password, role, email_verified) VALUES (?, ?, ?, ?, true)",
+        [userData.name, userData.email, userData.hashedPassword, userData.role]
+      );
 
       // Clean up pending registration
       pendingRegistrations.delete(registration_id);
@@ -255,19 +237,20 @@ app.post("/resend-otp", async (req, res) => {
 });
 
 // Login Route
-// Modify your login route in server.js
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  const getUserQuery =
-    "SELECT id, name, email, password, role, profile_picture, is_suspended, suspension_reason FROM users WHERE email = ?";
 
-  db.query(getUserQuery, [email], (err, result) => {
-    if (err) return res.status(500).json({ error: "Database error" });
-    if (result.length === 0) {
+  try {
+    const [results] = await promisePool.query(
+      "SELECT id, name, email, password, role, profile_picture, is_suspended, suspension_reason FROM users WHERE email = ?",
+      [email]
+    );
+
+    if (results.length === 0) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const user = result[0];
+    const user = results[0];
     if (!bcrypt.compareSync(password, user.password)) {
       return res.status(401).json({ error: "Invalid password" });
     }
@@ -290,11 +273,14 @@ app.post("/login", (req, res) => {
     };
 
     res.status(200).json({ user: req.session.user });
-  });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
 // Add Personal Information Route
-app.post("/personalinfo", (req, res) => {
+app.post("/personalinfo", async (req, res) => {
   const {
     user_id,
     email,
@@ -317,88 +303,58 @@ app.post("/personalinfo", (req, res) => {
     monthly_dorm_fee,
   } = req.body;
 
-  // Check if the user exists in the `users` table
-  const checkEmailQuery = "SELECT id FROM users WHERE email = ?";
-
-  console.log(
-    email,
-    user_id,
-    firstname,
-    lastname,
-    nickname,
-    age,
-    maritalstatus,
-    gender,
-    lgbt,
-    province,
-    university,
-    facebook,
-    instagram,
-    line_id,
-    phone,
-    dorm_name,
-    vehicle,
-    self_introduction,
-    monthly_dorm_fee
-  );
-
-  db.query(checkEmailQuery, [email], (err, result) => {
-    if (err) {
-      return res.status(500).json({ error: "Database error" });
-    }
+  try {
+    // Check if the user exists in the `users` table
+    const [result] = await promisePool.query(
+      "SELECT id FROM users WHERE email = ?",
+      [email]
+    );
 
     if (result.length > 0) {
-      // User exists, insert data into the `findmate` table
-      const userId = result[0].id;
+      // User exists, insert data into the personality_infomation table
       const insertPersonalInfoQuery = `
-  INSERT INTO personality_infomation (
-    user_id, firstname, lastname, nickname, age, maritalstatus, 
-    gender, lgbt, province, university, facebook, instagram, 
-    line_id, phone, dorm_name, vehicle, self_introduction, monthly_dorm_fee
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-`;
-      db.query(
-        insertPersonalInfoQuery,
-        [
-          user_id,
-          firstname,
-          lastname,
-          nickname,
-          age,
-          maritalstatus,
-          gender,
-          lgbt,
-          province,
-          university,
-          facebook,
-          instagram,
-          line_id,
-          phone,
-          dorm_name,
-          vehicle,
-          self_introduction,
-          monthly_dorm_fee || null,
-        ],
-        (err, result) => {
-          if (err) {
-            console.log(err);
-            return res
-              .status(500)
-              .json({ error: "Error inserting user information" });
-          }
-          return res
-            .status(200)
-            .json({ message: "User information updated successfully!" });
-        }
-      );
+        INSERT INTO personality_infomation (
+          user_id, firstname, lastname, nickname, age, maritalstatus, 
+          gender, lgbt, province, university, facebook, instagram, 
+          line_id, phone, dorm_name, vehicle, self_introduction, monthly_dorm_fee
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+
+      await promisePool.query(insertPersonalInfoQuery, [
+        user_id,
+        firstname,
+        lastname,
+        nickname,
+        age,
+        maritalstatus,
+        gender,
+        lgbt,
+        province,
+        university,
+        facebook,
+        instagram,
+        line_id,
+        phone,
+        dorm_name,
+        vehicle,
+        self_introduction,
+        monthly_dorm_fee || null,
+      ]);
+
+      return res
+        .status(200)
+        .json({ message: "User information updated successfully!" });
     } else {
       return res.status(400).json({ error: "User not found" });
     }
-  });
+  } catch (err) {
+    console.error("Error in personal info:", err);
+    return res.status(500).json({ error: "Error inserting user information" });
+  }
 });
 
 // Add Personal personalitytraits Route
-app.post("/personalitytraits", (req, res) => {
+app.post("/personalitytraits", async (req, res) => {
   const {
     user_id,
     type,
@@ -418,11 +374,15 @@ app.post("/personalitytraits", (req, res) => {
     period,
   } = req.body;
 
-  const insertTraitsQuery = `INSERT INTO personality_traits (user_id, type, sleep, wake, clean, air_conditioner, drink, smoke, money, expense, pet, cook, loud, friend, religion, period) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  try {
+    const insertTraitsQuery = `
+      INSERT INTO personality_traits (
+        user_id, type, sleep, wake, clean, air_conditioner, drink, 
+        smoke, money, expense, pet, cook, loud, friend, religion, period
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
 
-  db.query(
-    insertTraitsQuery,
-    [
+    await promisePool.query(insertTraitsQuery, [
       user_id,
       type,
       sleep,
@@ -439,19 +399,13 @@ app.post("/personalitytraits", (req, res) => {
       friend,
       religion,
       period,
-    ],
-    (err, result) => {
-      if (err) {
-        console.error(err);
-        return res
-          .status(500)
-          .json({ error: "Error saving personality traits" });
-      }
-      res
-        .status(200)
-        .json({ message: "Personality traits saved successfully!" });
-    }
-  );
+    ]);
+
+    res.status(200).json({ message: "Personality traits saved successfully!" });
+  } catch (err) {
+    console.error("Error saving personality traits:", err);
+    res.status(500).json({ error: "Error saving personality traits" });
+  }
 });
 
 // Logout Route
@@ -470,29 +424,18 @@ app.get("/home", (req, res) => {
   res.status(200).json({ user: req.session.user });
 });
 
-// Start the Server
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
-
-//KNN
-app.post("/knn", (req, res) => {
+// KNN Route
+app.post("/knn", async (req, res) => {
   const { user_id } = req.body;
 
-  const getTraitsQuery = `
-    SELECT pt.*, pi.*, u.profile_picture
-    FROM personality_traits pt
-    JOIN personality_infomation pi ON pt.user_id = pi.user_id
-    JOIN users u ON pt.user_id = u.id
-    WHERE u.role = 'user' AND u.is_suspended = 0
-  `;
-
-  db.query(getTraitsQuery, (err, results) => {
-    if (err) {
-      console.error("Database query error:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
+  try {
+    const [results] = await promisePool.query(`
+      SELECT pt.*, pi.*, u.profile_picture
+      FROM personality_traits pt
+      JOIN personality_infomation pi ON pt.user_id = pi.user_id
+      JOIN users u ON pt.user_id = u.id
+      WHERE u.role = 'user' AND u.is_suspended = 0
+    `);
 
     const currentUser = results.find((user) => user.user_id === user_id);
     if (!currentUser) return res.status(404).json({ error: "User not found" });
@@ -587,7 +530,10 @@ app.post("/knn", (req, res) => {
       .sort((a, b) => b.similarity - a.similarity); // Sort by highest similarity
 
     res.status(200).json({ neighbors });
-  });
+  } catch (err) {
+    console.error("Error in KNN algorithm:", err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
 // Multer configuration for file uploads
@@ -601,30 +547,6 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Add route to handle profile picture uploads
-// app.post(
-//   "/upload-profile-picture",
-//   upload.single("profile_picture"),
-//   (req, res) => {
-//     const { user_id } = req.body;
-//     const profilePictureUrl = `/uploads/${req.file.filename}`;
-//     const query = "UPDATE users SET profile_picture = ? WHERE id = ?";
-
-//     db.query(query, [profilePictureUrl, user_id], (err) => {
-//       if (err) {
-//         console.error("Error updating profile picture:", err);
-//         return res
-//           .status(500)
-//           .json({ error: "Failed to update profile picture" });
-//       }
-//       res.status(200).json({
-//         message: "Profile picture uploaded successfully",
-//         profilePictureUrl,
-//       });
-//     });
-//   }
-// );
-
 // Serve uploaded files statically
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -633,133 +555,112 @@ app.post("/like", async (req, res) => {
   const { user_id, liked_user_id, action } = req.body;
 
   try {
-    if (action === "unlike") {
-      // Remove like
-      const unlikeQuery =
-        "DELETE FROM likes WHERE user_id = ? AND liked_user_id = ?";
-      await new Promise((resolve, reject) => {
-        db.query(unlikeQuery, [user_id, liked_user_id], (err) => {
-          if (err) reject(err);
-          resolve();
-        });
-      });
+    const connection = await promisePool.getConnection();
+    try {
+      await connection.beginTransaction();
 
-      // Remove match if exists
-      const removeMatchQuery = `
-        DELETE FROM matches 
-        WHERE (user1_id = ? AND user2_id = ?) 
-        OR (user1_id = ? AND user2_id = ?)
-      `;
-      await new Promise((resolve, reject) => {
-        db.query(
-          removeMatchQuery,
-          [user_id, liked_user_id, liked_user_id, user_id],
-          (err) => {
-            if (err) reject(err);
-            resolve();
-          }
+      if (action === "unlike") {
+        // Remove like
+        await connection.query(
+          "DELETE FROM likes WHERE user_id = ? AND liked_user_id = ?",
+          [user_id, liked_user_id]
         );
-      });
 
-      return res
-        .status(200)
-        .json({ message: "Like and match removed successfully!" });
-    } else {
-      // Add like
-      const likeQuery =
-        "INSERT INTO likes (user_id, liked_user_id) VALUES (?, ?)";
-      await new Promise((resolve, reject) => {
-        db.query(likeQuery, [user_id, liked_user_id], (err) => {
-          if (err) reject(err);
-          resolve();
-        });
-      });
-
-      // Check for mutual like
-      const checkMutualLikeQuery =
-        "SELECT * FROM likes WHERE user_id = ? AND liked_user_id = ?";
-      const mutualLike = await new Promise((resolve, reject) => {
-        db.query(
-          checkMutualLikeQuery,
-          [liked_user_id, user_id],
-          (err, result) => {
-            if (err) reject(err);
-            resolve(result);
-          }
+        // Remove match if exists
+        await connection.query(
+          `DELETE FROM matches 
+          WHERE (user1_id = ? AND user2_id = ?) 
+          OR (user1_id = ? AND user2_id = ?)`,
+          [user_id, liked_user_id, liked_user_id, user_id]
         );
-      });
 
-      if (mutualLike.length > 0) {
-        // Create match
-        const createMatchQuery =
-          "INSERT INTO matches (user1_id, user2_id) VALUES (?, ?)";
-        await new Promise((resolve, reject) => {
-          db.query(createMatchQuery, [user_id, liked_user_id], (err) => {
-            if (err) reject(err);
-            resolve();
-          });
-        });
+        await connection.commit();
+        return res
+          .status(200)
+          .json({ message: "Like and match removed successfully!" });
+      } else {
+        // Add like
+        await connection.query(
+          "INSERT INTO likes (user_id, liked_user_id) VALUES (?, ?)",
+          [user_id, liked_user_id]
+        );
 
-        // Get both users' email addresses
-        const getUserEmailsQuery =
-          "SELECT id, email, name FROM users WHERE id IN (?, ?)";
-        const users = await new Promise((resolve, reject) => {
-          db.query(
-            getUserEmailsQuery,
-            [user_id, liked_user_id],
-            (err, result) => {
-              if (err) reject(err);
-              resolve(result);
-            }
+        // Check for mutual like
+        const [mutualLike] = await connection.query(
+          "SELECT * FROM likes WHERE user_id = ? AND liked_user_id = ?",
+          [liked_user_id, user_id]
+        );
+
+        if (mutualLike.length > 0) {
+          // Create match
+          await connection.query(
+            "INSERT INTO matches (user1_id, user2_id) VALUES (?, ?)",
+            [user_id, liked_user_id]
           );
-        });
 
-        // Send match notification emails to both users
-        for (const user of users) {
-          const otherUser = users.find((u) => u.id !== user.id);
-          const mailOptions = {
-            from: '"Find Mate" <findmate.official@gmail.com>',
-            to: user.email,
-            subject: "You have a new match!",
-            html: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
-                <h2 style="color: #27272a; text-align: center;">Congratulations! You have a new match on Find Mate!</h2>
-                <p style="font-size: 16px; line-height: 1.5; color: #333;">คุณจับคู่กับ ${otherUser.name} สำเร็จแล้ว! 🎉</p>
-                <p style="font-size: 16px; line-height: 1.5; color: #333;">คุณสามารถดูข้อมูลการติดต่อของรูมเมทได้แล้วในแอปพลิเคชัน</p>
-                <div style="text-align: center; margin: 30px 0;">
-                  <a href="https://findmate-react.vercel.app/matched" 
-                     style="background-color: #27272a; 
-                            color: white; 
-                            padding: 12px 24px; 
-                            text-decoration: none; 
-                            border-radius: 8px; 
-                            font-weight: bold;
-                            display: inline-block;">
-                    ดูข้อมูลการจับคู่
-                  </a>
-                </div>
-                <p style="font-size: 16px; line-height: 1.5; color: #333;">หวังว่าคุณจะได้รูมเมทที่ถูกใจ</p>
-                <p style="font-size: 16px; line-height: 1.5; color: #333;">ขอบคุณที่ใช้บริการ Find Mate</p>
-                <div style="text-align: center; margin-top: 30px; font-size: 12px; color: #666;">
-                  <p>หากคุณไม่สามารถคลิกปุ่มด้านบน กรุณาคัดลอกลิงก์นี้ไปยังเบราว์เซอร์ของคุณ:</p>
-                  <p>https://findmate-react.vercel.app/matched</p>
-                </div>
-              </div>
-            `,
-          };
+          // Get both users' email addresses
+          const [users] = await connection.query(
+            "SELECT id, email, name FROM users WHERE id IN (?, ?)",
+            [user_id, liked_user_id]
+          );
 
-          try {
-            await transporter.sendMail(mailOptions);
-          } catch (err) {
-            console.error("Error sending match notification email:", err);
-            // Continue even if email fails
+          await connection.commit();
+
+          // Send match notification emails to both users
+          for (const user of users) {
+            const otherUser = users.find((u) => u.id !== user.id);
+            const mailOptions = {
+              from: '"Find Mate" <findmate.official@gmail.com>',
+              to: user.email,
+              subject: "You have a new match!",
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+                  <h2 style="color: #27272a; text-align: center;">Congratulations! You have a new match on Find Mate!</h2>
+                  <p style="font-size: 16px; line-height: 1.5; color: #333;">คุณจับคู่กับ ${otherUser.name} สำเร็จแล้ว! 🎉</p>
+                  <p style="font-size: 16px; line-height: 1.5; color: #333;">คุณสามารถดูข้อมูลการติดต่อของรูมเมทได้แล้วในแอปพลิเคชัน</p>
+                  <div style="text-align: center; margin: 30px 0;">
+                    <a href="https://findmate-react.vercel.app/matched" 
+                       style="background-color: #27272a; 
+                              color: white; 
+                              padding: 12px 24px; 
+                              text-decoration: none; 
+                              border-radius: 8px; 
+                              font-weight: bold;
+                              display: inline-block;">
+                      ดูข้อมูลการจับคู่
+                    </a>
+                  </div>
+                  <p style="font-size: 16px; line-height: 1.5; color: #333;">หวังว่าคุณจะได้รูมเมทที่ถูกใจ</p>
+                  <p style="font-size: 16px; line-height: 1.5; color: #333;">ขอบคุณที่ใช้บริการ Find Mate</p>
+                  <div style="text-align: center; margin-top: 30px; font-size: 12px; color: #666;">
+                    <p>หากคุณไม่สามารถคลิกปุ่มด้านบน กรุณาคัดลอกลิงก์นี้ไปยังเบราว์เซอร์ของคุณ:</p>
+                    <p>https://findmate-react.vercel.app/matched</p>
+                  </div>
+                </div>
+              `,
+            };
+
+            try {
+              await transporter.sendMail(mailOptions);
+            } catch (err) {
+              console.error("Error sending match notification email:", err);
+              // Continue even if email fails
+            }
           }
+
+          return res
+            .status(200)
+            .json({ message: "Match created successfully!" });
         }
 
-        return res.status(200).json({ message: "Match created successfully!" });
+        await connection.commit();
+        return res.status(200).json({ message: "Like added successfully!" });
       }
-
-      return res.status(200).json({ message: "Like added successfully!" });
+    } catch (err) {
+      await connection.rollback();
+      throw err;
+    } finally {
+      connection.release();
     }
   } catch (err) {
     console.error("Database error:", err);
@@ -768,91 +669,110 @@ app.post("/like", async (req, res) => {
 });
 
 // Get Liked Users Route
-app.get("/liked", (req, res) => {
+app.get("/liked", async (req, res) => {
   const { user_id } = req.query;
 
-  const likedUsersQuery = `
-    SELECT u.id, u.name, u.profile_picture, pi.*, pt.*
-    FROM likes l
-    JOIN users u ON l.liked_user_id = u.id
-    LEFT JOIN personality_infomation pi ON u.id = pi.user_id
-    LEFT JOIN personality_traits pt ON u.id = pt.user_id
-    WHERE l.user_id = ?
-  `;
+  try {
+    const [results] = await promisePool.query(
+      `SELECT u.id, u.name, u.profile_picture, pi.*, pt.*
+      FROM likes l
+      JOIN users u ON l.liked_user_id = u.id
+      LEFT JOIN personality_infomation pi ON u.id = pi.user_id
+      LEFT JOIN personality_traits pt ON u.id = pt.user_id
+      WHERE l.user_id = ?`,
+      [user_id]
+    );
 
-  db.query(likedUsersQuery, [user_id], (err, results) => {
-    if (err) return res.status(500).json({ error: "Database error" });
     res.status(200).json(results);
-  });
+  } catch (err) {
+    console.error("Error getting liked users:", err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
 // Get Matches Route
-app.get("/matches", (req, res) => {
+app.get("/matches", async (req, res) => {
   const { user_id } = req.query;
 
-  const matchesQuery = `
-    SELECT u.id, u.name, u.profile_picture, pi.*, pt.*
-    FROM matches m
-    JOIN users u ON (m.user1_id = u.id OR m.user2_id = u.id)
-    LEFT JOIN personality_infomation pi ON u.id = pi.user_id
-    LEFT JOIN personality_traits pt ON u.id = pt.user_id
-    WHERE (m.user1_id = ? OR m.user2_id = ?) AND u.id != ?
-  `;
+  try {
+    const [results] = await promisePool.query(
+      `SELECT u.id, u.name, u.profile_picture, pi.*, pt.*
+      FROM matches m
+      JOIN users u ON (m.user1_id = u.id OR m.user2_id = u.id)
+      LEFT JOIN personality_infomation pi ON u.id = pi.user_id
+      LEFT JOIN personality_traits pt ON u.id = pt.user_id
+      WHERE (m.user1_id = ? OR m.user2_id = ?) AND u.id != ?`,
+      [user_id, user_id, user_id]
+    );
 
-  db.query(matchesQuery, [user_id, user_id, user_id], (err, results) => {
-    if (err) return res.status(500).json({ error: "Database error" });
     res.status(200).json(results);
-  });
+  } catch (err) {
+    console.error("Error getting matches:", err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
 // Check Like Status Route
-app.get("/check-like", (req, res) => {
+app.get("/check-like", async (req, res) => {
   const { user_id, target_user_id } = req.query;
 
-  const checkLikeQuery =
-    "SELECT * FROM likes WHERE user_id = ? AND liked_user_id = ?";
-  db.query(checkLikeQuery, [user_id, target_user_id], (err, result) => {
-    if (err) return res.status(500).json({ error: "Database error" });
+  try {
+    const [result] = await promisePool.query(
+      "SELECT * FROM likes WHERE user_id = ? AND liked_user_id = ?",
+      [user_id, target_user_id]
+    );
+
     res.status(200).json({ isLiked: result.length > 0 });
-  });
+  } catch (err) {
+    console.error("Error checking like status:", err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
 // Get user's personal information
-app.get("/personalinfo/:userId", (req, res) => {
+app.get("/personalinfo/:userId", async (req, res) => {
   const userId = req.params.userId;
-  const query = "SELECT * FROM personality_infomation WHERE user_id = ?";
 
-  db.query(query, [userId], (err, result) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
+  try {
+    const [result] = await promisePool.query(
+      "SELECT * FROM personality_infomation WHERE user_id = ?",
+      [userId]
+    );
+
     if (result.length === 0) {
       return res.status(404).json({ error: "User information not found" });
     }
+
     res.status(200).json(result[0]);
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
 // Get user's personality traits
-app.get("/personalitytraits/:userId", (req, res) => {
+app.get("/personalitytraits/:userId", async (req, res) => {
   const userId = req.params.userId;
-  const query = "SELECT * FROM personality_traits WHERE user_id = ?";
 
-  db.query(query, [userId], (err, result) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
+  try {
+    const [result] = await promisePool.query(
+      "SELECT * FROM personality_traits WHERE user_id = ?",
+      [userId]
+    );
+
     if (result.length === 0) {
       return res.status(404).json({ error: "Personality traits not found" });
     }
+
     res.status(200).json(result[0]);
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
 // Update user's personal information
-app.put("/personalinfo/:userId", (req, res) => {
+app.put("/personalinfo/:userId", async (req, res) => {
   const userId = req.params.userId;
   const {
     firstname,
@@ -874,53 +794,47 @@ app.put("/personalinfo/:userId", (req, res) => {
     monthly_dorm_fee,
   } = req.body;
 
-  const query = `
-    UPDATE personality_infomation 
-    SET firstname = ?, lastname = ?, nickname = ?, age = ?, 
-        maritalstatus = ?, gender = ?, lgbt = ?, province = ?, 
-        university = ?, facebook = ?, instagram = ?, line_id = ?, 
-        phone = ?, dorm_name = ?, vehicle = ?, self_introduction = ?, monthly_dorm_fee = ?
-    WHERE user_id = ?
-  `;
+  try {
+    await promisePool.query(
+      `UPDATE personality_infomation 
+      SET firstname = ?, lastname = ?, nickname = ?, age = ?, 
+          maritalstatus = ?, gender = ?, lgbt = ?, province = ?, 
+          university = ?, facebook = ?, instagram = ?, line_id = ?, 
+          phone = ?, dorm_name = ?, vehicle = ?, self_introduction = ?, monthly_dorm_fee = ?
+      WHERE user_id = ?`,
+      [
+        firstname,
+        lastname,
+        nickname,
+        age,
+        maritalstatus,
+        gender,
+        lgbt,
+        province,
+        university,
+        facebook,
+        instagram,
+        line_id,
+        phone,
+        dorm_name,
+        vehicle,
+        self_introduction,
+        monthly_dorm_fee || null,
+        userId,
+      ]
+    );
 
-  db.query(
-    query,
-    [
-      firstname,
-      lastname,
-      nickname,
-      age,
-      maritalstatus,
-      gender,
-      lgbt,
-      province,
-      university,
-      facebook,
-      instagram,
-      line_id,
-      phone,
-      dorm_name,
-      vehicle,
-      self_introduction,
-      monthly_dorm_fee || null,
-      userId,
-    ],
-    (err, result) => {
-      if (err) {
-        console.error("Database error:", err);
-        return res
-          .status(500)
-          .json({ error: "Error updating personal information" });
-      }
-      res
-        .status(200)
-        .json({ message: "Personal information updated successfully" });
-    }
-  );
+    res
+      .status(200)
+      .json({ message: "Personal information updated successfully" });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "Error updating personal information" });
+  }
 });
 
 // Update user's personality traits
-app.put("/personalitytraits/:userId", (req, res) => {
+app.put("/personalitytraits/:userId", async (req, res) => {
   const userId = req.params.userId;
   const {
     type,
@@ -940,91 +854,88 @@ app.put("/personalitytraits/:userId", (req, res) => {
     period,
   } = req.body;
 
-  const query = `
-    UPDATE personality_traits 
-    SET type = ?, sleep = ?, wake = ?, clean = ?, 
-        air_conditioner = ?, drink = ?, smoke = ?, 
-        money = ?, expense = ?, pet = ?, cook = ?, 
-        loud = ?, friend = ?, religion = ?, period = ?
-    WHERE user_id = ?
-  `;
-
-  const values = [
-    type,
-    sleep,
-    wake,
-    clean,
-    air_conditioner,
-    drink,
-    smoke,
-    money,
-    expense,
-    pet,
-    cook,
-    loud,
-    friend,
-    religion,
-    period,
-    userId,
-  ];
-
-  db.query(query, values, (err, result) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res
-        .status(500)
-        .json({ error: "Error updating personality traits" });
-    }
+  try {
+    const [result] = await promisePool.query(
+      `UPDATE personality_traits 
+      SET type = ?, sleep = ?, wake = ?, clean = ?, 
+          air_conditioner = ?, drink = ?, smoke = ?, 
+          money = ?, expense = ?, pet = ?, cook = ?, 
+          loud = ?, friend = ?, religion = ?, period = ?
+      WHERE user_id = ?`,
+      [
+        type,
+        sleep,
+        wake,
+        clean,
+        air_conditioner,
+        drink,
+        smoke,
+        money,
+        expense,
+        pet,
+        cook,
+        loud,
+        friend,
+        religion,
+        period,
+        userId,
+      ]
+    );
 
     // Check if any rows were affected
     if (result.affectedRows === 0) {
       // If no existing record, insert a new one
-      const insertQuery = `
-        INSERT INTO personality_traits 
+      await promisePool.query(
+        `INSERT INTO personality_traits 
         (user_id, type, sleep, wake, clean, air_conditioner, drink, 
          smoke, money, expense, pet, cook, loud, friend, religion, period)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `;
-
-      db.query(
-        insertQuery,
-        [userId, ...values.slice(0, -1)],
-        (insertErr, insertResult) => {
-          if (insertErr) {
-            console.error("Database error during insert:", insertErr);
-            return res
-              .status(500)
-              .json({ error: "Error creating personality traits" });
-          }
-          res
-            .status(201)
-            .json({ message: "Personality traits created successfully" });
-        }
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          userId,
+          type,
+          sleep,
+          wake,
+          clean,
+          air_conditioner,
+          drink,
+          smoke,
+          money,
+          expense,
+          pet,
+          cook,
+          loud,
+          friend,
+          religion,
+          period,
+        ]
       );
+
+      res
+        .status(201)
+        .json({ message: "Personality traits created successfully" });
     } else {
       res
         .status(200)
         .json({ message: "Personality traits updated successfully" });
     }
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "Error updating personality traits" });
+  }
 });
 
 // Update user profile
-app.put("/users/:userId", (req, res) => {
+app.put("/users/:userId", async (req, res) => {
   const userId = req.params.userId;
   const { name, email } = req.body;
 
-  const query = `
-    UPDATE users 
-    SET name = ?, email = ?
-    WHERE id = ?
-  `;
-
-  db.query(query, [name, email, userId], (err, result) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ error: "Error updating user profile" });
-    }
+  try {
+    await promisePool.query(
+      `UPDATE users 
+      SET name = ?, email = ?
+      WHERE id = ?`,
+      [name, email, userId]
+    );
 
     // Update the user information in the session if it exists
     if (req.session.user && req.session.user.id === parseInt(userId)) {
@@ -1043,20 +954,22 @@ app.put("/users/:userId", (req, res) => {
         email,
       },
     });
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "Error updating user profile" });
+  }
 });
 
 // Verify password endpoint
-app.post("/verify-password", (req, res) => {
+app.post("/verify-password", async (req, res) => {
   const { user_id, password } = req.body;
 
-  // Get user's stored password hash
-  const query = "SELECT password FROM users WHERE id = ?";
-  db.query(query, [user_id], (err, result) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
+  try {
+    // Get user's stored password hash
+    const [result] = await promisePool.query(
+      "SELECT password FROM users WHERE id = ?",
+      [user_id]
+    );
 
     if (result.length === 0) {
       return res.status(404).json({ error: "User not found" });
@@ -1065,7 +978,10 @@ app.post("/verify-password", (req, res) => {
     // Compare provided password with stored hash
     const isValid = bcrypt.compareSync(password, result[0].password);
     res.json({ verified: isValid });
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "Database error" });
+  }
 });
 
 // Delete account endpoint
@@ -1073,152 +989,102 @@ app.delete("/users/:userId", async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    // Start a transaction
-    await new Promise((resolve, reject) => {
-      db.beginTransaction((err) => {
-        if (err) reject(err);
-        resolve();
-      });
-    });
+    const connection = await promisePool.getConnection();
+    try {
+      await connection.beginTransaction();
 
-    // Delete from personality_traits
-    await new Promise((resolve, reject) => {
-      db.query(
+      // Delete from personality_traits
+      await connection.query(
         "DELETE FROM personality_traits WHERE user_id = ?",
-        [userId],
-        (err) => {
-          if (err) reject(err);
-          resolve();
-        }
+        [userId]
       );
-    });
 
-    // Delete from personality_infomation
-    await new Promise((resolve, reject) => {
-      db.query(
+      // Delete from personality_infomation
+      await connection.query(
         "DELETE FROM personality_infomation WHERE user_id = ?",
-        [userId],
-        (err) => {
-          if (err) reject(err);
-          resolve();
-        }
+        [userId]
       );
-    });
 
-    // Delete from likes
-    await new Promise((resolve, reject) => {
-      db.query(
+      // Delete from likes
+      await connection.query(
         "DELETE FROM likes WHERE user_id = ? OR liked_user_id = ?",
-        [userId, userId],
-        (err) => {
-          if (err) reject(err);
-          resolve();
-        }
+        [userId, userId]
       );
-    });
 
-    // Delete from matches
-    await new Promise((resolve, reject) => {
-      db.query(
+      // Delete from matches
+      await connection.query(
         "DELETE FROM matches WHERE user1_id = ? OR user2_id = ?",
-        [userId, userId],
-        (err) => {
-          if (err) reject(err);
-          resolve();
-        }
+        [userId, userId]
       );
-    });
 
-    // Finally, delete the user
-    await new Promise((resolve, reject) => {
-      db.query("DELETE FROM users WHERE id = ?", [userId], (err) => {
-        if (err) reject(err);
-        resolve();
-      });
-    });
+      // Finally, delete the user
+      await connection.query("DELETE FROM users WHERE id = ?", [userId]);
 
-    // Commit the transaction
-    await new Promise((resolve, reject) => {
-      db.commit((err) => {
-        if (err) reject(err);
-        resolve();
-      });
-    });
+      await connection.commit();
 
-    // Clear user session if it exists
-    if (req.session.user && req.session.user.id === parseInt(userId)) {
-      req.session.destroy();
+      // Clear user session if it exists
+      if (req.session.user && req.session.user.id === parseInt(userId)) {
+        req.session.destroy();
+      }
+
+      res.json({ message: "Account deleted successfully" });
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
     }
-
-    res.json({ message: "Account deleted successfully" });
   } catch (error) {
-    // Rollback on error
-    await new Promise((resolve) => {
-      db.rollback(() => resolve());
-    });
     console.error("Error deleting account:", error);
     res.status(500).json({ error: "Error deleting account" });
   }
 });
 
 // Change password endpoint
-app.put("/users/:userId/password", (req, res) => {
+app.put("/users/:userId/password", async (req, res) => {
   const userId = req.params.userId;
   const { newPassword } = req.body;
 
-  // Hash the new password
-  const hashedPassword = bcrypt.hashSync(newPassword, 10);
+  try {
+    // Hash the new password
+    const hashedPassword = bcrypt.hashSync(newPassword, 10);
 
-  // Update the password in the database
-  const query = "UPDATE users SET password = ? WHERE id = ?";
-
-  db.query(query, [hashedPassword, userId], (err, result) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ error: "Error updating password" });
-    }
+    // Update the password in the database
+    const [result] = await promisePool.query(
+      "UPDATE users SET password = ? WHERE id = ?",
+      [hashedPassword, userId]
+    );
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "User not found" });
     }
 
     res.json({ message: "Password updated successfully" });
-  });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "Error updating password" });
+  }
 });
-
-// Add these new routes to server.js
 
 // Admin Stats Route
 app.get("/admin/stats", async (req, res) => {
   try {
-    const [usersResult, matchesResult, reportsResult] = await Promise.all([
-      new Promise((resolve, reject) => {
-        db.query(
-          "SELECT COUNT(*) as count FROM users WHERE role = 'user'",
-          (err, result) => {
-            if (err) reject(err);
-            resolve(result[0].count);
-          }
-        );
-      }),
-      new Promise((resolve, reject) => {
-        db.query("SELECT COUNT(*) as count FROM matches", (err, result) => {
-          if (err) reject(err);
-          resolve(result[0].count);
-        });
-      }),
-      new Promise((resolve, reject) => {
-        db.query("SELECT COUNT(*) as count FROM reports", (err, result) => {
-          if (err) reject(err);
-          resolve(result[0].count);
-        });
-      }),
-    ]);
+    const [usersResult] = await promisePool.query(
+      "SELECT COUNT(*) as count FROM users WHERE role = 'user'"
+    );
+
+    const [matchesResult] = await promisePool.query(
+      "SELECT COUNT(*) as count FROM matches"
+    );
+
+    const [reportsResult] = await promisePool.query(
+      "SELECT COUNT(*) as count FROM reports"
+    );
 
     res.json({
-      totalUsers: usersResult,
-      totalMatches: matchesResult,
-      totalReports: reportsResult,
+      totalUsers: usersResult[0].count,
+      totalMatches: matchesResult[0].count,
+      totalReports: reportsResult[0].count,
     });
   } catch (error) {
     console.error("Error fetching admin stats:", error);
@@ -1230,43 +1096,38 @@ app.get("/admin/stats", async (req, res) => {
 app.post("/reports/user", async (req, res) => {
   const { reporter_id, reported_user_id, type, description } = req.body;
 
-  const query = `
-    INSERT INTO reports (reporter_id, reported_user_id, type, description, report_type, status)
-    VALUES (?, ?, ?, ?, 'user', 'pending')
-  `;
+  try {
+    await promisePool.query(
+      `INSERT INTO reports (reporter_id, reported_user_id, type, description, report_type, status)
+      VALUES (?, ?, ?, ?, 'user', 'pending')`,
+      [reporter_id, reported_user_id, type, description]
+    );
 
-  db.query(
-    query,
-    [reporter_id, reported_user_id, type, description],
-    (err, result) => {
-      if (err) {
-        console.error("Error creating user report:", err);
-        return res.status(500).json({ error: "Error creating report" });
-      }
-      res.status(201).json({ message: "Report created successfully" });
-    }
-  );
+    res.status(201).json({ message: "Report created successfully" });
+  } catch (err) {
+    console.error("Error creating user report:", err);
+    res.status(500).json({ error: "Error creating report" });
+  }
 });
 
-app.get("/admin/user-reports", (req, res) => {
-  const query = `
-    SELECT r.*, 
-           u1.name as reporter_name,
-           u2.name as reported_user_name
-    FROM reports r
-    JOIN users u1 ON r.reporter_id = u1.id
-    JOIN users u2 ON r.reported_user_id = u2.id
-    WHERE r.report_type = 'user'
-    ORDER BY r.created_at DESC
-  `;
+app.get("/admin/user-reports", async (req, res) => {
+  try {
+    const [results] = await promisePool.query(
+      `SELECT r.*, 
+             u1.name as reporter_name,
+             u2.name as reported_user_name
+      FROM reports r
+      JOIN users u1 ON r.reporter_id = u1.id
+      JOIN users u2 ON r.reported_user_id = u2.id
+      WHERE r.report_type = 'user'
+      ORDER BY r.created_at DESC`
+    );
 
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Error fetching user reports:", err);
-      return res.status(500).json({ error: "Error fetching reports" });
-    }
     res.json(results);
-  });
+  } catch (err) {
+    console.error("Error fetching user reports:", err);
+    res.status(500).json({ error: "Error fetching reports" });
+  }
 });
 
 // System Reports Routes
@@ -1274,71 +1135,69 @@ app.post("/reports/system", upload.single("image"), async (req, res) => {
   const { user_id, type, description } = req.body;
   const image = req.file ? `/uploads/${req.file.filename}` : null;
 
-  const query = `
-    INSERT INTO reports (reporter_id, type, description, image, report_type, status)
-    VALUES (?, ?, ?, ?, 'system', 'pending')
-  `;
+  try {
+    await promisePool.query(
+      `INSERT INTO reports (reporter_id, type, description, image, report_type, status)
+      VALUES (?, ?, ?, ?, 'system', 'pending')`,
+      [user_id, type, description, image]
+    );
 
-  db.query(query, [user_id, type, description, image], (err, result) => {
-    if (err) {
-      console.error("Error creating system report:", err);
-      return res.status(500).json({ error: "Error creating report" });
-    }
     res.status(201).json({ message: "Report created successfully" });
-  });
+  } catch (err) {
+    console.error("Error creating system report:", err);
+    res.status(500).json({ error: "Error creating report" });
+  }
 });
 
-app.get("/admin/system-reports", (req, res) => {
-  const query = `
-    SELECT r.*, u.name as reporter_name
-    FROM reports r
-    JOIN users u ON r.reporter_id = u.id
-    WHERE r.report_type = 'system'
-    ORDER BY r.created_at DESC
-  `;
+app.get("/admin/system-reports", async (req, res) => {
+  try {
+    const [results] = await promisePool.query(
+      `SELECT r.*, u.name as reporter_name
+      FROM reports r
+      JOIN users u ON r.reporter_id = u.id
+      WHERE r.report_type = 'system'
+      ORDER BY r.created_at DESC`
+    );
 
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Error fetching system reports:", err);
-      return res.status(500).json({ error: "Error fetching reports" });
-    }
     res.json(results);
-  });
+  } catch (err) {
+    console.error("Error fetching system reports:", err);
+    res.status(500).json({ error: "Error fetching reports" });
+  }
 });
 
 // Suggestions Routes
 app.post("/suggestions", async (req, res) => {
   const { user_id, content } = req.body;
 
-  const query = `
-    INSERT INTO suggestions (user_id, content, status)
-    VALUES (?, ?, 'pending')
-  `;
+  try {
+    await promisePool.query(
+      `INSERT INTO suggestions (user_id, content, status)
+      VALUES (?, ?, 'pending')`,
+      [user_id, content]
+    );
 
-  db.query(query, [user_id, content], (err, result) => {
-    if (err) {
-      console.error("Error creating suggestion:", err);
-      return res.status(500).json({ error: "Error creating suggestion" });
-    }
     res.status(201).json({ message: "Suggestion created successfully" });
-  });
+  } catch (err) {
+    console.error("Error creating suggestion:", err);
+    res.status(500).json({ error: "Error creating suggestion" });
+  }
 });
 
-app.get("/admin/suggestions", (req, res) => {
-  const query = `
-    SELECT s.*, u.name as user_name
-    FROM suggestions s
-    JOIN users u ON s.user_id = u.id
-    ORDER BY s.created_at DESC
-  `;
+app.get("/admin/suggestions", async (req, res) => {
+  try {
+    const [results] = await promisePool.query(
+      `SELECT s.*, u.name as user_name
+      FROM suggestions s
+      JOIN users u ON s.user_id = u.id
+      ORDER BY s.created_at DESC`
+    );
 
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Error fetching suggestions:", err);
-      return res.status(500).json({ error: "Error fetching suggestions" });
-    }
     res.json(results);
-  });
+  } catch (err) {
+    console.error("Error fetching suggestions:", err);
+    res.status(500).json({ error: "Error fetching suggestions" });
+  }
 });
 
 // Update Report Status
@@ -1347,16 +1206,10 @@ app.post("/admin/reports/:id/action", async (req, res) => {
   const { action } = req.body;
 
   try {
-    await new Promise((resolve, reject) => {
-      db.query(
-        "UPDATE reports SET status = ? WHERE id = ?",
-        [action, id],
-        (err) => {
-          if (err) reject(err);
-          resolve();
-        }
-      );
-    });
+    await promisePool.query("UPDATE reports SET status = ? WHERE id = ?", [
+      action,
+      id,
+    ]);
 
     res.json({ message: "Report updated successfully" });
   } catch (error) {
@@ -1373,41 +1226,23 @@ app.post("/admin/user-action/:userId", async (req, res) => {
   try {
     if (action === "suspend") {
       // Update user's suspension status
-      await new Promise((resolve, reject) => {
-        db.query(
-          "UPDATE users SET is_suspended = 1, suspension_reason = ? WHERE id = ?",
-          [reason, userId],
-          (err) => {
-            if (err) reject(err);
-            resolve();
-          }
-        );
-      });
+      await promisePool.query(
+        "UPDATE users SET is_suspended = 1, suspension_reason = ? WHERE id = ?",
+        [reason, userId]
+      );
 
       // If this action is from a report, update report status
       if (report_id) {
-        await new Promise((resolve, reject) => {
-          db.query(
-            "UPDATE reports SET status = 'resolved' WHERE id = ?",
-            [report_id],
-            (err) => {
-              if (err) reject(err);
-              resolve();
-            }
-          );
-        });
+        await promisePool.query(
+          "UPDATE reports SET status = 'resolved' WHERE id = ?",
+          [report_id]
+        );
       }
     } else if (action === "unsuspend") {
-      await new Promise((resolve, reject) => {
-        db.query(
-          "UPDATE users SET is_suspended = 0, suspension_reason = NULL WHERE id = ?",
-          [userId],
-          (err) => {
-            if (err) reject(err);
-            resolve();
-          }
-        );
-      });
+      await promisePool.query(
+        "UPDATE users SET is_suspended = 0, suspension_reason = NULL WHERE id = ?",
+        [userId]
+      );
     }
 
     res.json({ message: "User action completed successfully" });
@@ -1422,12 +1257,7 @@ app.delete("/admin/reports/:reportId", async (req, res) => {
   const { reportId } = req.params;
 
   try {
-    await new Promise((resolve, reject) => {
-      db.query("DELETE FROM reports WHERE id = ?", [reportId], (err) => {
-        if (err) reject(err);
-        resolve();
-      });
-    });
+    await promisePool.query("DELETE FROM reports WHERE id = ?", [reportId]);
 
     res.json({ message: "Report deleted successfully" });
   } catch (error) {
@@ -1439,39 +1269,24 @@ app.delete("/admin/reports/:reportId", async (req, res) => {
 app.get("/statistics", async (req, res) => {
   try {
     // Get total users (excluding admins)
-    const usersCount = await new Promise((resolve, reject) => {
-      db.query(
-        "SELECT COUNT(*) as count FROM users WHERE role = 'user'",
-        (err, result) => {
-          if (err) reject(err);
-          resolve(result[0].count);
-        }
-      );
-    });
+    const [usersCount] = await promisePool.query(
+      "SELECT COUNT(*) as count FROM users WHERE role = 'user'"
+    );
 
     // Get total successful matches
-    const matchesCount = await new Promise((resolve, reject) => {
-      db.query("SELECT COUNT(*) as count FROM matches", (err, result) => {
-        if (err) reject(err);
-        resolve(result[0].count);
-      });
-    });
+    const [matchesCount] = await promisePool.query(
+      "SELECT COUNT(*) as count FROM matches"
+    );
 
     // Get total unique universities
-    const universitiesCount = await new Promise((resolve, reject) => {
-      db.query(
-        "SELECT COUNT(DISTINCT university) as count FROM personality_infomation WHERE university IS NOT NULL AND university != ''",
-        (err, result) => {
-          if (err) reject(err);
-          resolve(result[0].count);
-        }
-      );
-    });
+    const [universitiesCount] = await promisePool.query(
+      "SELECT COUNT(DISTINCT university) as count FROM personality_infomation WHERE university IS NOT NULL AND university != ''"
+    );
 
     res.json({
-      totalUsers: usersCount,
-      totalMatches: matchesCount,
-      totalUniversities: universitiesCount,
+      totalUsers: usersCount[0].count,
+      totalMatches: matchesCount[0].count,
+      totalUniversities: universitiesCount[0].count,
     });
   } catch (error) {
     console.error("Error fetching statistics:", error);
@@ -1489,20 +1304,14 @@ app.post("/update-profile-picture", async (req, res) => {
   }
 
   try {
-    const query = "UPDATE users SET profile_picture = ? WHERE id = ?";
+    await promisePool.query(
+      "UPDATE users SET profile_picture = ? WHERE id = ?",
+      [profile_picture, user_id]
+    );
 
-    db.query(query, [profile_picture, user_id], (err, result) => {
-      if (err) {
-        console.error("Error updating profile picture:", err);
-        return res.status(500).json({
-          error: "Failed to update profile picture",
-        });
-      }
-
-      res.status(200).json({
-        message: "Profile picture updated successfully",
-        profilePictureUrl: profile_picture,
-      });
+    res.status(200).json({
+      message: "Profile picture updated successfully",
+      profilePictureUrl: profile_picture,
     });
   } catch (error) {
     console.error("Error in profile picture update:", error);
@@ -1514,83 +1323,36 @@ app.post("/update-profile-picture", async (req, res) => {
 
 app.get("/admin/users", async (req, res) => {
   try {
-    const query = `
-      SELECT u.*, GROUP_CONCAT(pi.university) as universities
+    const [results] = await promisePool.query(
+      `SELECT u.*, GROUP_CONCAT(pi.university) as universities
       FROM users u 
       LEFT JOIN personality_infomation pi ON u.id = pi.user_id
       WHERE u.role = 'user'
       GROUP BY u.id
-      ORDER BY u.id DESC
-    `;
+      ORDER BY u.id DESC`
+    );
 
-    db.query(query, (err, results) => {
-      if (err) {
-        console.error("Error fetching users:", err);
-        return res.status(500).json({ error: "Database error" });
-      }
-      res.json(results);
-    });
+    res.json(results);
   } catch (error) {
     console.error("Error in /admin/users:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// app.post("/admin/user-action/:userId", async (req, res) => {
-//   const { userId } = req.params;
-//   const { action, reason } = req.body;
-
-//   try {
-//     if (action === "suspend") {
-//       await new Promise((resolve, reject) => {
-//         db.query(
-//           "UPDATE users SET is_suspended = 1, suspension_reason = ? WHERE id = ?",
-//           [reason, userId],
-//           (err) => {
-//             if (err) reject(err);
-//             resolve();
-//           }
-//         );
-//       });
-//     } else if (action === "unsuspend") {
-//       await new Promise((resolve, reject) => {
-//         db.query(
-//           "UPDATE users SET is_suspended = 0, suspension_reason = NULL WHERE id = ?",
-//           [userId],
-//           (err) => {
-//             if (err) reject(err);
-//             resolve();
-//           }
-//         );
-//       });
-//     }
-
-//     res.json({ message: "User action completed successfully" });
-//   } catch (error) {
-//     console.error("Error performing user action:", error);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// });
-
-// Add delete user route
 app.get("/admin/users/:userId", async (req, res) => {
   const { userId } = req.params;
 
   try {
-    db.query(
+    const [result] = await promisePool.query(
       "SELECT id, name, email, profile_picture, is_suspended, suspension_reason FROM users WHERE id = ?",
-      [userId],
-      (err, result) => {
-        if (err) {
-          console.error("Error fetching user:", err);
-          return res.status(500).json({ error: "Database error" });
-        }
-        if (result.length === 0) {
-          return res.status(404).json({ error: "User not found" });
-        }
-        res.json(result[0]);
-      }
+      [userId]
     );
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(result[0]);
   } catch (error) {
     console.error("Error in /admin/users/:userId:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -1601,16 +1363,17 @@ app.delete("/admin/users/:userId", async (req, res) => {
   const { userId } = req.params;
 
   try {
-    await new Promise((resolve, reject) => {
-      db.query("DELETE FROM users WHERE id = ?", [userId], (err, result) => {
-        if (err) reject(err);
-        resolve(result);
-      });
-    });
+    await promisePool.query("DELETE FROM users WHERE id = ?", [userId]);
 
     res.json({ message: "User deleted successfully" });
   } catch (error) {
     console.error("Error deleting user:", error);
     res.status(500).json({ error: "Error deleting user" });
   }
+});
+
+// Start the Server
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
