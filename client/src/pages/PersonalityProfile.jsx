@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../services/api";
 import AppTheme from "../AppTheme";
-import RequiredInfoBanner from "../components/RequiredInfoBanner";
+//import RequiredInfoBanner from "../components/RequiredInfoBanner";
 import {
   Box,
   Button,
