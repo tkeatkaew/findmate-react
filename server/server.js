@@ -21,19 +21,40 @@ const nodemailer = require("nodemailer");
 //   database: "findmatev3",
 // });
 
-const db = mysql.createConnection({
+// const db = mysql.createConnection({
+//   host: "mysql.railway.internal",
+//   user: "root",
+//   password: "hAGSisGocpxGJpFQzPDLxdyZxOlaJGsG",
+//   database: "railway",
+// });
+
+// db.connect((err) => {
+//   if (err) {
+//     console.error("Database connection failed:", err);
+//     process.exit(1);
+//   }
+//   console.log("Connected to MySQL database.");
+// });
+
+// MySQL Connection Pool
+const pool = mysql.createPool({
   host: "mysql.railway.internal",
   user: "root",
   password: "hAGSisGocpxGJpFQzPDLxdyZxOlaJGsG",
   database: "railway",
+  waitForConnections: true,
+  connectionLimit: 10, // Adjust this based on your server capacity
+  queueLimit: 0,
 });
 
-db.connect((err) => {
+// Check pool connection
+pool.getConnection((err, connection) => {
   if (err) {
     console.error("Database connection failed:", err);
     process.exit(1);
   }
-  console.log("Connected to MySQL database.");
+  console.log("Connected to MySQL database using pool.");
+  connection.release(); // Release connection back to the pool
 });
 
 // Middleware
