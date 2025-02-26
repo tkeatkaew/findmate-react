@@ -1,4 +1,4 @@
-// In a new file, e.g., src/utils/profileCheck.js
+// src/utils/profileCheck.js
 export const checkProfileCompleteness = (personalInfo, personalityTraits) => {
   // Required fields for personalInfo
   const requiredPersonalInfo = [

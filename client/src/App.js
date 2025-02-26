@@ -13,25 +13,28 @@ import PersonalityProfile from "./pages/PersonalityProfile";
 import EditProfile from "./pages/EditProfile";
 import AdminDashboard from "./pages/AdminDashboard";
 import OTPVerification from "./pages/OTPVerification";
+import ProfileChecker from "./components/ProfileChecker";
 
 const App = () => {
   return (
     <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/discovery" element={<Discovery />} />
-        <Route path="/liked" element={<Liked />} />
-        <Route path="/matched" element={<Matched />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/personalInfo" element={<PersonalInfo />} />
-        <Route path="/personalityprofile" element={<PersonalityProfile />} />
-        <Route path="/edit-profile" element={<EditProfile />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/verify-otp" element={<OTPVerification />} />
-      </Routes>
+      <ProfileChecker>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/discovery" element={<Discovery />} />
+          <Route path="/liked" element={<Liked />} />
+          <Route path="/matched" element={<Matched />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/personalInfo" element={<PersonalInfo />} />
+          <Route path="/personalityprofile" element={<PersonalityProfile />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/verify-otp" element={<OTPVerification />} />
+        </Routes>
+      </ProfileChecker>
     </Router>
   );
 };
