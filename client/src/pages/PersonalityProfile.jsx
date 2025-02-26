@@ -326,7 +326,7 @@ const PersonalityProfile = () => {
           </Typography>
 
           {/* Add the RequiredInfoBanner here */}
-          <RequiredInfoBanner type="traits" />
+          {/* <RequiredInfoBanner type="traits" /> */}
 
           {showError && (
             <Alert severity="error" sx={{ mb: 3 }}>

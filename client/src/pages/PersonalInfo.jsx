@@ -476,7 +476,7 @@ const PersonalInfo = () => {
           <Typography variant="h4">ประวัติส่วนตัว</Typography>
 
           {/* Add the RequiredInfoBanner here */}
-          <RequiredInfoBanner type="personal" />
+          {/* <RequiredInfoBanner type="personal" /> */}
 
           <form onSubmit={handleSubmit}>
             <Stack spacing={2} useFlexGap>
