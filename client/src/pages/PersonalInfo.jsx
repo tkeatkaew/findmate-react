@@ -1,8 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../services/api";
 import { uploadToCloudinary } from "../utils/cloudinary";
 import { CheckCircle, XCircle } from "lucide-react";
+import RequiredInfoBanner from "../components/RequiredInfoBanner";
 
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -29,6 +30,7 @@ import AppTheme from "../AppTheme";
 
 const provinces = ["กรุงเทพมหานคร", "กระบี่"];
 
+// University data by province
 const universitiesByProvince = {
   กระบี่: ["มหาวิทยาลัยการกีฬาแห่งชาติ วิทยาเขตกระบี่"],
   กรุงเทพมหานคร: [
@@ -121,6 +123,7 @@ const universitiesByProvince = {
 };
 
 const PersonalInfo = () => {
+  // State for form fields
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [nickname, setNickname] = useState("");
@@ -141,25 +144,111 @@ const PersonalInfo = () => {
   const [vehicle, setVehicle] = useState("none");
   const [selfIntroduction, setSelfIntroduction] = useState("");
   const [monthlyDormFee, setMonthlyDormFee] = useState("");
+
+  // Other state
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState(null);
+  const [userEmail, setUserEmail] = useState(null);
   const [alert, setAlert] = useState({
     open: false,
     message: "",
     severity: "success",
   });
-
   const [contactError, setContactError] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [socialContactHelperText, setSocialContactHelperText] = useState(
     "กรุณากรอกข้อมูลติดต่ออย่างน้อย 1 ช่องทาง"
   );
-
   const [ageError, setAgeError] = useState("");
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { user_id, email } = location.state || {};
   const fileInputRef = useRef(null);
+
+  // Get user ID and email, prioritizing location state but falling back to localStorage
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+
+    // First try to get from location state (from redirects)
+    let id = location.state?.user_id;
+    let email = location.state?.email;
+
+    // If not available in location state, use localStorage as fallback
+    if (!id && storedUser) {
+      id = storedUser.id;
+      email = storedUser.email;
+    }
+
+    // If we still don't have a user ID, redirect to login
+    if (!id) {
+      navigate("/login");
+      return;
+    }
+
+    setUserId(id);
+    setUserEmail(email);
+  }, [location.state, navigate]);
+
+  // Fetch existing data once we have a userId
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(true);
+
+        // Try to get existing personal info from database
+        try {
+          const response = await axios.get(`/personalinfo/${userId}`);
+          const data = response.data;
+
+          if (data) {
+            // Pre-fill form with existing data
+            setFirstname(data.firstname || "");
+            setLastname(data.lastname || "");
+            setNickname(data.nickname || "");
+            setAge(data.age?.toString() || "");
+            setMaritalstatus(data.maritalstatus || "single");
+            setGender(data.gender || "male");
+            setLGBT(Boolean(data.lgbt));
+            setProvince(data.province || "");
+            setUniversity(data.university || "");
+            setFacebook(data.facebook || "");
+            setInstagram(data.instagram || "");
+            setLineId(data.line_id || "");
+            setPhone(data.phone || "");
+            setDormName(data.dorm_name || "");
+            setVehicle(data.vehicle || "none");
+            setSelfIntroduction(data.self_introduction || "");
+            setMonthlyDormFee(data.monthly_dorm_fee?.toString() || "");
+          }
+        } catch (error) {
+          // It's okay if there's no existing data
+          console.log(
+            "No existing personal info found, starting with a blank form"
+          );
+        }
+
+        // Try to get user profile picture
+        try {
+          const userResponse = await axios.get(`/admin/users/${userId}`);
+          if (userResponse.data.profile_picture) {
+            setPreviewUrl(userResponse.data.profile_picture);
+          }
+        } catch (error) {
+          console.log("Could not fetch profile picture");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        showAlert("Error loading user data", "error");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [userId]);
 
   const hasAnySocialContact = () => {
     return Boolean(facebook || instagram || lineId || phone);
@@ -263,16 +352,23 @@ const PersonalInfo = () => {
     try {
       setIsSubmitting(true);
 
-      if (profilePicture) {
+      if (profilePicture && userId) {
         await axios.post("/update-profile-picture", {
-          user_id,
+          user_id: userId,
           profile_picture: profilePicture,
         });
+
+        // Update local storage with new profile picture
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (user) {
+          user.profile_picture = profilePicture;
+          localStorage.setItem("user", JSON.stringify(user));
+        }
       }
 
       await axios.post("/personalinfo", {
-        user_id,
-        email,
+        user_id: userId,
+        email: userEmail,
         firstname,
         lastname,
         nickname,
@@ -299,7 +395,7 @@ const PersonalInfo = () => {
       });
 
       setTimeout(() => {
-        navigate("/personalityprofile", { state: { user_id } });
+        navigate("/personalityprofile", { state: { user_id: userId } });
       }, 1500);
     } catch (err) {
       console.error("Error updating profile:", err);
@@ -309,7 +405,7 @@ const PersonalInfo = () => {
         severity: "error",
       });
     } finally {
-      setIsSubmitting(true);
+      setIsSubmitting(false);
     }
   };
 
@@ -334,6 +430,32 @@ const PersonalInfo = () => {
     setAgeError(error);
   };
 
+  const showAlert = (message, severity) => {
+    setAlert({ open: true, message, severity });
+  };
+
+  // Loading screen
+  if (isLoading) {
+    return (
+      <AppTheme>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "60vh",
+          }}
+        >
+          <CircularProgress size={60} />
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            กำลังโหลดข้อมูล...
+          </Typography>
+        </Box>
+      </AppTheme>
+    );
+  }
+
   return (
     <AppTheme>
       <CssBaseline />
@@ -352,6 +474,10 @@ const PersonalInfo = () => {
       >
         <Stack spacing={1} useFlexGap>
           <Typography variant="h4">ประวัติส่วนตัว</Typography>
+
+          {/* Add the RequiredInfoBanner here */}
+          <RequiredInfoBanner type="personal" />
+
           <form onSubmit={handleSubmit}>
             <Stack spacing={2} useFlexGap>
               <Box
@@ -467,6 +593,7 @@ const PersonalInfo = () => {
                 <Select
                   value={maritalstatus}
                   onChange={(e) => setMaritalstatus(e.target.value)}
+                  label="Marital Status"
                 >
                   <MenuItem value="single">โสด</MenuItem>
                   <MenuItem value="inrelationship">มีแฟน</MenuItem>
@@ -479,6 +606,7 @@ const PersonalInfo = () => {
                 <Select
                   value={gender}
                   onChange={(e) => setGender(e.target.value)}
+                  label="Gender"
                 >
                   <MenuItem value="male">ชาย</MenuItem>
                   <MenuItem value="female">หญิง</MenuItem>
@@ -494,7 +622,11 @@ const PersonalInfo = () => {
               </Box>
               <FormControl fullWidth required>
                 <InputLabel>จังหวัด</InputLabel>
-                <Select value={province} onChange={handleProvinceChange}>
+                <Select
+                  value={province}
+                  onChange={handleProvinceChange}
+                  label="Province"
+                >
                   {provinces.map((prov) => (
                     <MenuItem key={prov} value={prov}>
                       {prov}
@@ -508,6 +640,7 @@ const PersonalInfo = () => {
                 <Select
                   value={university}
                   onChange={(e) => setUniversity(e.target.value)}
+                  label="University"
                 >
                   {province &&
                     (universitiesByProvince[province] || []).map((uni) => (
@@ -643,6 +776,7 @@ const PersonalInfo = () => {
                 sx={{
                   textTransform: "none",
                   position: "relative",
+                  mt: 2,
                 }}
               >
                 {isSubmitting ? (

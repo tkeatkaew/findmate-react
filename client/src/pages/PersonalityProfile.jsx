@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../services/api";
 import AppTheme from "../AppTheme";
+import RequiredInfoBanner from "../components/RequiredInfoBanner";
 import {
   Box,
   Button,
@@ -84,11 +85,56 @@ const RadioCardGroup = ({
 const PersonalityProfile = () => {
   const [traits, setTraits] = useState({});
   const [showError, setShowError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user_id } = location.state || {};
-
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // First determine the user ID
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+
+    // First try to get from location state (from redirects)
+    let id = location.state?.user_id;
+
+    // If not available in location state, use localStorage as fallback
+    if (!id && storedUser) {
+      id = storedUser.id;
+    }
+
+    // If we still don't have a user ID, redirect to login
+    if (!id) {
+      navigate("/login");
+      return;
+    }
+
+    setUserId(id);
+  }, [location.state, navigate]);
+
+  // Fetch existing traits data once we have a userId
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchExistingTraits = async () => {
+      setIsLoading(true);
+      try {
+        // Try to get existing traits data from the database
+        const response = await axios.get(`/personalitytraits/${userId}`);
+        if (response.data) {
+          // Pre-fill form with existing data
+          setTraits(response.data);
+        }
+      } catch (error) {
+        // It's okay if there's no existing data
+        console.log("No existing traits found, starting with empty form");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchExistingTraits();
+  }, [userId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -126,9 +172,16 @@ const PersonalityProfile = () => {
 
     try {
       setIsSubmitting(true);
-      await axios.post("/personalitytraits", { user_id, ...traits });
+
+      // Send data to the server - it will handle update vs create
+      await axios.post("/personalitytraits", {
+        user_id: userId,
+        ...traits,
+      });
+
       navigate("/discovery");
     } catch (err) {
+      console.error("Error saving personality traits:", err);
       alert("บันทึกข้อมูลไม่สำเร็จ");
     } finally {
       setIsSubmitting(false);
@@ -229,6 +282,28 @@ const PersonalityProfile = () => {
     { value: "period_no_need", label: "ไม่จำเป็น" },
   ];
 
+  // Loading screen
+  if (isLoading) {
+    return (
+      <AppTheme>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "60vh",
+          }}
+        >
+          <CircularProgress size={60} />
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            กำลังโหลดข้อมูล...
+          </Typography>
+        </Box>
+      </AppTheme>
+    );
+  }
+
   return (
     <AppTheme>
       <CssBaseline />
@@ -245,10 +320,13 @@ const PersonalityProfile = () => {
             component="h1"
             gutterBottom
             align="center"
-            sx={{ mb: 4 }}
+            sx={{ mb: 2 }}
           >
             ลักษณะนิสัย
           </Typography>
+
+          {/* Add the RequiredInfoBanner here */}
+          <RequiredInfoBanner type="traits" />
 
           {showError && (
             <Alert severity="error" sx={{ mb: 3 }}>
