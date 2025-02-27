@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../services/api";
 import authService from "../services/authService";
+import { jwtDecode } from "jwt-decode";
 
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
