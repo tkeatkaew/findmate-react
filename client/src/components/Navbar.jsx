@@ -20,7 +20,6 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import defaultAvatar from "../images/anonymous.jpg";
-import authService from "../services/authService";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -87,8 +86,6 @@ const Navbar = () => {
   };
 
   const handleSignOut = () => {
-    authService.logout();
-
     localStorage.removeItem("user");
     setCurrentUser(null);
     setUserInfo(null);

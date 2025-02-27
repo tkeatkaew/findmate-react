@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../services/api";
-import authService from "../services/authService";
 import { checkProfileCompleteness } from "../utils/profileCheck";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
@@ -34,20 +33,10 @@ const ProfileChecker = ({ children }) => {
   const isAdminPath = location.pathname.startsWith("/admin");
 
   useEffect(() => {
-    // Initialize authentication from token if available
-    authService.initializeAuth();
-
-    // Check if user is authenticated using JWT
-    const isAuthenticated = authService.isAuthenticated();
-    const user = authService.getUser();
+    const user = JSON.parse(localStorage.getItem("user"));
 
     // No checking needed if not logged in, or if we're on an exempt page
-    if (
-      !isAuthenticated ||
-      !user ||
-      exemptPaths.includes(location.pathname) ||
-      isAdminPath
-    ) {
+    if (!user || exemptPaths.includes(location.pathname) || isAdminPath) {
       setIsChecking(false);
       return;
     }
@@ -93,7 +82,7 @@ const ProfileChecker = ({ children }) => {
         if (error.response && error.response.status === 404) {
           setAlert({
             open: true,
-            message: "กรุณากรอกข้อมูลส่วนตัว",
+            message: "กรุณากรอกข้อมูลส่วนตัวให้ครบถ้วน",
             severity: "warning",
           });
 
@@ -102,16 +91,6 @@ const ProfileChecker = ({ children }) => {
               state: { user_id: user.id, email: user.email },
             });
           }, 1500);
-        }
-
-        // If we get a 401 or 403, the token is invalid or expired
-        if (
-          error.response &&
-          (error.response.status === 401 || error.response.status === 403)
-        ) {
-          // Force logout and redirect to login
-          authService.logout();
-          navigate("/login");
         }
       } finally {
         setIsChecking(false);

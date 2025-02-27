@@ -6,14 +6,12 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
-const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
-const knn = require("ml-knn");
 
 const app = express();
 
-const JWT_SECRET = "#FM2024JWT";
-const JWT_EXPIRES_IN = "24h";
+const knn = require("ml-knn");
+
+const nodemailer = require("nodemailer");
 
 // MySQL Connection Pool instead of single connection
 const pool = mysql.createPool({
@@ -50,33 +48,13 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
-// JWT middleware for protected routes
-const authenticateJWT = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (authHeader) {
-    const token = authHeader.split(" ")[1]; // Bearer TOKEN format
-
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-      if (err) {
-        return res.sendStatus(403); // Forbidden
-      }
-
-      req.user = user;
-      next();
-    });
-  } else {
-    res.sendStatus(401); // Unauthorized
-  }
-};
-// app.use(
-//   session({
-//     secret: "#FM2024",
-//     resave: false,
-//     saveUninitialized: false,
-//   })
-// );
+app.use(
+  session({
+    secret: "#FM2024",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
 //Create a transporter using SMTP
 const transporter = nodemailer.createTransport({
@@ -209,23 +187,16 @@ app.post("/verify-otp", async (req, res) => {
       // Clean up pending registration
       pendingRegistrations.delete(registration_id);
 
-      const userObj = {
-        id: result.insertId,
-        name: userData.name,
-        email: userData.email,
-        role: userData.role,
-      };
-
-      // Generate JWT token
-      const token = jwt.sign(userObj, JWT_SECRET, {
-        expiresIn: JWT_EXPIRES_IN,
-      });
-
-      // Return token
+      // Return full user data
       return res.json({
         verified: true,
-        token,
         user_id: result.insertId,
+        user: {
+          id: result.insertId,
+          name: userData.name,
+          email: userData.email,
+          role: userData.role,
+        },
       });
     } catch (err) {
       console.error("Error creating user:", err);
@@ -292,8 +263,8 @@ app.post("/login", async (req, res) => {
       });
     }
 
-    // Create user object to be encoded in the token (don't include password)
-    const userForToken = {
+    // Continue with normal login...
+    req.session.user = {
       id: user.id,
       name: user.name,
       email: user.email,
@@ -301,13 +272,7 @@ app.post("/login", async (req, res) => {
       profile_picture: user.profile_picture,
     };
 
-    // Generate JWT token with user information embedded
-    const token = jwt.sign(userForToken, JWT_SECRET, {
-      expiresIn: JWT_EXPIRES_IN,
-    });
-
-    // Send only the token
-    res.status(200).json({ token });
+    res.status(200).json({ user: req.session.user });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ error: "Database error" });
@@ -315,7 +280,7 @@ app.post("/login", async (req, res) => {
 });
 
 // Add Personal Information Route
-app.post("/personalinfo", authenticateJWT, async (req, res) => {
+app.post("/personalinfo", async (req, res) => {
   const {
     user_id,
     email,
@@ -432,7 +397,7 @@ app.post("/personalinfo", authenticateJWT, async (req, res) => {
 });
 
 // Add Personal personalitytraits Route
-app.post("/personalitytraits", authenticateJWT, async (req, res) => {
+app.post("/personalitytraits", async (req, res) => {
   const {
     user_id,
     type,
@@ -532,18 +497,22 @@ app.post("/personalitytraits", authenticateJWT, async (req, res) => {
 
 // Logout Route
 app.post("/logout", (req, res) => {
-  // We don't need server-side logout logic with JWT
-  // The client will simply remove the token
-  res.status(200).json({ message: "Logged out successfully" });
+  req.session.destroy((err) => {
+    if (err) return res.status(500).json({ error: "Logout failed" });
+    res.status(200).json({ message: "Logged out successfully" });
+  });
 });
 
 // Protected Route (example)
-app.get("/home", authenticateJWT, (req, res) => {
-  res.status(200).json({ user: req.user });
+app.get("/home", (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: "Unauthorized access" });
+  }
+  res.status(200).json({ user: req.session.user });
 });
 
 // KNN Route
-app.post("/knn", authenticateJWT, async (req, res) => {
+app.post("/knn", async (req, res) => {
   const { user_id } = req.body;
 
   try {
@@ -669,7 +638,7 @@ const upload = multer({ storage });
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Like/Unlike Route
-app.post("/knn", authenticateJWT, async (req, res) => {
+app.post("/like", async (req, res) => {
   const { user_id, liked_user_id, action } = req.body;
 
   try {
@@ -787,7 +756,7 @@ app.post("/knn", authenticateJWT, async (req, res) => {
 });
 
 // Get Liked Users Route
-app.get("/liked", authenticateJWT, async (req, res) => {
+app.get("/liked", async (req, res) => {
   const { user_id } = req.query;
 
   try {
@@ -809,7 +778,7 @@ app.get("/liked", authenticateJWT, async (req, res) => {
 });
 
 // Get Matches Route
-app.get("/matches", authenticateJWT, async (req, res) => {
+app.get("/matches", async (req, res) => {
   const { user_id } = req.query;
 
   try {
@@ -831,7 +800,7 @@ app.get("/matches", authenticateJWT, async (req, res) => {
 });
 
 // Check Like Status Route
-app.get("/check-like", authenticateJWT, async (req, res) => {
+app.get("/check-like", async (req, res) => {
   const { user_id, target_user_id } = req.query;
 
   try {
@@ -1412,7 +1381,7 @@ app.get("/statistics", async (req, res) => {
   }
 });
 
-app.post("/update-profile-picture", authenticateJWT, async (req, res) => {
+app.post("/update-profile-picture", async (req, res) => {
   const { user_id, profile_picture } = req.body;
 
   if (!profile_picture || !user_id) {
@@ -1427,31 +1396,10 @@ app.post("/update-profile-picture", authenticateJWT, async (req, res) => {
       [profile_picture, user_id]
     );
 
-    // Get current user data to create a new token with updated profile picture
-    const [userData] = await promisePool.query(
-      "SELECT id, name, email, role FROM users WHERE id = ?",
-      [user_id]
-    );
-
-    if (userData.length > 0) {
-      const userForToken = {
-        ...userData[0],
-        profile_picture,
-      };
-
-      // Generate a new token with updated info
-      const token = jwt.sign(userForToken, JWT_SECRET, {
-        expiresIn: JWT_EXPIRES_IN,
-      });
-
-      res.status(200).json({
-        message: "Profile picture updated successfully",
-        profilePictureUrl: profile_picture,
-        token: token, // Return the new token
-      });
-    } else {
-      throw new Error("User not found");
-    }
+    res.status(200).json({
+      message: "Profile picture updated successfully",
+      profilePictureUrl: profile_picture,
+    });
   } catch (error) {
     console.error("Error in profile picture update:", error);
     res.status(500).json({

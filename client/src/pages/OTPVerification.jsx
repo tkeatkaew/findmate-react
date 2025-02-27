@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../services/api";
-import authService from "../services/authService";
-import { jwtDecode } from "jwt-decode";
 
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -50,21 +48,20 @@ const OTPVerification = () => {
       });
 
       if (response.data.verified) {
-        // Get token from response
-        const { token } = response.data;
-
-        // Store token using authService
-        localStorage.setItem("auth_token", token);
-
-        // Set auth header for future requests
-        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        // Store user data in localStorage after successful verification
+        const userData = {
+          id: response.data.user_id,
+          email: email,
+          name: email.split("@")[0], // temporary name until they set their profile
+          role: "user",
+        };
+        localStorage.setItem("user", JSON.stringify(userData));
 
         // Navigate to personal info page
-        const user = jwtDecode(token);
         navigate("/personalinfo", {
           state: {
-            user_id: user.id,
-            email: user.email,
+            user_id: response.data.user_id,
+            email,
           },
         });
       } else {

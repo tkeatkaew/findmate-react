@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import authService from "../services/authService";
+import axios from "../services/api";
 
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -12,7 +12,6 @@ import Link from "@mui/material/Link";
 import SvgIcon from "@mui/material/SvgIcon";
 import Divider from "@mui/material/Divider";
 import CircularProgress from "@mui/material/CircularProgress";
-import Alert from "@mui/material/Alert";
 
 import AppTheme from "../AppTheme";
 
@@ -24,24 +23,25 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Check if user is already logged in
-    if (authService.isAuthenticated()) {
-      navigate("/discovery");
+    const user = localStorage.getItem("user");
+    if (user) {
+      navigate("/discovery"); // Redirect to discovery if logged in
     }
   }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError("");
+    setIsLoading(true); // Set loading to true when submission starts
+    setError(""); // Clear any existing errors
 
     try {
-      await authService.login(email, password);
+      const { data } = await axios.post("/login", { email, password });
+      localStorage.setItem("user", JSON.stringify(data.user));
       navigate("/discovery");
     } catch (err) {
-      setError(err.error || "อีเมลหรือรหัสผ่านไม่ถูกต้องหรือบัญชีถูกระงับ");
+      setError("อีเมลหรือรหัสผ่านไม่ถูกต้องหรือบัญชีถูกระงับ");
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Set loading to false when submission completes
     }
   };
 
@@ -98,11 +98,11 @@ const Login = () => {
                 type="submit"
                 variant="contained"
                 fullWidth
-                disabled={isLoading}
+                disabled={isLoading} // Disable button while loading
                 sx={{
                   textTransform: "none",
-                  position: "relative",
-                  minHeight: "36px",
+                  position: "relative", // Added for loading indicator positioning
+                  minHeight: "36px", // Added to maintain consistent height
                 }}
               >
                 {isLoading ? (

@@ -300,7 +300,6 @@ const EditProfile = () => {
     }));
   };
 
-  // In your component
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -314,21 +313,20 @@ const EditProfile = () => {
 
       // Upload to Cloudinary
       const cloudinaryUrl = await uploadToCloudinary(file);
+      setProfilePicture(cloudinaryUrl);
 
       // Update in database
-      const response = await axios.post("/update-profile-picture", {
+      await axios.post("/update-profile-picture", {
         user_id: user.id,
         profile_picture: cloudinaryUrl,
       });
 
-      // If we received a new token, update it
-      if (response.data.token) {
-        localStorage.setItem("auth_token", response.data.token);
-        // Update auth header
-        axios.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${response.data.token}`;
-      }
+      // Update local storage
+      const updatedUser = {
+        ...user,
+        profile_picture: cloudinaryUrl,
+      };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
 
       setAlert({
         open: true,
