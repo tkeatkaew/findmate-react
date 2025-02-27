@@ -49,21 +49,21 @@ const OTPVerification = () => {
       });
 
       if (response.data.verified) {
-        // Now we get a token from the server
-        const { token, user, user_id } = response.data;
+        // Get token from response
+        const { token } = response.data;
 
-        // Store token and user data using authService
-        authService.setUser(user);
+        // Store token using authService
         localStorage.setItem("auth_token", token);
 
         // Set auth header for future requests
         axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
         // Navigate to personal info page
+        const user = jwtDecode(token);
         navigate("/personalinfo", {
           state: {
-            user_id: user_id,
-            email,
+            user_id: user.id,
+            email: user.email,
           },
         });
       } else {

@@ -1,9 +1,8 @@
 import axios from "./api";
-import { jwtDecode } from "jwt-decode"; // Correct import with named export
+import { jwtDecode } from "jwt-decode";
 
 // Token key in localStorage
 const TOKEN_KEY = "auth_token";
-const USER_KEY = "user";
 
 // Set token in localStorage
 const setToken = (token) => {
@@ -20,20 +19,19 @@ const removeToken = () => {
   localStorage.removeItem(TOKEN_KEY);
 };
 
-// Set user info in localStorage
-const setUser = (user) => {
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
-};
-
-// Get user info from localStorage
+// Get user info from JWT token
 const getUser = () => {
-  const user = localStorage.getItem(USER_KEY);
-  return user ? JSON.parse(user) : null;
-};
+  const token = getToken();
+  if (!token) return null;
 
-// Remove user info from localStorage
-const removeUser = () => {
-  localStorage.removeItem(USER_KEY);
+  try {
+    // Decode JWT to get user info
+    const decoded = jwtDecode(token);
+    return decoded;
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    return null;
+  }
 };
 
 // Login user
@@ -49,16 +47,10 @@ const login = async (email, password) => {
     // Save token in localStorage
     setToken(token);
 
-    // Decode token to get user info
-    const user = jwtDecode(token);
-
-    // Save user info for easy access
-    setUser(user);
-
     // Set auth header for future requests
     setAuthHeader(token);
 
-    return { success: true, user };
+    return { success: true, user: jwtDecode(token) };
   } catch (error) {
     throw error.response ? error.response.data : { error: "Network error" };
   }
@@ -74,9 +66,8 @@ const logout = async () => {
   } catch (error) {
     console.error("Logout error:", error);
   } finally {
-    // Remove token and user from localStorage
+    // Remove token from localStorage
     removeToken();
-    removeUser();
 
     // Remove auth header
     removeAuthHeader();
@@ -97,7 +88,6 @@ const isAuthenticated = () => {
     if (decoded.exp < currentTime) {
       // Token expired, clean up
       removeToken();
-      removeUser();
       return false;
     }
 
@@ -106,7 +96,6 @@ const isAuthenticated = () => {
     // Invalid token
     console.error("Token validation error:", error);
     removeToken();
-    removeUser();
     return false;
   }
 };
@@ -140,7 +129,6 @@ const authService = {
   isAuthenticated,
   getToken,
   getUser,
-  setUser,
   initializeAuth,
 };
 

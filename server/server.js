@@ -221,12 +221,11 @@ app.post("/verify-otp", async (req, res) => {
         expiresIn: JWT_EXPIRES_IN,
       });
 
-      // Return token and user info
+      // Return token
       return res.json({
         verified: true,
         token,
         user_id: result.insertId,
-        user: userObj,
       });
     } catch (err) {
       console.error("Error creating user:", err);
@@ -267,7 +266,6 @@ app.post("/resend-otp", async (req, res) => {
 });
 
 // Login Route
-// Modified Login Route to only return JWT
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -1414,7 +1412,7 @@ app.get("/statistics", async (req, res) => {
   }
 });
 
-app.post("/update-profile-picture", async (req, res) => {
+app.post("/update-profile-picture", authenticateJWT, async (req, res) => {
   const { user_id, profile_picture } = req.body;
 
   if (!profile_picture || !user_id) {
@@ -1429,10 +1427,31 @@ app.post("/update-profile-picture", async (req, res) => {
       [profile_picture, user_id]
     );
 
-    res.status(200).json({
-      message: "Profile picture updated successfully",
-      profilePictureUrl: profile_picture,
-    });
+    // Get current user data to create a new token with updated profile picture
+    const [userData] = await promisePool.query(
+      "SELECT id, name, email, role FROM users WHERE id = ?",
+      [user_id]
+    );
+
+    if (userData.length > 0) {
+      const userForToken = {
+        ...userData[0],
+        profile_picture,
+      };
+
+      // Generate a new token with updated info
+      const token = jwt.sign(userForToken, JWT_SECRET, {
+        expiresIn: JWT_EXPIRES_IN,
+      });
+
+      res.status(200).json({
+        message: "Profile picture updated successfully",
+        profilePictureUrl: profile_picture,
+        token: token, // Return the new token
+      });
+    } else {
+      throw new Error("User not found");
+    }
   } catch (error) {
     console.error("Error in profile picture update:", error);
     res.status(500).json({
