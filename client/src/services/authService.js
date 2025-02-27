@@ -1,4 +1,5 @@
 import axios from "./api";
+import jwtDecode from "jwt-decode";
 
 // Token key in localStorage
 const TOKEN_KEY = "auth_token";
@@ -39,13 +40,22 @@ const removeUser = () => {
 const login = async (email, password) => {
   try {
     const response = await axios.post("/login", { email, password });
-    const { token, user } = response.data;
+    const { token } = response.data;
 
-    // Save token and user in localStorage
-    setToken(token);
-    setUser(user);
+    if (!token) {
+      throw new Error("No token received from server");
+    }
 
-    // Set auth token for all future requests
+    // Save token in localStorage
+    localStorage.setItem(TOKEN_KEY, token);
+
+    // Decode token to get user info
+    const user = jwtDecode(token);
+
+    // Save user info for easy access
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+
+    // Set auth header for future requests
     setAuthHeader(token);
 
     return { success: true, user };

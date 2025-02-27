@@ -267,6 +267,7 @@ app.post("/resend-otp", async (req, res) => {
 });
 
 // Login Route
+// Modified Login Route to only return JWT
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -293,30 +294,22 @@ app.post("/login", async (req, res) => {
       });
     }
 
-    // Create user object (don't include password)
+    // Create user object to be encoded in the token (don't include password)
     const userForToken = {
       id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
+      profile_picture: user.profile_picture,
     };
 
-    // Generate JWT token
+    // Generate JWT token with user information embedded
     const token = jwt.sign(userForToken, JWT_SECRET, {
       expiresIn: JWT_EXPIRES_IN,
     });
 
-    // Send token and user info
-    res.status(200).json({
-      token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        profile_picture: user.profile_picture,
-      },
-    });
+    // Send only the token
+    res.status(200).json({ token });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ error: "Database error" });
