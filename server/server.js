@@ -6,12 +6,14 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
+const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
+const knn = require("ml-knn");
 
 const app = express();
 
-const knn = require("ml-knn");
-
-const nodemailer = require("nodemailer");
+const JWT_SECRET = "#FM2024JWT";
+const JWT_EXPIRES_IN = "24h";
 
 // MySQL Connection Pool instead of single connection
 const pool = mysql.createPool({
@@ -48,13 +50,33 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-app.use(
-  session({
-    secret: "#FM2024",
-    resave: false,
-    saveUninitialized: false,
-  })
-);
+
+// JWT middleware for protected routes
+const authenticateJWT = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader) {
+    const token = authHeader.split(" ")[1]; // Bearer TOKEN format
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+      if (err) {
+        return res.sendStatus(403); // Forbidden
+      }
+
+      req.user = user;
+      next();
+    });
+  } else {
+    res.sendStatus(401); // Unauthorized
+  }
+};
+// app.use(
+//   session({
+//     secret: "#FM2024",
+//     resave: false,
+//     saveUninitialized: false,
+//   })
+// );
 
 //Create a transporter using SMTP
 const transporter = nodemailer.createTransport({
@@ -187,16 +209,24 @@ app.post("/verify-otp", async (req, res) => {
       // Clean up pending registration
       pendingRegistrations.delete(registration_id);
 
-      // Return full user data
+      const userObj = {
+        id: result.insertId,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+      };
+
+      // Generate JWT token
+      const token = jwt.sign(userObj, JWT_SECRET, {
+        expiresIn: JWT_EXPIRES_IN,
+      });
+
+      // Return token and user info
       return res.json({
         verified: true,
+        token,
         user_id: result.insertId,
-        user: {
-          id: result.insertId,
-          name: userData.name,
-          email: userData.email,
-          role: userData.role,
-        },
+        user: userObj,
       });
     } catch (err) {
       console.error("Error creating user:", err);
@@ -263,16 +293,30 @@ app.post("/login", async (req, res) => {
       });
     }
 
-    // Continue with normal login...
-    req.session.user = {
+    // Create user object (don't include password)
+    const userForToken = {
       id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
-      profile_picture: user.profile_picture,
     };
 
-    res.status(200).json({ user: req.session.user });
+    // Generate JWT token
+    const token = jwt.sign(userForToken, JWT_SECRET, {
+      expiresIn: JWT_EXPIRES_IN,
+    });
+
+    // Send token and user info
+    res.status(200).json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        profile_picture: user.profile_picture,
+      },
+    });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ error: "Database error" });
@@ -280,7 +324,7 @@ app.post("/login", async (req, res) => {
 });
 
 // Add Personal Information Route
-app.post("/personalinfo", async (req, res) => {
+app.post("/personalinfo", authenticateJWT, async (req, res) => {
   const {
     user_id,
     email,
@@ -397,7 +441,7 @@ app.post("/personalinfo", async (req, res) => {
 });
 
 // Add Personal personalitytraits Route
-app.post("/personalitytraits", async (req, res) => {
+app.post("/personalitytraits", authenticateJWT, async (req, res) => {
   const {
     user_id,
     type,
@@ -497,22 +541,18 @@ app.post("/personalitytraits", async (req, res) => {
 
 // Logout Route
 app.post("/logout", (req, res) => {
-  req.session.destroy((err) => {
-    if (err) return res.status(500).json({ error: "Logout failed" });
-    res.status(200).json({ message: "Logged out successfully" });
-  });
+  // We don't need server-side logout logic with JWT
+  // The client will simply remove the token
+  res.status(200).json({ message: "Logged out successfully" });
 });
 
 // Protected Route (example)
-app.get("/home", (req, res) => {
-  if (!req.session.user) {
-    return res.status(401).json({ error: "Unauthorized access" });
-  }
-  res.status(200).json({ user: req.session.user });
+app.get("/home", authenticateJWT, (req, res) => {
+  res.status(200).json({ user: req.user });
 });
 
 // KNN Route
-app.post("/knn", async (req, res) => {
+app.post("/knn", authenticateJWT, async (req, res) => {
   const { user_id } = req.body;
 
   try {
@@ -638,7 +678,7 @@ const upload = multer({ storage });
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Like/Unlike Route
-app.post("/like", async (req, res) => {
+app.post("/knn", authenticateJWT, async (req, res) => {
   const { user_id, liked_user_id, action } = req.body;
 
   try {
@@ -756,7 +796,7 @@ app.post("/like", async (req, res) => {
 });
 
 // Get Liked Users Route
-app.get("/liked", async (req, res) => {
+app.get("/liked", authenticateJWT, async (req, res) => {
   const { user_id } = req.query;
 
   try {
@@ -778,7 +818,7 @@ app.get("/liked", async (req, res) => {
 });
 
 // Get Matches Route
-app.get("/matches", async (req, res) => {
+app.get("/matches", authenticateJWT, async (req, res) => {
   const { user_id } = req.query;
 
   try {
@@ -800,7 +840,7 @@ app.get("/matches", async (req, res) => {
 });
 
 // Check Like Status Route
-app.get("/check-like", async (req, res) => {
+app.get("/check-like", authenticateJWT, async (req, res) => {
   const { user_id, target_user_id } = req.query;
 
   try {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../services/api";
+import authService from "../services/authService";
 
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -48,19 +49,20 @@ const OTPVerification = () => {
       });
 
       if (response.data.verified) {
-        // Store user data in localStorage after successful verification
-        const userData = {
-          id: response.data.user_id,
-          email: email,
-          name: email.split("@")[0], // temporary name until they set their profile
-          role: "user",
-        };
-        localStorage.setItem("user", JSON.stringify(userData));
+        // Now we get a token from the server
+        const { token, user, user_id } = response.data;
+
+        // Store token and user data using authService
+        authService.setUser(user);
+        localStorage.setItem("auth_token", token);
+
+        // Set auth header for future requests
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
         // Navigate to personal info page
         navigate("/personalinfo", {
           state: {
-            user_id: response.data.user_id,
+            user_id: user_id,
             email,
           },
         });
