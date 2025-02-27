@@ -905,7 +905,6 @@ const Discovery = () => {
                               height: "150px",
                               borderRadius: "10%",
                               objectFit: "cover",
-                              aspectRatio: "1 / 1",
                             }}
                           />
                           <Box>
