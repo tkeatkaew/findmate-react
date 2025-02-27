@@ -1,5 +1,5 @@
 import axios from "./api";
-import jwtDecode from "jwt-decode";
+import { jwtDecode } from "jwt-decode"; // Correct import with named export
 
 // Token key in localStorage
 const TOKEN_KEY = "auth_token";
@@ -47,13 +47,13 @@ const login = async (email, password) => {
     }
 
     // Save token in localStorage
-    localStorage.setItem(TOKEN_KEY, token);
+    setToken(token);
 
     // Decode token to get user info
     const user = jwtDecode(token);
 
     // Save user info for easy access
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    setUser(user);
 
     // Set auth header for future requests
     setAuthHeader(token);
@@ -65,21 +65,50 @@ const login = async (email, password) => {
 };
 
 // Logout user
-const logout = () => {
-  // Remove token and user from localStorage
-  removeToken();
-  removeUser();
+const logout = async () => {
+  try {
+    // Call the logout endpoint if needed
+    await axios
+      .post("/logout")
+      .catch((err) => console.error("Logout error:", err));
+  } catch (error) {
+    console.error("Logout error:", error);
+  } finally {
+    // Remove token and user from localStorage
+    removeToken();
+    removeUser();
 
-  // Remove auth header
-  removeAuthHeader();
-
-  // Optional: notify server about logout (not necessary for JWT)
-  axios.post("/logout").catch((err) => console.error("Logout error:", err));
+    // Remove auth header
+    removeAuthHeader();
+  }
 };
 
 // Check if user is authenticated
 const isAuthenticated = () => {
-  return !!getToken();
+  const token = getToken();
+  if (!token) return false;
+
+  try {
+    // Verify token hasn't expired
+    const decoded = jwtDecode(token);
+    const currentTime = Date.now() / 1000;
+
+    // Check if token is expired
+    if (decoded.exp < currentTime) {
+      // Token expired, clean up
+      removeToken();
+      removeUser();
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    // Invalid token
+    console.error("Token validation error:", error);
+    removeToken();
+    removeUser();
+    return false;
+  }
 };
 
 // Set authorization header for axios
@@ -97,7 +126,7 @@ const removeAuthHeader = () => {
 // Initialize auth header from localStorage on app start
 const initializeAuth = () => {
   const token = getToken();
-  if (token) {
+  if (token && isAuthenticated()) {
     setAuthHeader(token);
     return true;
   }
