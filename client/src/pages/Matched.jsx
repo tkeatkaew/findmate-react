@@ -51,7 +51,7 @@ const Matched = () => {
 
   const footerItems = [
     {
-      text: "ให้คะแนนแอปพลิเคชัน",
+      text: "ให้คะแนนการจับคู่",
       icon: <Star size={20} />,
       onClick: () => setAppReviewOpen(true),
       color: "warning",
