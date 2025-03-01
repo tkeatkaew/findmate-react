@@ -1605,7 +1605,8 @@ const sendReviewRequests = async () => {
 
 // Schedule the function to run once a week (every Sunday at midnight)
 const cron = require("node-cron");
-cron.schedule("0 0 * * 0", sendReviewRequests);
+cron.schedule("* * * * *", sendReviewRequests); //every 1 min
+// cron.schedule("0 0 * * 0", sendReviewRequests);
 
 // 4. Admin route to get all app reviews
 app.get("/admin/app-reviews", async (req, res) => {
