@@ -30,6 +30,7 @@ import DialogActions from "@mui/material/DialogActions";
 import Chip from "@mui/material/Chip";
 import Grid from "@mui/material/Grid";
 import Divider from "@mui/material/Divider";
+import { Star } from "lucide-react";
 
 import defaultAvatar from "../images/anonymous.jpg";
 
