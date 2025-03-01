@@ -1459,6 +1459,171 @@ app.delete("/admin/users/:userId", async (req, res) => {
   }
 });
 
+app.post("/app-reviews", async (req, res) => {
+  const { user_id, rating, feedback } = req.body;
+
+  try {
+    // Insert the review
+    await promisePool.query(
+      `INSERT INTO app_reviews (user_id, rating, feedback)
+       VALUES (?, ?, ?)`,
+      [user_id || null, rating, feedback || null]
+    );
+
+    // If there's valid feedback, send an email notification to the team
+    if (feedback && feedback.trim().length > 0) {
+      // Get user information if a user_id was provided
+      let userName = "Anonymous";
+      let userEmail = "anonymous@user.com";
+
+      if (user_id) {
+        const [userResults] = await promisePool.query(
+          "SELECT name, email FROM users WHERE id = ?",
+          [user_id]
+        );
+
+        if (userResults.length > 0) {
+          userName = userResults[0].name;
+          userEmail = userResults[0].email;
+        }
+      }
+
+      // Send email to the team
+      const mailOptions = {
+        from: '"Find Mate System" <findmate.official@gmail.com>',
+        to: "findmate.official@gmail.com", // Your team's email
+        subject: `New App Review: ${rating} Stars`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+            <h2 style="color: #27272a; text-align: center;">คุณได้รับความคิดเห็นใหม่สำหรับแอป</h2>
+            <p style="font-size: 16px; line-height: 1.5; color: #333;"><strong>คะแนน:</strong> ${rating} / 5</p>
+            <p style="font-size: 16px; line-height: 1.5; color: #333;"><strong>จาก:</strong> ${userName} (${userEmail})</p>
+            <p style="font-size: 16px; line-height: 1.5; color: #333;"><strong>ความคิดเห็น:</strong></p>
+            <div style="background-color: white; padding: 15px; border-radius: 5px; margin: 10px 0;">
+              ${feedback.replace(/\n/g, "<br>")}
+            </div>
+            <p style="font-size: 16px; line-height: 1.5; color: #333;">ส่งเมื่อ: ${new Date().toLocaleString(
+              "th-TH"
+            )}</p>
+          </div>
+        `,
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+
+        // Mark this review as having sent an email
+        await promisePool.query(
+          "UPDATE app_reviews SET email_sent = 1 WHERE user_id = ? AND created_at = (SELECT MAX(created_at) FROM app_reviews WHERE user_id = ?)",
+          [user_id, user_id]
+        );
+      } catch (emailErr) {
+        console.error("Error sending review notification email:", emailErr);
+        // Continue even if email fails
+      }
+    }
+
+    res.status(201).json({ message: "Review submitted successfully" });
+  } catch (err) {
+    console.error("Error storing app review:", err);
+    res.status(500).json({ error: "Error storing review" });
+  }
+});
+
+// 3. Set up automated review requests via email
+// This function will send emails to users who have been active for a while but haven't left a review
+const sendReviewRequests = async () => {
+  try {
+    // Get users who:
+    // 1. Have been active for at least 2 weeks
+    // 2. Have made a successful match
+    // 3. Haven't already submitted an app review
+    const [users] = await promisePool.query(
+      `SELECT u.id, u.name, u.email
+       FROM users u
+       JOIN matches m ON (u.id = m.user1_id OR u.id = m.user2_id)
+       WHERE u.id NOT IN (SELECT user_id FROM app_reviews WHERE user_id IS NOT NULL)
+       AND DATEDIFF(NOW(), u.created_at) >= 14
+       GROUP BY u.id`
+    );
+
+    for (const user of users) {
+      // Check if this user has been sent a review request in the last 30 days
+      // You'd need to add a "review_requests" table for this
+
+      // Send email asking for a review
+      const mailOptions = {
+        from: '"Find Mate" <findmate.official@gmail.com>',
+        to: user.email,
+        subject: "ช่วยให้คะแนนแอปพลิเคชัน Find Mate",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+            <h2 style="color: #27272a; text-align: center;">คุณคิดอย่างไรเกี่ยวกับแอปพลิเคชัน Find Mate?</h2>
+            <p style="font-size: 16px; line-height: 1.5; color: #333;">สวัสดี ${user.name}!</p>
+            <p style="font-size: 16px; line-height: 1.5; color: #333;">เราหวังว่าคุณจะชอบใช้งานแอปพลิเคชัน Find Mate ในการหาและจับคู่กับรูมเมทที่เหมาะสมกับคุณ</p>
+            <p style="font-size: 16px; line-height: 1.5; color: #333;">ความคิดเห็นของคุณสำคัญมากสำหรับเราในการปรับปรุงแอปพลิเคชันให้ดียิ่งขึ้น โปรดสละเวลาสักครู่เพื่อให้คะแนนและความคิดเห็น</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://findmate-react.vercel.app/matched" 
+                 style="background-color: #27272a; 
+                        color: white; 
+                        padding: 12px 24px; 
+                        text-decoration: none; 
+                        border-radius: 8px; 
+                        font-weight: bold;
+                        display: inline-block;">
+                ให้คะแนน Find Mate
+              </a>
+            </div>
+            
+            <p style="font-size: 16px; line-height: 1.5; color: #333;">ขอบคุณสำหรับการสนับสนุน!</p>
+            <p style="font-size: 16px; line-height: 1.5; color: #333;">ทีมงาน Find Mate</p>
+          </div>
+        `,
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log(`Review request email sent to ${user.email}`);
+
+        // Record that we sent a review request
+        // await promisePool.query(
+        //   "INSERT INTO review_requests (user_id, sent_at) VALUES (?, NOW())",
+        //   [user.id]
+        // );
+      } catch (emailErr) {
+        console.error(
+          `Error sending review request email to ${user.email}:`,
+          emailErr
+        );
+      }
+    }
+  } catch (err) {
+    console.error("Error in sendReviewRequests:", err);
+  }
+};
+
+// Schedule the function to run once a week (every Sunday at midnight)
+const cron = require("node-cron");
+cron.schedule("0 0 * * 0", sendReviewRequests);
+
+// 4. Admin route to get all app reviews
+app.get("/admin/app-reviews", async (req, res) => {
+  try {
+    const [reviews] = await promisePool.query(
+      `SELECT ar.*, u.name, u.email 
+       FROM app_reviews ar
+       LEFT JOIN users u ON ar.user_id = u.id
+       ORDER BY ar.created_at DESC`
+    );
+
+    res.json(reviews);
+  } catch (err) {
+    console.error("Error fetching app reviews:", err);
+    res.status(500).json({ error: "Error fetching reviews" });
+  }
+});
+
 // Start the Server
 const PORT = 3000;
 app.listen(PORT, () => {

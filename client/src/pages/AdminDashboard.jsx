@@ -59,6 +59,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [actionReason, setActionReason] = useState("");
   const [selectedAction, setSelectedAction] = useState("");
+  const [appReviews, setAppReviews] = useState([]);
 
   const fetchUsers = async () => {
     try {
@@ -87,6 +88,7 @@ const AdminDashboard = () => {
       fetchStats();
       fetchReports();
       fetchUsers();
+      fetchAppReviews();
     }
   }, [navigate]);
 
@@ -167,6 +169,20 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error("Error fetching user details:", error);
       return null;
+    }
+  };
+
+  const fetchAppReviews = async () => {
+    try {
+      const response = await axios.get("/admin/app-reviews");
+      setAppReviews(response.data);
+    } catch (error) {
+      console.error("Error fetching app reviews:", error);
+      setAlert({
+        open: true,
+        message: "เกิดข้อผิดพลาดในการดึงข้อมูลรีวิว",
+        severity: "error",
+      });
     }
   };
 
@@ -329,6 +345,7 @@ const AdminDashboard = () => {
               <Tab label="รายงานระบบ" />
               <Tab label="ข้อเสนอแนะ" />
               <Tab label="จัดการผู้ใช้ทั้งหมด" />
+              <Tab label="รีวิว" />
             </Tabs>
 
             <Box sx={{ p: 3 }}>
@@ -557,6 +574,115 @@ const AdminDashboard = () => {
                     </TableBody>
                   </Table>
                 </TableContainer>
+              )}
+
+              {activeTab === 4 && (
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    รีวิวแอปพลิเคชันทั้งหมด
+                  </Typography>
+
+                  {appReviews.length > 0 ? (
+                    <>
+                      {/* Average Rating Display */}
+                      <Box
+                        sx={{
+                          mb: 3,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Typography variant="h4" color="primary">
+                          {(
+                            appReviews.reduce(
+                              (acc, review) => acc + review.rating,
+                              0
+                            ) / appReviews.length
+                          ).toFixed(1)}
+                        </Typography>
+                        <Typography variant="subtitle1">
+                          ค่าเฉลี่ยจาก {appReviews.length} รีวิว
+                        </Typography>
+                      </Box>
+
+                      <TableContainer>
+                        <Table>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>ชื่อผู้ใช้</TableCell>
+                              <TableCell>อีเมล</TableCell>
+                              <TableCell>คะแนน</TableCell>
+                              <TableCell>ความคิดเห็น</TableCell>
+                              <TableCell>วันที่</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {appReviews.map((review) => (
+                              <TableRow key={review.id}>
+                                <TableCell>
+                                  {review.name || "ไม่ระบุ"}
+                                </TableCell>
+                                <TableCell>
+                                  {review.email || "ไม่ระบุ"}
+                                </TableCell>
+                                <TableCell>
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    {review.rating}
+                                    <Box
+                                      component="span"
+                                      sx={{ ml: 1, display: "flex" }}
+                                    >
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star
+                                          key={star}
+                                          size={16}
+                                          fill={
+                                            star <= review.rating
+                                              ? "#faaf00"
+                                              : "#e0e0e0"
+                                          }
+                                          color={
+                                            star <= review.rating
+                                              ? "#faaf00"
+                                              : "#e0e0e0"
+                                          }
+                                        />
+                                      ))}
+                                    </Box>
+                                  </Box>
+                                </TableCell>
+                                <TableCell>
+                                  {review.feedback || (
+                                    <Typography color="text.secondary">
+                                      ไม่มีความคิดเห็น
+                                    </Typography>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {new Date(
+                                    review.created_at
+                                  ).toLocaleDateString("th-TH")}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </>
+                  ) : (
+                    <Paper sx={{ p: 3, textAlign: "center" }}>
+                      <Typography variant="body1" color="text.secondary">
+                        ยังไม่มีรีวิวแอปพลิเคชัน
+                      </Typography>
+                    </Paper>
+                  )}
+                </Box>
               )}
             </Box>
           </Paper>

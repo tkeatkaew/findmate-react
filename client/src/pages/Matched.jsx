@@ -33,6 +33,8 @@ import {
   MessageSquarePlus,
 } from "lucide-react";
 import { Male, Female } from "lucide-react";
+import AppReviewForm from "../components/AppReviewForm";
+import { Star } from "lucide-react";
 import { useTheme, useMediaQuery } from "@mui/material";
 
 import defaultAvatar from "../images/anonymous.jpg";
@@ -48,6 +50,12 @@ const Matched = () => {
   ];
 
   const footerItems = [
+    {
+      text: "ให้คะแนนแอปพลิเคชัน",
+      icon: <Star size={20} />,
+      onClick: () => setAppReviewOpen(true),
+      color: "warning",
+    },
     {
       text: "แจ้งปัญหาการใช้งาน",
       icon: <Bug size={20} />,
@@ -74,6 +82,8 @@ const Matched = () => {
   const [reportDescription, setReportDescription] = useState("");
   const [reportImage, setReportImage] = useState(null);
   const [reportImagePreview, setReportImagePreview] = useState("");
+
+  const [appReviewOpen, setAppReviewOpen] = useState(false);
 
   const [matches, setMatches] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -593,7 +603,6 @@ const Matched = () => {
           )}
         </Box>
       </Box>
-
       {/* Modal for User Details */}
       {selectedUser && (
         <Modal
@@ -813,7 +822,6 @@ const Matched = () => {
           </Box>
         </Modal>
       )}
-
       {/* Report User Dialog */}
       <Dialog
         open={reportDialogOpen}
@@ -877,7 +885,6 @@ const Matched = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
       {/* System Report/Suggestion Dialog */}
       <Dialog
         open={systemReportDialog}
@@ -984,7 +991,6 @@ const Matched = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
       {/* Alert Snackbar */}
       <Snackbar
         open={alert.open}
@@ -1001,6 +1007,11 @@ const Matched = () => {
           {alert.message}
         </Alert>
       </Snackbar>
+
+      <AppReviewForm
+        open={appReviewOpen}
+        onClose={() => setAppReviewOpen(false)}
+      />
     </AppTheme>
   );
 };
