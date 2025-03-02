@@ -1186,16 +1186,16 @@ const EditProfile = () => {
         </Snackbar>
       </Box>
       <Dialog open={deleteDialogOpen} onClose={handleCloseDeleteDialog}>
-        <DialogTitle sx={{ color: "error.main" }}>Delete Account</DialogTitle>
+        <DialogTitle sx={{ color: "error.main" }}>ลบบัญชีถาวร</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1, minWidth: "300px" }}>
             <Typography>
-              This action cannot be undone. Please enter your password to
-              confirm deletion.
+              การลบบัญชีถาวร จะลบข้อมูลผู้ใช้ทุกอย่างและไม่สามารถย้อนกลับได้
+              กรุณากรอกรหัสผ่านเพื่อดำเนินการลบบัญชีถาวร
             </Typography>
             <TextField
               type="password"
-              label="Password"
+              label="รหัสผ่าน"
               value={deletePassword}
               onChange={(e) => setDeletePassword(e.target.value)}
               error={!!passwordError}
@@ -1210,7 +1210,7 @@ const EditProfile = () => {
             onClick={handleCloseDeleteDialog}
             sx={{ textTransform: "none" }}
           >
-            Cancel
+            ยกเลิก
           </Button>
           <Button
             onClick={handleDeleteAccount}
@@ -1219,7 +1219,7 @@ const EditProfile = () => {
             disabled={!deletePassword}
             sx={{ textTransform: "none" }}
           >
-            Delete Account
+            ลบบัญชีถาวร
           </Button>
         </DialogActions>
       </Dialog>
@@ -1228,12 +1228,12 @@ const EditProfile = () => {
         open={changePasswordDialogOpen}
         onClose={handleClosePasswordDialog}
       >
-        <DialogTitle>Change Password</DialogTitle>
+        <DialogTitle>เปลี่ยนรหัสผ่าน</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1, minWidth: "300px" }}>
             <TextField
               type="password"
-              label="Current Password"
+              label="รหัสผ่านเดิม"
               value={passwordForm.oldPassword}
               onChange={handlePasswordFormChange("oldPassword")}
               error={!!passwordErrors.oldPassword}
@@ -1243,7 +1243,7 @@ const EditProfile = () => {
             />
             <TextField
               type="password"
-              label="New Password"
+              label="รหัสผ่านใหม่"
               value={passwordForm.newPassword}
               onChange={handlePasswordFormChange("newPassword")}
               error={!!passwordErrors.newPassword}
@@ -1253,7 +1253,7 @@ const EditProfile = () => {
             />
             <TextField
               type="password"
-              label="Confirm New Password"
+              label="ยืนยันรหัสผ่านใหม่"
               value={passwordForm.confirmPassword}
               onChange={handlePasswordFormChange("confirmPassword")}
               error={!!passwordErrors.confirmPassword}
@@ -1268,7 +1268,7 @@ const EditProfile = () => {
             onClick={handleClosePasswordDialog}
             sx={{ textTransform: "none" }}
           >
-            Cancel
+            ยกเลิก
           </Button>
           <Button
             onClick={handleChangePassword}
@@ -1280,7 +1280,7 @@ const EditProfile = () => {
               !passwordForm.confirmPassword
             }
           >
-            Change Password
+            เปลี่ยนรหัสผ่าน
           </Button>
         </DialogActions>
       </Dialog>
