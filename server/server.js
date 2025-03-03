@@ -624,231 +624,127 @@ app.get("/home", (req, res) => {
 // });
 
 // // KNN Route
-// app.post("/knn", async (req, res) => {
-//   const { user_id } = req.body; // We'll return all neighbors
-
-//   try {
-//     const [results] = await promisePool.query(`
-//       SELECT pt.*, pi.*, u.profile_picture
-//       FROM personality_traits pt
-//       JOIN personality_infomation pi ON pt.user_id = pi.user_id
-//       JOIN users u ON pt.user_id = u.id
-//       WHERE u.role = 'user' AND u.is_suspended = 0
-//     `);
-
-//     const currentUser = results.find((user) => user.user_id === user_id);
-//     if (!currentUser) return res.status(404).json({ error: "User not found" });
-
-//     // One-hot encoding function
-//     const encodeTrait = (trait, categories) => {
-//       const index = categories.indexOf(trait);
-//       if (index === -1) return new Array(categories.length).fill(0);
-//       return categories.map((_, i) => (i === index ? 1 : 0));
-//     };
-
-//     // Define categories and weightings for each trait
-//     const traitCategories = {
-//       type: ["type_introvert", "type_ambivert", "type_extrovert"],
-//       sleep: ["sleep_before_midnight", "sleep_after_midnight"],
-//       wake: ["wake_morning", "wake_noon", "wake_evening"],
-//       clean: [
-//         "clean_every_day",
-//         "clean_every_other_day",
-//         "clean_once_a_week",
-//         "clean_dont_really",
-//       ],
-//       air_conditioner: [
-//         "ac_never",
-//         "ac_only_sleep",
-//         "ac_only_hot",
-//         "ac_all_day",
-//       ],
-//       drink: ["drink_never", "drink_spacial", "drink_weekend", "drink_always"],
-//       smoke: ["smoke_never", "smoke_spacial", "smoke_always"],
-//       money: ["money_on_time", "money_late"],
-//       expense: ["money_half", "money_ratio"],
-//       pet: ["pet_dont_have", "pet_have"],
-//       cook: ["cook_ok", "cook_tell_first", "cook_no"],
-//       loud: ["loud_low", "loud_medium", "loud_high"],
-//       friend: ["friend_ok", "friend_tell_first", "friend_no"],
-//       religion: ["religion_ok", "religion_no_affect", "religion_no"],
-//       period: ["period_long", "period_sometime", "period_no_need"],
-//     };
-
-//     const weights = {
-//       smoke: 2.0,
-//       drink: 1.8,
-//       sleep: 1.5,
-//       money: 1.5,
-//       expense: 1.5,
-//       pet: 1.2,
-//       religion: 1.2,
-//       loud: 1.2,
-//       friend: 1.1,
-//       cook: 1.0,
-//       clean: 0.8,
-//     };
-
-//     // Encode user traits and apply weights
-//     const encodeUserTraits = (user) => {
-//       return Object.keys(traitCategories).flatMap((trait) => {
-//         const encoded = encodeTrait(user[trait], traitCategories[trait]);
-//         return encoded.map((value) => value * (weights[trait] || 1)); // Apply weight
-//       });
-//     };
-
-//     const currentUserTraits = encodeUserTraits(currentUser);
-
-//     // Calculate Euclidean distance (standard for KNN)
-//     const calculateDistance = (vectorA, vectorB) => {
-//       let sum = 0;
-//       for (let i = 0; i < vectorA.length; i++) {
-//         sum += Math.pow(vectorA[i] - vectorB[i], 2);
-//       }
-//       return Math.sqrt(sum);
-//     };
-
-//     // Convert distance to similarity percentage (inverse relationship)
-//     const distanceToSimilarity = (distance, maxDistance) => {
-//       // Normalize and invert to get similarity (100% - normalized distance)
-//       return parseFloat((100 * (1 - distance / maxDistance)).toFixed(2));
-//     };
-
-//     // Compute distance with all other users
-//     const otherUsers = results.filter((user) => user.user_id !== user_id);
-//     const distances = otherUsers.map((user) => {
-//       const userTraits = encodeUserTraits(user);
-//       return {
-//         user_id: user.user_id,
-//         distance: calculateDistance(userTraits, currentUserTraits),
-//         traits: user,
-//       };
-//     });
-
-//     // Find maximum distance for normalization
-//     const maxDistance = Math.max(...distances.map((item) => item.distance));
-
-//     // Convert to similarity and sort by highest similarity first
-//     const neighbors = distances
-//       .map((item) => ({
-//         user_id: item.user_id,
-//         similarity: distanceToSimilarity(item.distance, maxDistance),
-//         traits: item.traits,
-//       }))
-//       .sort((a, b) => b.similarity - a.similarity); // Sort by highest similarity
-
-//     // Return all neighbors sorted by similarity
-//     res.status(200).json({
-//       neighbors: neighbors,
-//       total_matches: neighbors.length,
-//     });
-//   } catch (err) {
-//     console.error("Error in KNN algorithm:", err);
-//     res.status(500).json({ error: "Database error" });
-//   }
-// });
-
-// New KNN
-router.post("/knn", async (req, res) => {
-  const { user_id } = req.body;
-
-  if (!user_id) {
-    return res.status(400).json({ error: "User ID is required" });
-  }
+app.post("/knn", async (req, res) => {
+  const { user_id } = req.body; // We'll return all neighbors
 
   try {
-    // Create database connection
-    const connection = await mysql.createConnection(dbConfig);
+    const [results] = await promisePool.query(`
+      SELECT pt.*, pi.*, u.profile_picture
+      FROM personality_traits pt
+      JOIN personality_infomation pi ON pt.user_id = pi.user_id
+      JOIN users u ON pt.user_id = u.id
+      WHERE u.role = 'user' AND u.is_suspended = 0
+    `);
 
-    // 1. Get current user's personality traits
-    const [userTraits] = await connection.execute(
-      `SELECT * FROM personality_traits WHERE user_id = ?`,
-      [user_id]
-    );
+    const currentUser = results.find((user) => user.user_id === user_id);
+    if (!currentUser) return res.status(404).json({ error: "User not found" });
 
-    if (userTraits.length === 0) {
-      await connection.end();
-      return res.status(404).json({ error: "User traits not found" });
-    }
-
-    const currentUserTraits = userTraits[0];
-
-    // 2. Get all other users' traits (excluding current user and suspended users)
-    const [allUsersTraits] = await connection.execute(
-      `SELECT pt.*, pi.*, u.id as user_id, u.profile_picture 
-       FROM personality_traits pt 
-       JOIN personality_infomation pi ON pt.user_id = pi.user_id 
-       JOIN users u ON pt.user_id = u.id
-       WHERE pt.user_id != ? AND u.is_suspended = 0`,
-      [user_id]
-    );
-
-    // 3. Calculate similarity score for each user
-    const weightedTraits = {
-      type: 5, // Personality type is highly important
-      sleep: 4, // Sleep schedule is very important
-      clean: 4, // Cleanliness habits are very important
-      smoke: 5, // Smoking habits are highly important
-      drink: 4, // Drinking habits are very important
-      air_conditioner: 3, // AC usage is moderately important
-      expense: 3, // Expense sharing is moderately important
-      pet: 4, // Pet preference is very important
-      cook: 3, // Cooking preference is moderately important
-      loud: 4, // Noise level is very important
-      friend: 3, // Friend visits is moderately important
-      religion: 2, // Religious considerations are less important
-      period: 3, // Roommate period is moderately important
-      wake: 3, // Wake up time is moderately important
-      money: 3, // Payment punctuality is moderately important
+    // One-hot encoding function
+    const encodeTrait = (trait, categories) => {
+      const index = categories.indexOf(trait);
+      if (index === -1) return new Array(categories.length).fill(0);
+      return categories.map((_, i) => (i === index ? 1 : 0));
     };
 
-    const totalWeight = Object.values(weightedTraits).reduce(
-      (a, b) => a + b,
-      0
-    );
+    // Define categories and weightings for each trait
+    const traitCategories = {
+      type: ["type_introvert", "type_ambivert", "type_extrovert"],
+      sleep: ["sleep_before_midnight", "sleep_after_midnight"],
+      wake: ["wake_morning", "wake_noon", "wake_evening"],
+      clean: [
+        "clean_every_day",
+        "clean_every_other_day",
+        "clean_once_a_week",
+        "clean_dont_really",
+      ],
+      air_conditioner: [
+        "ac_never",
+        "ac_only_sleep",
+        "ac_only_hot",
+        "ac_all_day",
+      ],
+      drink: ["drink_never", "drink_spacial", "drink_weekend", "drink_always"],
+      smoke: ["smoke_never", "smoke_spacial", "smoke_always"],
+      money: ["money_on_time", "money_late"],
+      expense: ["money_half", "money_ratio"],
+      pet: ["pet_dont_have", "pet_have"],
+      cook: ["cook_ok", "cook_tell_first", "cook_no"],
+      loud: ["loud_low", "loud_medium", "loud_high"],
+      friend: ["friend_ok", "friend_tell_first", "friend_no"],
+      religion: ["religion_ok", "religion_no_affect", "religion_no"],
+      period: ["period_long", "period_sometime", "period_no_need"],
+    };
 
-    // Calculate similarity and add to neighbors array
-    const neighbors = allUsersTraits.map((otherUser) => {
-      let similarityScore = 0;
-      let applicableWeight = 0;
+    const weights = {
+      smoke: 2.0,
+      drink: 1.8,
+      sleep: 1.5,
+      money: 1.5,
+      expense: 1.5,
+      pet: 1.2,
+      religion: 1.2,
+      loud: 1.2,
+      friend: 1.1,
+      cook: 1.0,
+      clean: 0.8,
+    };
 
-      // Compare each trait
-      Object.keys(weightedTraits).forEach((trait) => {
-        if (currentUserTraits[trait] && otherUser[trait]) {
-          const weight = weightedTraits[trait];
-          applicableWeight += weight;
-
-          // If traits match exactly, add full weighted score
-          if (currentUserTraits[trait] === otherUser[trait]) {
-            similarityScore += weight;
-          }
-        }
+    // Encode user traits and apply weights
+    const encodeUserTraits = (user) => {
+      return Object.keys(traitCategories).flatMap((trait) => {
+        const encoded = encodeTrait(user[trait], traitCategories[trait]);
+        return encoded.map((value) => value * (weights[trait] || 1)); // Apply weight
       });
+    };
 
-      // Calculate percentage similarity based on applicable weights
-      const similarityPercentage = Math.round(
-        (similarityScore / applicableWeight) * 100
-      );
+    const currentUserTraits = encodeUserTraits(currentUser);
 
+    // Calculate Euclidean distance (standard for KNN)
+    const calculateDistance = (vectorA, vectorB) => {
+      let sum = 0;
+      for (let i = 0; i < vectorA.length; i++) {
+        sum += Math.pow(vectorA[i] - vectorB[i], 2);
+      }
+      return Math.sqrt(sum);
+    };
+
+    // Convert distance to similarity percentage (inverse relationship)
+    const distanceToSimilarity = (distance, maxDistance) => {
+      // Normalize and invert to get similarity (100% - normalized distance)
+      return parseFloat((100 * (1 - distance / maxDistance)).toFixed(2));
+    };
+
+    // Compute distance with all other users
+    const otherUsers = results.filter((user) => user.user_id !== user_id);
+    const distances = otherUsers.map((user) => {
+      const userTraits = encodeUserTraits(user);
       return {
-        user_id: otherUser.user_id,
-        similarity: similarityPercentage,
-        traits: otherUser,
+        user_id: user.user_id,
+        distance: calculateDistance(userTraits, currentUserTraits),
+        traits: user,
       };
     });
 
-    // Sort by similarity score (highest first)
-    neighbors.sort((a, b) => b.similarity - a.similarity);
+    // Find maximum distance for normalization
+    const maxDistance = Math.max(...distances.map((item) => item.distance));
 
-    await connection.end();
+    // Convert to similarity and sort by highest similarity first
+    const neighbors = distances
+      .map((item) => ({
+        user_id: item.user_id,
+        similarity: distanceToSimilarity(item.distance, maxDistance),
+        traits: item.traits,
+      }))
+      .sort((a, b) => b.similarity - a.similarity); // Sort by highest similarity
 
-    res.json({
-      user_id,
-      neighbors,
+    // Return all neighbors sorted by similarity
+    res.status(200).json({
+      neighbors: neighbors,
+      total_matches: neighbors.length,
     });
-  } catch (error) {
-    console.error("Error in KNN algorithm:", error);
-    res.status(500).json({ error: "Server error processing KNN algorithm" });
+  } catch (err) {
+    console.error("Error in KNN algorithm:", err);
+    res.status(500).json({ error: "Database error" });
   }
 });
 
