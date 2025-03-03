@@ -624,8 +624,135 @@ app.get("/home", (req, res) => {
 // });
 
 // // KNN Route
+// app.post("/knn", async (req, res) => {
+//   const { user_id } = req.body; // We'll return all neighbors
+
+//   try {
+//     const [results] = await promisePool.query(`
+//       SELECT pt.*, pi.*, u.profile_picture
+//       FROM personality_traits pt
+//       JOIN personality_infomation pi ON pt.user_id = pi.user_id
+//       JOIN users u ON pt.user_id = u.id
+//       WHERE u.role = 'user' AND u.is_suspended = 0
+//     `);
+
+//     const currentUser = results.find((user) => user.user_id === user_id);
+//     if (!currentUser) return res.status(404).json({ error: "User not found" });
+
+//     // One-hot encoding function
+//     const encodeTrait = (trait, categories) => {
+//       const index = categories.indexOf(trait);
+//       if (index === -1) return new Array(categories.length).fill(0);
+//       return categories.map((_, i) => (i === index ? 1 : 0));
+//     };
+
+//     // Define categories and weightings for each trait
+//     const traitCategories = {
+//       type: ["type_introvert", "type_ambivert", "type_extrovert"],
+//       sleep: ["sleep_before_midnight", "sleep_after_midnight"],
+//       wake: ["wake_morning", "wake_noon", "wake_evening"],
+//       clean: [
+//         "clean_every_day",
+//         "clean_every_other_day",
+//         "clean_once_a_week",
+//         "clean_dont_really",
+//       ],
+//       air_conditioner: [
+//         "ac_never",
+//         "ac_only_sleep",
+//         "ac_only_hot",
+//         "ac_all_day",
+//       ],
+//       drink: ["drink_never", "drink_spacial", "drink_weekend", "drink_always"],
+//       smoke: ["smoke_never", "smoke_spacial", "smoke_always"],
+//       money: ["money_on_time", "money_late"],
+//       expense: ["money_half", "money_ratio"],
+//       pet: ["pet_dont_have", "pet_have"],
+//       cook: ["cook_ok", "cook_tell_first", "cook_no"],
+//       loud: ["loud_low", "loud_medium", "loud_high"],
+//       friend: ["friend_ok", "friend_tell_first", "friend_no"],
+//       religion: ["religion_ok", "religion_no_affect", "religion_no"],
+//       period: ["period_long", "period_sometime", "period_no_need"],
+//     };
+
+//     const weights = {
+//       smoke: 2.5, // ↑ Smoking is a major deal-breaker for many
+//       sleep: 2.0, // ↑ Sleep schedules are critical
+//       clean: 1.8, // ↑↑ Cleaning habits cause significant conflicts
+//       loud: 1.8, // ↑↑ Noise tolerance is more important
+//       friend: 1.5, // ↑ Guest policies are more impactful
+//       drink: 1.8, // = Alcohol use remains important
+//       money: 1.5, // = Financial responsibility is important
+//       expense: 1.5, // = Expense sharing remains important
+//       pet: 1.3, // ↑ Slight increase for pet compatibility
+//       religion: 1.2, // = Religion remains moderately important
+//       cook: 1.0, // = Cooking remains as is
+//       air_conditioner: 0.9, // New: Temperature preference matters
+//       wake: 0.8, // New: Wake time matters but less than sleep time
+//     };
+
+//     // Encode user traits and apply weights
+//     const encodeUserTraits = (user) => {
+//       return Object.keys(traitCategories).flatMap((trait) => {
+//         const encoded = encodeTrait(user[trait], traitCategories[trait]);
+//         return encoded.map((value) => value * (weights[trait] || 1)); // Apply weight
+//       });
+//     };
+
+//     const currentUserTraits = encodeUserTraits(currentUser);
+
+//     // Calculate Euclidean distance (standard for KNN)
+//     const calculateDistance = (vectorA, vectorB) => {
+//       let sum = 0;
+//       for (let i = 0; i < vectorA.length; i++) {
+//         sum += Math.pow(vectorA[i] - vectorB[i], 2);
+//       }
+//       return Math.sqrt(sum);
+//     };
+
+//     // Convert distance to similarity percentage (inverse relationship)
+//     const distanceToSimilarity = (distance, maxDistance) => {
+//       // Normalize and invert to get similarity (100% - normalized distance)
+//       return parseFloat((100 * (1 - distance / maxDistance)).toFixed(2));
+//     };
+
+//     // Compute distance with all other users
+//     const otherUsers = results.filter((user) => user.user_id !== user_id);
+//     const distances = otherUsers.map((user) => {
+//       const userTraits = encodeUserTraits(user);
+//       return {
+//         user_id: user.user_id,
+//         distance: calculateDistance(userTraits, currentUserTraits),
+//         traits: user,
+//       };
+//     });
+
+//     // Find maximum distance for normalization
+//     const maxDistance = Math.max(...distances.map((item) => item.distance));
+
+//     // Convert to similarity and sort by highest similarity first
+//     const neighbors = distances
+//       .map((item) => ({
+//         user_id: item.user_id,
+//         similarity: distanceToSimilarity(item.distance, maxDistance),
+//         traits: item.traits,
+//       }))
+//       .sort((a, b) => b.similarity - a.similarity); // Sort by highest similarity
+
+//     // Return all neighbors sorted by similarity
+//     res.status(200).json({
+//       neighbors: neighbors,
+//       total_matches: neighbors.length,
+//     });
+//   } catch (err) {
+//     console.error("Error in KNN algorithm:", err);
+//     res.status(500).json({ error: "Database error" });
+//   }
+// });
+
+// // KNN Route 2
 app.post("/knn", async (req, res) => {
-  const { user_id } = req.body; // We'll return all neighbors
+  const { user_id } = req.body;
 
   try {
     const [results] = await promisePool.query(`
@@ -676,70 +803,87 @@ app.post("/knn", async (req, res) => {
     };
 
     const weights = {
-      smoke: 2.5, // ↑ Smoking is a major deal-breaker for many
-      sleep: 2.0, // ↑ Sleep schedules are critical
-      clean: 1.8, // ↑↑ Cleaning habits cause significant conflicts
-      loud: 1.8, // ↑↑ Noise tolerance is more important
-      friend: 1.5, // ↑ Guest policies are more impactful
-      drink: 1.8, // = Alcohol use remains important
-      money: 1.5, // = Financial responsibility is important
-      expense: 1.5, // = Expense sharing remains important
-      pet: 1.3, // ↑ Slight increase for pet compatibility
-      religion: 1.2, // = Religion remains moderately important
-      cook: 1.0, // = Cooking remains as is
-      air_conditioner: 0.9, // New: Temperature preference matters
-      wake: 0.8, // New: Wake time matters but less than sleep time
+      smoke: 2.5,
+      sleep: 2.0,
+      clean: 1.8,
+      loud: 1.8,
+      friend: 1.5,
+      drink: 1.8,
+      money: 1.5,
+      expense: 1.5,
+      pet: 1.3,
+      religion: 1.2,
+      cook: 1.0,
+      air_conditioner: 0.9,
+      wake: 0.8,
+      type: 1.0, // Added missing weight
+      period: 0.8, // Added missing weight
     };
 
     // Encode user traits and apply weights
     const encodeUserTraits = (user) => {
       return Object.keys(traitCategories).flatMap((trait) => {
         const encoded = encodeTrait(user[trait], traitCategories[trait]);
-        return encoded.map((value) => value * (weights[trait] || 1)); // Apply weight
+        return encoded.map((value) => value * (weights[trait] || 1));
       });
     };
 
     const currentUserTraits = encodeUserTraits(currentUser);
 
-    // Calculate Euclidean distance (standard for KNN)
-    const calculateDistance = (vectorA, vectorB) => {
-      let sum = 0;
-      for (let i = 0; i < vectorA.length; i++) {
-        sum += Math.pow(vectorA[i] - vectorB[i], 2);
-      }
-      return Math.sqrt(sum);
+    // Count total dimensions for normalization
+    const totalDimensions = Object.values(traitCategories).reduce(
+      (sum, categories) => sum + categories.length,
+      0
+    );
+
+    // Calculate weighted Jaccard similarity instead of Euclidean distance
+    const calculateSimilarity = (userA, userB) => {
+      let matchingScore = 0;
+      let totalWeightedTraits = 0;
+
+      Object.keys(traitCategories).forEach((trait) => {
+        // Extract trait values
+        const traitA = userA[trait];
+        const traitB = userB[trait];
+
+        // Calculate trait weight
+        const traitWeight = weights[trait] || 1;
+        totalWeightedTraits += traitWeight;
+
+        // Perfect match adds full weight to score
+        if (traitA === traitB) {
+          matchingScore += traitWeight;
+        }
+        // For multi-option traits, give partial credit for "compatible" traits
+        else if (
+          trait === "smoke" &&
+          traitA === "smoke_never" &&
+          traitB === "smoke_spacial"
+        ) {
+          matchingScore += traitWeight * 0.5; // Partial match for this combination
+        }
+        // Add more compatibility rules as needed for other traits
+      });
+
+      // Convert to percentage
+      return parseFloat(
+        ((matchingScore / totalWeightedTraits) * 100).toFixed(2)
+      );
     };
 
-    // Convert distance to similarity percentage (inverse relationship)
-    const distanceToSimilarity = (distance, maxDistance) => {
-      // Normalize and invert to get similarity (100% - normalized distance)
-      return parseFloat((100 * (1 - distance / maxDistance)).toFixed(2));
-    };
-
-    // Compute distance with all other users
+    // Compute similarity with all other users
     const otherUsers = results.filter((user) => user.user_id !== user_id);
-    const distances = otherUsers.map((user) => {
-      const userTraits = encodeUserTraits(user);
+    const similarities = otherUsers.map((user) => {
       return {
         user_id: user.user_id,
-        distance: calculateDistance(userTraits, currentUserTraits),
+        similarity: calculateSimilarity(currentUser, user),
         traits: user,
       };
     });
 
-    // Find maximum distance for normalization
-    const maxDistance = Math.max(...distances.map((item) => item.distance));
+    // Sort by highest similarity first
+    const neighbors = similarities.sort((a, b) => b.similarity - a.similarity);
 
-    // Convert to similarity and sort by highest similarity first
-    const neighbors = distances
-      .map((item) => ({
-        user_id: item.user_id,
-        similarity: distanceToSimilarity(item.distance, maxDistance),
-        traits: item.traits,
-      }))
-      .sort((a, b) => b.similarity - a.similarity); // Sort by highest similarity
-
-    // Return all neighbors sorted by similarity
     res.status(200).json({
       neighbors: neighbors,
       total_matches: neighbors.length,
