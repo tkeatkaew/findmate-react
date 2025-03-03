@@ -512,6 +512,7 @@ app.get("/home", (req, res) => {
 });
 
 // KNN Route
+// KNN Route
 app.post("/knn", async (req, res) => {
   const { user_id } = req.body;
 
@@ -606,19 +607,92 @@ app.post("/knn", async (req, res) => {
       return parseFloat(similarity.toFixed(2));
     };
 
-    // Compute similarity with all other users
+    // Compute similarity with all other users and implement nearest neighbor ranking
     const neighbors = results
       .filter((user) => user.user_id !== user_id)
-      .map((user) => ({
-        user_id: user.user_id,
-        similarity: cosineSimilarity(encodeUserTraits(user), currentUserTraits),
-        traits: user,
-      }))
+      .map((user) => {
+        const similarity = cosineSimilarity(
+          encodeUserTraits(user),
+          currentUserTraits
+        );
+
+        // Calculate individual trait matches
+        const traitMatches = {};
+        Object.keys(traitCategories).forEach((trait) => {
+          // If both users have the exact same trait value
+          traitMatches[trait] = user[trait] === currentUser[trait];
+        });
+
+        return {
+          user_id: user.user_id,
+          similarity: similarity,
+          traits: user,
+          trait_matches: traitMatches,
+        };
+      })
       .sort((a, b) => b.similarity - a.similarity); // Sort by highest similarity
+
+    // Assign neighbor ranks (1st nearest, 2nd nearest, etc.)
+    neighbors.forEach((neighbor, index) => {
+      neighbor.neighbor_rank = index + 1;
+    });
+
+    // Add distance bands based on similarity score
+    neighbors.forEach((neighbor) => {
+      if (neighbor.similarity >= 85) neighbor.compatibility = "excellent_match";
+      else if (neighbor.similarity >= 70) neighbor.compatibility = "good_match";
+      else if (neighbor.similarity >= 55)
+        neighbor.compatibility = "moderate_match";
+      else if (neighbor.similarity >= 40) neighbor.compatibility = "fair_match";
+      else neighbor.compatibility = "poor_match";
+    });
+
+    // Add match percentage to make it more user-friendly
+    neighbors.forEach((neighbor) => {
+      neighbor.match_percentage = `${neighbor.similarity.toFixed(0)}%`;
+    });
+
+    // Get top 3 matching traits and top 3 mismatching traits
+    neighbors.forEach((neighbor) => {
+      const traitMatchScores = [];
+
+      Object.keys(traitCategories).forEach((trait) => {
+        // Calculate individual similarity for this trait
+        const userTraitVector = encodeTrait(
+          currentUser[trait],
+          traitCategories[trait]
+        ).map((val) => val * (weights[trait] || 1));
+        const neighborTraitVector = encodeTrait(
+          neighbor.traits[trait],
+          traitCategories[trait]
+        ).map((val) => val * (weights[trait] || 1));
+
+        const traitSimilarity = cosineSimilarity(
+          userTraitVector,
+          neighborTraitVector
+        );
+
+        traitMatchScores.push({
+          trait: trait,
+          similarity: traitSimilarity,
+          weight: weights[trait] || 1,
+        });
+      });
+
+      // Sort by similarity (descending)
+      traitMatchScores.sort((a, b) => b.similarity - a.similarity);
+
+      neighbor.top_matching_traits = traitMatchScores
+        .slice(0, 3)
+        .map((t) => t.trait);
+      neighbor.top_mismatching_traits = traitMatchScores
+        .slice(-3)
+        .map((t) => t.trait);
+    });
 
     res.status(200).json({ neighbors });
   } catch (err) {
-    console.error("Error in KNN algorithm:", err);
+    console.error("Error in nearest neighbors algorithm:", err);
     res.status(500).json({ error: "Database error" });
   }
 });
