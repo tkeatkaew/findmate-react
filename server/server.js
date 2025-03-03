@@ -626,7 +626,10 @@ app.get("/home", (req, res) => {
 // KNN Route
 app.post("/knn", async (req, res) => {
   const { user_id } = req.body;
-  console.log("Received user_id:", user_id); // ตรวจสอบค่าที่รับเข้ามา
+  console.log(
+    "//////////////////////////////////////////Received user_id:",
+    user_id
+  ); // ตรวจสอบค่าที่รับเข้ามา
 
   try {
     const [results] = await promisePool.query(`
@@ -637,10 +640,16 @@ app.post("/knn", async (req, res) => {
       WHERE u.role = 'user' AND u.is_suspended = 0
     `);
 
-    console.log("Fetched users from database:", results); // ตรวจสอบข้อมูลที่ดึงมา
+    console.log(
+      "//////////////////////////////////////////Fetched users from database:",
+      results
+    ); // ตรวจสอบข้อมูลที่ดึงมา
 
     const currentUser = results.find((user) => user.user_id === user_id);
-    console.log("Current user data:", currentUser); // ดูว่าพบ user หรือไม่
+    console.log(
+      "//////////////////////////////////////////Current user data:",
+      currentUser
+    ); // ดูว่าพบ user หรือไม่
 
     if (!currentUser) return res.status(404).json({ error: "User not found" });
 
@@ -702,7 +711,10 @@ app.post("/knn", async (req, res) => {
     };
 
     const currentUserTraits = encodeUserTraits(currentUser);
-    console.log("Encoded current user traits:", currentUserTraits); // ตรวจสอบค่า traits ที่ encode แล้ว
+    console.log(
+      "//////////////////////////////////////////Encoded current user traits:",
+      currentUserTraits
+    ); // ตรวจสอบค่า traits ที่ encode แล้ว
 
     const calculateDistance = (vectorA, vectorB) => {
       let sum = 0;
@@ -717,20 +729,26 @@ app.post("/knn", async (req, res) => {
     };
 
     const otherUsers = results.filter((user) => user.user_id !== user_id);
-    console.log("Other users for comparison:", otherUsers); // ตรวจสอบรายชื่อผู้ใช้ที่นำมาเปรียบเทียบ
+    console.log(
+      "//////////////////////////////////////////Other users for comparison:",
+      otherUsers
+    ); // ตรวจสอบรายชื่อผู้ใช้ที่นำมาเปรียบเทียบ
 
     const distances = otherUsers.map((user) => {
       const userTraits = encodeUserTraits(user);
       const distance = calculateDistance(userTraits, currentUserTraits);
       console.log(
-        `Distance from user ${user.user_id} to ${user_id}:`,
+        `//////////////////////////////////////////Distance from user ${user.user_id} to ${user_id}:`,
         distance
       ); // ดูระยะห่างของแต่ละคน
       return { user_id: user.user_id, distance, traits: user };
     });
 
     const maxDistance = Math.max(...distances.map((item) => item.distance));
-    console.log("Max distance:", maxDistance); // ตรวจสอบค่าระยะห่างสูงสุด
+    console.log(
+      "//////////////////////////////////////////Max distance:",
+      maxDistance
+    ); // ตรวจสอบค่าระยะห่างสูงสุด
 
     const neighbors = distances
       .map((item) => ({
@@ -740,7 +758,10 @@ app.post("/knn", async (req, res) => {
       }))
       .sort((a, b) => b.similarity - a.similarity);
 
-    console.log("Final sorted neighbors:", neighbors); // ตรวจสอบผลลัพธ์ที่ได้
+    console.log(
+      "//////////////////////////////////////////Final sorted neighbors:",
+      neighbors
+    ); // ตรวจสอบผลลัพธ์ที่ได้
 
     res.status(200).json({
       neighbors: neighbors,
