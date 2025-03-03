@@ -676,17 +676,19 @@ app.post("/knn", async (req, res) => {
     };
 
     const weights = {
-      smoke: 2.0,
-      drink: 1.8,
-      sleep: 1.5,
-      money: 1.5,
-      expense: 1.5,
-      pet: 1.2,
-      religion: 1.2,
-      loud: 1.2,
-      friend: 1.1,
-      cook: 1.0,
-      clean: 0.8,
+      smoke: 2.5, // ↑ Smoking is a major deal-breaker for many
+      sleep: 2.0, // ↑ Sleep schedules are critical
+      clean: 1.8, // ↑↑ Cleaning habits cause significant conflicts
+      loud: 1.8, // ↑↑ Noise tolerance is more important
+      friend: 1.5, // ↑ Guest policies are more impactful
+      drink: 1.8, // = Alcohol use remains important
+      money: 1.5, // = Financial responsibility is important
+      expense: 1.5, // = Expense sharing remains important
+      pet: 1.3, // ↑ Slight increase for pet compatibility
+      religion: 1.2, // = Religion remains moderately important
+      cook: 1.0, // = Cooking remains as is
+      air_conditioner: 0.9, // New: Temperature preference matters
+      wake: 0.8, // New: Wake time matters but less than sleep time
     };
 
     // Encode user traits and apply weights
