@@ -640,10 +640,10 @@ app.post("/knn", async (req, res) => {
       WHERE u.role = 'user' AND u.is_suspended = 0
     `);
 
-    console.log(
-      "//////////////////////////////////////////Fetched users from database:",
-      results
-    ); // ตรวจสอบข้อมูลที่ดึงมา
+    // console.log(
+    //   "//////////////////////////////////////////Fetched users from database:",
+    //   results
+    // ); // ตรวจสอบข้อมูลที่ดึงมา
 
     const currentUser = results.find((user) => user.user_id === user_id);
     console.log(
