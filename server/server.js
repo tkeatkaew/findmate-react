@@ -626,10 +626,7 @@ app.get("/home", (req, res) => {
 // KNN Route
 app.post("/knn", async (req, res) => {
   const { user_id } = req.body;
-  console.log(
-    "//////////////////////////////////////////Received user_id:",
-    user_id
-  ); // ตรวจสอบค่าที่รับเข้ามา
+  console.log("Received user_id:", user_id);
 
   try {
     const [results] = await promisePool.query(`
@@ -640,25 +637,12 @@ app.post("/knn", async (req, res) => {
       WHERE u.role = 'user' AND u.is_suspended = 0
     `);
 
-    // console.log(
-    //   "//////////////////////////////////////////Fetched users from database:",
-    //   results
-    // ); // ตรวจสอบข้อมูลที่ดึงมา
-
     const currentUser = results.find((user) => user.user_id === user_id);
-    console.log(
-      "//////////////////////////////////////////Current user data:",
-      currentUser
-    ); // ดูว่าพบ user หรือไม่
+    console.log("Current user data:", currentUser);
 
     if (!currentUser) return res.status(404).json({ error: "User not found" });
 
-    const encodeTrait = (trait, categories) => {
-      const index = categories.indexOf(trait);
-      if (index === -1) return new Array(categories.length).fill(0);
-      return categories.map((_, i) => (i === index ? 1 : 0));
-    };
-
+    // กำหนดหมวดหมู่ของแต่ละคุณลักษณะ
     const traitCategories = {
       type: ["type_introvert", "type_ambivert", "type_extrovert"],
       sleep: ["sleep_before_midnight", "sleep_after_midnight"],
@@ -687,6 +671,7 @@ app.post("/knn", async (req, res) => {
       period: ["period_long", "period_sometime", "period_no_need"],
     };
 
+    // กำหนดน้ำหนักของแต่ละคุณลักษณะ
     const weights = {
       smoke: 2.5,
       sleep: 2.0,
@@ -703,6 +688,14 @@ app.post("/knn", async (req, res) => {
       wake: 0.8,
     };
 
+    // ฟังก์ชันแปลงคุณลักษณะเป็น One-Hot Encoding
+    const encodeTrait = (trait, categories) => {
+      const index = categories.indexOf(trait);
+      if (index === -1) return new Array(categories.length).fill(0);
+      return categories.map((_, i) => (i === index ? 1 : 0));
+    };
+
+    // ฟังก์ชันแปลงข้อมูลผู้ใช้เป็นเวกเตอร์
     const encodeUserTraits = (user) => {
       return Object.keys(traitCategories).flatMap((trait) => {
         const encoded = encodeTrait(user[trait], traitCategories[trait]);
@@ -710,12 +703,42 @@ app.post("/knn", async (req, res) => {
       });
     };
 
-    const currentUserTraits = encodeUserTraits(currentUser);
-    console.log(
-      "//////////////////////////////////////////Encoded current user traits:",
-      currentUserTraits
-    ); // ตรวจสอบค่า traits ที่ encode แล้ว
+    // คำนวณระยะห่างทางทฤษฎีสูงสุด
+    const calculateMaxTheoreticalDistance = () => {
+      // ระยะห่างสูงสุดจะเกิดขึ้นเมื่อมีความแตกต่างในทุกคุณลักษณะ
+      let maxDistanceSquared = 0;
 
+      Object.keys(traitCategories).forEach((trait) => {
+        const weight = weights[trait] || 1;
+        const categories = traitCategories[trait];
+
+        // กรณีแย่ที่สุดคือเมื่อคนหนึ่งเป็น [1,0,0] และอีกคนเป็น [0,0,1]
+        // ระยะห่างจึงเท่ากับรากที่สองของผลรวมของกำลังสองของความแตกต่าง
+        // สำหรับหมวดหมู่ที่มี 2 ตัวเลือก: (weight*1 - weight*0)^2 + (weight*0 - weight*1)^2 = 2*weight^2
+        // สำหรับหมวดหมู่ที่มี 3 ตัวเลือก: (weight*1 - weight*0)^2 + (weight*0 - weight*0)^2 + (weight*0 - weight*1)^2 = 2*weight^2
+        // และอื่นๆ
+
+        if (categories.length === 2) {
+          // สำหรับหมวดหมู่ binary เช่น yes/no
+          maxDistanceSquared += 2 * Math.pow(weight, 2);
+        } else {
+          // สำหรับหมวดหมู่ที่มีมากกว่า 2 ตัวเลือก
+          maxDistanceSquared += 2 * Math.pow(weight, 2); // ยังคงเป็น 2*weight^2 เพราะ one-hot encoding
+        }
+      });
+
+      return Math.sqrt(maxDistanceSquared);
+    };
+
+    // คำนวณค่าทางทฤษฎีสูงสุดเพียงครั้งเดียว
+    const THEORETICAL_MAX_DISTANCE = calculateMaxTheoreticalDistance();
+    console.log("Theoretical maximum distance:", THEORETICAL_MAX_DISTANCE);
+
+    // แปลงข้อมูลผู้ใช้ปัจจุบัน
+    const currentUserTraits = encodeUserTraits(currentUser);
+    console.log("Encoded current user traits:", currentUserTraits);
+
+    // ฟังก์ชันคำนวณระยะห่าง Euclidean
     const calculateDistance = (vectorA, vectorB) => {
       let sum = 0;
       for (let i = 0; i < vectorA.length; i++) {
@@ -724,45 +747,42 @@ app.post("/knn", async (req, res) => {
       return Math.sqrt(sum);
     };
 
-    const distanceToSimilarity = (distance, maxDistance) => {
-      return parseFloat((100 * (1 - distance / maxDistance)).toFixed(2));
+    // ฟังก์ชันแปลงระยะห่างเป็นเปอร์เซ็นต์ความเหมือน (ใช้ค่าทางทฤษฎีสูงสุด)
+    const distanceToSimilarity = (distance) => {
+      return parseFloat(
+        (100 * (1 - distance / THEORETICAL_MAX_DISTANCE)).toFixed(2)
+      );
     };
 
+    // กรองผู้ใช้อื่นๆ
     const otherUsers = results.filter((user) => user.user_id !== user_id);
-    console.log(
-      "//////////////////////////////////////////Other users for comparison:",
-      otherUsers
-    ); // ตรวจสอบรายชื่อผู้ใช้ที่นำมาเปรียบเทียบ
+    console.log("Total other users for comparison:", otherUsers.length);
 
+    // คำนวณระยะห่างสำหรับแต่ละผู้ใช้
     const distances = otherUsers.map((user) => {
       const userTraits = encodeUserTraits(user);
       const distance = calculateDistance(userTraits, currentUserTraits);
+
       console.log(
-        `//////////////////////////////////////////Distance from user ${user.user_id} to ${user_id}:`,
+        `Distance from user ${user.user_id} to ${user_id}:`,
         distance
-      ); // ดูระยะห่างของแต่ละคน
-      return { user_id: user.user_id, distance, traits: user };
+      );
+      console.log(`Similarity: ${distanceToSimilarity(distance)}%`);
+
+      return {
+        user_id: user.user_id,
+        distance,
+        similarity: distanceToSimilarity(distance),
+        traits: user,
+      };
     });
 
-    const maxDistance = Math.max(...distances.map((item) => item.distance));
-    console.log(
-      "//////////////////////////////////////////Max distance:",
-      maxDistance
-    ); // ตรวจสอบค่าระยะห่างสูงสุด
+    // เรียงลำดับผู้ใช้ตามความเหมือนจากมากไปน้อย
+    const neighbors = distances.sort((a, b) => b.similarity - a.similarity);
 
-    const neighbors = distances
-      .map((item) => ({
-        user_id: item.user_id,
-        similarity: distanceToSimilarity(item.distance, maxDistance),
-        traits: item.traits,
-      }))
-      .sort((a, b) => b.similarity - a.similarity);
+    console.log("Final sorted neighbors:", neighbors);
 
-    console.log(
-      "//////////////////////////////////////////Final sorted neighbors:",
-      neighbors
-    ); // ตรวจสอบผลลัพธ์ที่ได้
-
+    // ส่งผลลัพธ์กลับไป
     res.status(200).json({
       neighbors: neighbors,
       total_matches: neighbors.length,
