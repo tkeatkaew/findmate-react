@@ -623,7 +623,7 @@ app.get("/home", (req, res) => {
 //   }
 // });
 
-// // KNN Route
+// KNN Route
 // app.post("/knn", async (req, res) => {
 //   const { user_id } = req.body; // We'll return all neighbors
 
@@ -750,7 +750,7 @@ app.get("/home", (req, res) => {
 //   }
 // });
 
-// // KNN Route 2
+// KNN Route Improved
 app.post("/knn", async (req, res) => {
   const { user_id } = req.body;
 
@@ -803,91 +803,68 @@ app.post("/knn", async (req, res) => {
     };
 
     const weights = {
-      smoke: 2.5,
-      sleep: 2.0,
-      clean: 1.8,
-      loud: 1.8,
-      friend: 1.5,
+      smoke: 2.0,
       drink: 1.8,
+      sleep: 1.5,
       money: 1.5,
       expense: 1.5,
-      pet: 1.3,
+      pet: 1.2,
       religion: 1.2,
+      loud: 1.2,
+      friend: 1.1,
       cook: 1.0,
-      air_conditioner: 0.9,
-      wake: 0.8,
-      type: 1.0, // Added missing weight
-      period: 0.8, // Added missing weight
+      clean: 0.8,
     };
 
     // Encode user traits and apply weights
     const encodeUserTraits = (user) => {
       return Object.keys(traitCategories).flatMap((trait) => {
         const encoded = encodeTrait(user[trait], traitCategories[trait]);
-        return encoded.map((value) => value * (weights[trait] || 1));
+        return encoded.map((value) => value * (weights[trait] || 1)); // Apply weight
       });
     };
 
     const currentUserTraits = encodeUserTraits(currentUser);
 
-    // Count total dimensions for normalization
-    const totalDimensions = Object.values(traitCategories).reduce(
-      (sum, categories) => sum + categories.length,
-      0
-    );
-
-    // Calculate weighted Jaccard similarity instead of Euclidean distance
-    const calculateSimilarity = (userA, userB) => {
-      let matchingScore = 0;
-      let totalWeightedTraits = 0;
-
-      Object.keys(traitCategories).forEach((trait) => {
-        // Extract trait values
-        const traitA = userA[trait];
-        const traitB = userB[trait];
-
-        // Calculate trait weight
-        const traitWeight = weights[trait] || 1;
-        totalWeightedTraits += traitWeight;
-
-        // Perfect match adds full weight to score
-        if (traitA === traitB) {
-          matchingScore += traitWeight;
-        }
-        // For multi-option traits, give partial credit for "compatible" traits
-        else if (
-          trait === "smoke" &&
-          traitA === "smoke_never" &&
-          traitB === "smoke_spacial"
-        ) {
-          matchingScore += traitWeight * 0.5; // Partial match for this combination
-        }
-        // Add more compatibility rules as needed for other traits
-      });
-
-      // Convert to percentage
-      return parseFloat(
-        ((matchingScore / totalWeightedTraits) * 100).toFixed(2)
-      );
+    // Calculate Euclidean distance between vectors (true KNN approach)
+    const calculateDistance = (vectorA, vectorB) => {
+      let sumOfSquares = 0;
+      for (let i = 0; i < vectorA.length; i++) {
+        sumOfSquares += Math.pow(vectorA[i] - vectorB[i], 2);
+      }
+      return Math.sqrt(sumOfSquares);
     };
 
-    // Compute similarity with all other users
+    // Convert distance to similarity percentage (closer = higher percentage)
+    const distanceToSimilarity = (distance, maxDistance) => {
+      // Invert the distance and scale to percentage
+      return parseFloat((100 * (1 - distance / maxDistance)).toFixed(2));
+    };
+
+    // Compute distances with all other users
     const otherUsers = results.filter((user) => user.user_id !== user_id);
-    const similarities = otherUsers.map((user) => {
+    const distances = otherUsers.map((user) => {
       return {
         user_id: user.user_id,
-        similarity: calculateSimilarity(currentUser, user),
+        distance: calculateDistance(encodeUserTraits(user), currentUserTraits),
         traits: user,
       };
     });
 
-    // Sort by highest similarity first
-    const neighbors = similarities.sort((a, b) => b.similarity - a.similarity);
+    // Find maximum distance to normalize percentages
+    const maxDistance = Math.max(...distances.map((item) => item.distance));
 
-    res.status(200).json({
-      neighbors: neighbors,
-      total_matches: neighbors.length,
-    });
+    // Convert distances to similarity percentages and sort
+    const neighbors = distances
+      .map((item) => ({
+        user_id: item.user_id,
+        similarity: distanceToSimilarity(item.distance, maxDistance),
+        distance: item.distance,
+        traits: item.traits,
+      }))
+      .sort((a, b) => b.similarity - a.similarity); // Sort by highest similarity
+
+    res.status(200).json({ neighbors });
   } catch (err) {
     console.error("Error in KNN algorithm:", err);
     res.status(500).json({ error: "Database error" });
