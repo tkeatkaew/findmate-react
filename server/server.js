@@ -625,7 +625,8 @@ app.get("/home", (req, res) => {
 
 // KNN Route
 app.post("/knn", async (req, res) => {
-  const { user_id } = req.body; // We'll return all neighbors
+  const { user_id } = req.body;
+  console.log("Received user_id:", user_id); // ตรวจสอบค่าที่รับเข้ามา
 
   try {
     const [results] = await promisePool.query(`
@@ -636,18 +637,19 @@ app.post("/knn", async (req, res) => {
       WHERE u.role = 'user' AND u.is_suspended = 0
     `);
 
-    const currentUser = results.find((user) => user.user_id === user_id);
-    if (!currentUser) return res.status(404).json({ error: "User not found" });
-    console.log(currentUser);
+    console.log("Fetched users from database:", results); // ตรวจสอบข้อมูลที่ดึงมา
 
-    // One-hot encoding function
+    const currentUser = results.find((user) => user.user_id === user_id);
+    console.log("Current user data:", currentUser); // ดูว่าพบ user หรือไม่
+
+    if (!currentUser) return res.status(404).json({ error: "User not found" });
+
     const encodeTrait = (trait, categories) => {
       const index = categories.indexOf(trait);
       if (index === -1) return new Array(categories.length).fill(0);
       return categories.map((_, i) => (i === index ? 1 : 0));
     };
 
-    // Define categories and weightings for each trait
     const traitCategories = {
       type: ["type_introvert", "type_ambivert", "type_extrovert"],
       sleep: ["sleep_before_midnight", "sleep_after_midnight"],
@@ -677,32 +679,31 @@ app.post("/knn", async (req, res) => {
     };
 
     const weights = {
-      smoke: 2.5, // ↑ Smoking is a major deal-breaker for many
-      sleep: 2.0, // ↑ Sleep schedules are critical
-      clean: 1.8, // ↑↑ Cleaning habits cause significant conflicts
-      loud: 1.8, // ↑↑ Noise tolerance is more important
-      friend: 1.5, // ↑ Guest policies are more impactful
-      drink: 1.8, // = Alcohol use remains important
-      money: 1.5, // = Financial responsibility is important
-      expense: 1.5, // = Expense sharing remains important
-      pet: 1.3, // ↑ Slight increase for pet compatibility
-      religion: 1.2, // = Religion remains moderately important
-      cook: 1.0, // = Cooking remains as is
-      air_conditioner: 0.9, // New: Temperature preference matters
-      wake: 0.8, // New: Wake time matters but less than sleep time
+      smoke: 2.5,
+      sleep: 2.0,
+      clean: 1.8,
+      loud: 1.8,
+      friend: 1.5,
+      drink: 1.8,
+      money: 1.5,
+      expense: 1.5,
+      pet: 1.3,
+      religion: 1.2,
+      cook: 1.0,
+      air_conditioner: 0.9,
+      wake: 0.8,
     };
 
-    // Encode user traits and apply weights
     const encodeUserTraits = (user) => {
       return Object.keys(traitCategories).flatMap((trait) => {
         const encoded = encodeTrait(user[trait], traitCategories[trait]);
-        return encoded.map((value) => value * (weights[trait] || 1)); // Apply weight
+        return encoded.map((value) => value * (weights[trait] || 1));
       });
     };
 
     const currentUserTraits = encodeUserTraits(currentUser);
+    console.log("Encoded current user traits:", currentUserTraits); // ตรวจสอบค่า traits ที่ encode แล้ว
 
-    // Calculate Euclidean distance (standard for KNN)
     const calculateDistance = (vectorA, vectorB) => {
       let sum = 0;
       for (let i = 0; i < vectorA.length; i++) {
@@ -711,36 +712,36 @@ app.post("/knn", async (req, res) => {
       return Math.sqrt(sum);
     };
 
-    // Convert distance to similarity percentage (inverse relationship)
     const distanceToSimilarity = (distance, maxDistance) => {
-      // Normalize and invert to get similarity (100% - normalized distance)
       return parseFloat((100 * (1 - distance / maxDistance)).toFixed(2));
     };
 
-    // Compute distance with all other users
     const otherUsers = results.filter((user) => user.user_id !== user_id);
+    console.log("Other users for comparison:", otherUsers); // ตรวจสอบรายชื่อผู้ใช้ที่นำมาเปรียบเทียบ
+
     const distances = otherUsers.map((user) => {
       const userTraits = encodeUserTraits(user);
-      return {
-        user_id: user.user_id,
-        distance: calculateDistance(userTraits, currentUserTraits),
-        traits: user,
-      };
+      const distance = calculateDistance(userTraits, currentUserTraits);
+      console.log(
+        `Distance from user ${user.user_id} to ${user_id}:`,
+        distance
+      ); // ดูระยะห่างของแต่ละคน
+      return { user_id: user.user_id, distance, traits: user };
     });
 
-    // Find maximum distance for normalization
     const maxDistance = Math.max(...distances.map((item) => item.distance));
+    console.log("Max distance:", maxDistance); // ตรวจสอบค่าระยะห่างสูงสุด
 
-    // Convert to similarity and sort by highest similarity first
     const neighbors = distances
       .map((item) => ({
         user_id: item.user_id,
         similarity: distanceToSimilarity(item.distance, maxDistance),
         traits: item.traits,
       }))
-      .sort((a, b) => b.similarity - a.similarity); // Sort by highest similarity
+      .sort((a, b) => b.similarity - a.similarity);
 
-    // Return all neighbors sorted by similarity
+    console.log("Final sorted neighbors:", neighbors); // ตรวจสอบผลลัพธ์ที่ได้
+
     res.status(200).json({
       neighbors: neighbors,
       total_matches: neighbors.length,
