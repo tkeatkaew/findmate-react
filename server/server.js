@@ -673,19 +673,21 @@ app.post("/knn", async (req, res) => {
 
     // กำหนดน้ำหนักของแต่ละคุณลักษณะ
     const weights = {
-      smoke: 2.5,
-      sleep: 2.0,
-      clean: 1.8,
-      loud: 1.8,
-      friend: 1.5,
+      type: 1.0,
+      sleep: 1.0,
+      wake: 1.0,
+      clean: 2.0,
+      air_conditioner: 1.5,
       drink: 1.8,
-      money: 1.5,
+      smoke: 2.5,
+      money: 2,
       expense: 1.5,
       pet: 1.3,
-      religion: 1.2,
       cook: 1.0,
-      air_conditioner: 0.9,
-      wake: 0.8,
+      loud: 1.8,
+      friend: 1.5,
+      religion: 1.2,
+      period: 1,
     };
 
     // ฟังก์ชันแปลงคุณลักษณะเป็น One-Hot Encoding
