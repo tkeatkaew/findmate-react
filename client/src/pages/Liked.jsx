@@ -240,17 +240,21 @@ const Liked = () => {
   };
 
   const weights = {
-    smoke: 2.0,
+    type: 1.0,
+    sleep: 1.0,
+    wake: 1.0,
+    clean: 2.0,
+    air_conditioner: 1.5,
     drink: 1.8,
-    sleep: 1.5,
-    money: 1.5,
+    smoke: 2.5,
+    money: 2,
     expense: 1.5,
-    pet: 1.2,
-    religion: 1.2,
-    loud: 1.2,
-    friend: 1.1,
+    pet: 1.3,
     cook: 1.0,
-    clean: 0.8,
+    loud: 1.8,
+    friend: 1.5,
+    religion: 1.2,
+    period: 1,
   };
 
   useEffect(() => {
@@ -303,13 +307,16 @@ const Liked = () => {
     }
   }, [user, navigate, dataFetched]);
 
+  // Updated similarity calculation based on KNN algorithm
   const calculateSimilarity = (userTraits, currentTraits) => {
+    // Function to encode trait as one-hot vector
     const encodeTrait = (trait, categories) => {
       const index = categories.indexOf(trait);
       if (index === -1) return new Array(categories.length).fill(0);
       return categories.map((_, i) => (i === index ? 1 : 0));
     };
 
+    // Function to encode all traits for a user with weights
     const encodeUserTraits = (traits) => {
       return Object.keys(traitCategories).flatMap((trait) => {
         const encoded = encodeTrait(traits[trait], traitCategories[trait]);
@@ -317,28 +324,52 @@ const Liked = () => {
       });
     };
 
-    const cosineSimilarity = (vectorA, vectorB) => {
-      let dotProduct = 0,
-        magnitudeA = 0,
-        magnitudeB = 0;
+    // Calculate maximum theoretical distance (reused from KNN algorithm)
+    const calculateMaxTheoreticalDistance = () => {
+      let maxDistanceSquared = 0;
 
-      vectorA.forEach((a, i) => {
-        dotProduct += a * vectorB[i];
-        magnitudeA += a * a;
-        magnitudeB += vectorB[i] * vectorB[i];
+      Object.keys(traitCategories).forEach((trait) => {
+        const weight = weights[trait] || 1;
+        const categories = traitCategories[trait];
+
+        if (categories.length === 2) {
+          // For binary categories
+          maxDistanceSquared += 2 * Math.pow(weight, 2);
+        } else {
+          // For categories with more than 2 options
+          maxDistanceSquared += 2 * Math.pow(weight, 2);
+        }
       });
 
-      const similarity =
-        magnitudeA && magnitudeB
-          ? (dotProduct / (Math.sqrt(magnitudeA) * Math.sqrt(magnitudeB))) * 100
-          : 0;
-      return parseFloat(similarity.toFixed(2));
+      return Math.sqrt(maxDistanceSquared);
     };
 
+    // Calculate Euclidean distance between vectors
+    const calculateDistance = (vectorA, vectorB) => {
+      let sum = 0;
+      for (let i = 0; i < vectorA.length; i++) {
+        sum += Math.pow(vectorA[i] - vectorB[i], 2);
+      }
+      return Math.sqrt(sum);
+    };
+
+    // Convert distance to similarity percentage
+    const distanceToSimilarity = (distance, maxDistance) => {
+      return parseFloat((100 * (1 - distance / maxDistance)).toFixed(2));
+    };
+
+    // Encode both users' traits
     const encodedUserTraits = encodeUserTraits(userTraits);
     const encodedCurrentTraits = encodeUserTraits(currentTraits);
 
-    return cosineSimilarity(encodedUserTraits, encodedCurrentTraits);
+    // Calculate theoretical maximum distance
+    const maxDistance = calculateMaxTheoreticalDistance();
+
+    // Calculate actual distance
+    const distance = calculateDistance(encodedUserTraits, encodedCurrentTraits);
+
+    // Return similarity percentage
+    return distanceToSimilarity(distance, maxDistance);
   };
 
   const handleLike = async (targetUserId, event) => {

@@ -642,7 +642,6 @@ app.post("/knn", async (req, res) => {
 
     if (!currentUser) return res.status(404).json({ error: "User not found" });
 
-    // กำหนดหมวดหมู่ของแต่ละคุณลักษณะ
     const traitCategories = {
       type: ["type_introvert", "type_ambivert", "type_extrovert"],
       sleep: ["sleep_before_midnight", "sleep_after_midnight"],
@@ -671,7 +670,6 @@ app.post("/knn", async (req, res) => {
       period: ["period_long", "period_sometime", "period_no_need"],
     };
 
-    // กำหนดน้ำหนักของแต่ละคุณลักษณะ
     const weights = {
       type: 1.0,
       sleep: 1.0,
@@ -690,14 +688,12 @@ app.post("/knn", async (req, res) => {
       period: 1,
     };
 
-    // ฟังก์ชันแปลงคุณลักษณะเป็น One-Hot Encoding
     const encodeTrait = (trait, categories) => {
       const index = categories.indexOf(trait);
       if (index === -1) return new Array(categories.length).fill(0);
       return categories.map((_, i) => (i === index ? 1 : 0));
     };
 
-    // ฟังก์ชันแปลงข้อมูลผู้ใช้เป็นเวกเตอร์
     const encodeUserTraits = (user) => {
       return Object.keys(traitCategories).flatMap((trait) => {
         const encoded = encodeTrait(user[trait], traitCategories[trait]);
@@ -705,7 +701,6 @@ app.post("/knn", async (req, res) => {
       });
     };
 
-    // คำนวณระยะห่างทางทฤษฎีสูงสุด
     const calculateMaxTheoreticalDistance = () => {
       // ระยะห่างสูงสุดจะเกิดขึ้นเมื่อมีความแตกต่างในทุกคุณลักษณะ
       let maxDistanceSquared = 0;
