@@ -624,9 +624,179 @@ app.get("/home", (req, res) => {
 // });
 
 // KNN Route
+// app.post("/knn", async (req, res) => {
+//   const { user_id } = req.body;
+//   console.log("Received user_id:", user_id);
+
+//   try {
+//     const [results] = await promisePool.query(`
+//       SELECT pt.*, pi.*, u.profile_picture
+//       FROM personality_traits pt
+//       JOIN personality_infomation pi ON pt.user_id = pi.user_id
+//       JOIN users u ON pt.user_id = u.id
+//       WHERE u.role = 'user' AND u.is_suspended = 0
+//     `);
+
+//     const currentUser = results.find((user) => user.user_id === user_id);
+//     console.log("Current user data:", currentUser);
+
+//     if (!currentUser) return res.status(404).json({ error: "User not found" });
+
+//     const traitCategories = {
+//       type: ["type_introvert", "type_ambivert", "type_extrovert"],
+//       sleep: ["sleep_before_midnight", "sleep_after_midnight"],
+//       wake: ["wake_morning", "wake_noon", "wake_evening"],
+//       clean: [
+//         "clean_every_day",
+//         "clean_every_other_day",
+//         "clean_once_a_week",
+//         "clean_dont_really",
+//       ],
+//       air_conditioner: [
+//         "ac_never",
+//         "ac_only_sleep",
+//         "ac_only_hot",
+//         "ac_all_day",
+//       ],
+//       drink: ["drink_never", "drink_spacial", "drink_weekend", "drink_always"],
+//       smoke: ["smoke_never", "smoke_spacial", "smoke_always"],
+//       money: ["money_on_time", "money_late"],
+//       expense: ["money_half", "money_ratio"],
+//       pet: ["pet_dont_have", "pet_have"],
+//       cook: ["cook_ok", "cook_tell_first", "cook_no"],
+//       loud: ["loud_low", "loud_medium", "loud_high"],
+//       friend: ["friend_ok", "friend_tell_first", "friend_no"],
+//       religion: ["religion_ok", "religion_no_affect", "religion_no"],
+//       period: ["period_long", "period_sometime", "period_no_need"],
+//     };
+
+//     const weights = {
+//       type: 1.0,
+//       sleep: 1.0,
+//       wake: 1.0,
+//       clean: 2.0,
+//       air_conditioner: 1.5,
+//       drink: 1.8,
+//       smoke: 2.5,
+//       money: 2,
+//       expense: 1.5,
+//       pet: 1.3,
+//       cook: 1.0,
+//       loud: 1.8,
+//       friend: 1.5,
+//       religion: 1.2,
+//       period: 1,
+//     };
+
+//     const encodeTrait = (trait, categories) => {
+//       const index = categories.indexOf(trait);
+//       if (index === -1) return new Array(categories.length).fill(0);
+//       return categories.map((_, i) => (i === index ? 1 : 0));
+//     };
+
+//     const encodeUserTraits = (user) => {
+//       return Object.keys(traitCategories).flatMap((trait) => {
+//         const encoded = encodeTrait(user[trait], traitCategories[trait]);
+//         return encoded.map((value) => value * (weights[trait] || 1));
+//       });
+//     };
+
+//     const calculateMaxTheoreticalDistance = () => {
+//       // ระยะห่างสูงสุดจะเกิดขึ้นเมื่อมีความแตกต่างในทุกคุณลักษณะ
+//       let maxDistanceSquared = 0;
+
+//       Object.keys(traitCategories).forEach((trait) => {
+//         const weight = weights[trait] || 1;
+//         const categories = traitCategories[trait];
+
+//         // กรณีแย่ที่สุดคือเมื่อคนหนึ่งเป็น [1,0,0] และอีกคนเป็น [0,0,1]
+//         // ระยะห่างจึงเท่ากับรากที่สองของผลรวมของกำลังสองของความแตกต่าง
+//         // สำหรับหมวดหมู่ที่มี 2 ตัวเลือก: (weight*1 - weight*0)^2 + (weight*0 - weight*1)^2 = 2*weight^2
+//         // สำหรับหมวดหมู่ที่มี 3 ตัวเลือก: (weight*1 - weight*0)^2 + (weight*0 - weight*0)^2 + (weight*0 - weight*1)^2 = 2*weight^2
+//         // และอื่นๆ
+
+//         if (categories.length === 2) {
+//           // สำหรับหมวดหมู่ binary เช่น yes/no
+//           maxDistanceSquared += 2 * Math.pow(weight, 2);
+//         } else {
+//           // สำหรับหมวดหมู่ที่มีมากกว่า 2 ตัวเลือก
+//           maxDistanceSquared += 2 * Math.pow(weight, 2); // ยังคงเป็น 2*weight^2 เพราะ one-hot encoding
+//         }
+//       });
+
+//       return Math.sqrt(maxDistanceSquared);
+//     };
+
+//     // คำนวณค่าทางทฤษฎีสูงสุดเพียงครั้งเดียว
+//     const THEORETICAL_MAX_DISTANCE = calculateMaxTheoreticalDistance();
+//     console.log("Theoretical maximum distance:", THEORETICAL_MAX_DISTANCE);
+
+//     // แปลงข้อมูลผู้ใช้ปัจจุบัน
+//     const currentUserTraits = encodeUserTraits(currentUser);
+//     console.log("Encoded current user traits:", currentUserTraits);
+
+//     // ฟังก์ชันคำนวณระยะห่าง Euclidean
+//     const calculateDistance = (vectorA, vectorB) => {
+//       let sum = 0;
+//       for (let i = 0; i < vectorA.length; i++) {
+//         sum += Math.pow(vectorA[i] - vectorB[i], 2);
+//       }
+//       return Math.sqrt(sum);
+//     };
+
+//     // ฟังก์ชันแปลงระยะห่างเป็นเปอร์เซ็นต์ความเหมือน (ใช้ค่าทางทฤษฎีสูงสุด)
+//     const distanceToSimilarity = (distance) => {
+//       return parseFloat(
+//         (100 * (1 - distance / THEORETICAL_MAX_DISTANCE)).toFixed(2)
+//       );
+//     };
+
+//     // กรองผู้ใช้อื่นๆ
+//     const otherUsers = results.filter((user) => user.user_id !== user_id);
+//     console.log("Total other users for comparison:", otherUsers.length);
+
+//     // คำนวณระยะห่างสำหรับแต่ละผู้ใช้
+//     const distances = otherUsers.map((user) => {
+//       const userTraits = encodeUserTraits(user);
+//       const distance = calculateDistance(userTraits, currentUserTraits);
+
+//       console.log(
+//         `Distance from user ${user.user_id} to ${user_id}:`,
+//         distance
+//       );
+//       console.log(`Similarity: ${distanceToSimilarity(distance)}%`);
+
+//       return {
+//         user_id: user.user_id,
+//         distance,
+//         similarity: distanceToSimilarity(distance),
+//         traits: user,
+//       };
+//     });
+
+//     // เรียงลำดับผู้ใช้ตามความเหมือนจากมากไปน้อย
+//     const neighbors = distances.sort((a, b) => b.similarity - a.similarity);
+
+//     console.log("Final sorted neighbors:", neighbors);
+
+//     // ส่งผลลัพธ์กลับไป
+//     res.status(200).json({
+//       neighbors: neighbors,
+//       total_matches: neighbors.length,
+//     });
+//   } catch (err) {
+//     console.error("Error in KNN algorithm:", err);
+//     res.status(500).json({ error: "Database error" });
+//   }
+// });
+
+// KNN Lib Route
 app.post("/knn", async (req, res) => {
   const { user_id } = req.body;
   console.log("Received user_id:", user_id);
+
+  // Import ml-knn library
+  const KNN = require("ml-knn");
 
   try {
     const [results] = await promisePool.query(`
@@ -688,228 +858,113 @@ app.post("/knn", async (req, res) => {
       period: 1,
     };
 
-    const encodeTrait = (trait, categories) => {
-      const index = categories.indexOf(trait);
-      if (index === -1) return new Array(categories.length).fill(0);
-      return categories.map((_, i) => (i === index ? 1 : 0));
-    };
-
+    // Function to encode user traits with weights applied
     const encodeUserTraits = (user) => {
-      return Object.keys(traitCategories).flatMap((trait) => {
-        const encoded = encodeTrait(user[trait], traitCategories[trait]);
-        return encoded.map((value) => value * (weights[trait] || 1));
+      const features = [];
+
+      Object.keys(traitCategories).forEach((trait) => {
+        const categories = traitCategories[trait];
+        const weight = weights[trait] || 1;
+
+        // Find which category applies to this user
+        const userValue = user[trait];
+        const categoryIndex = categories.indexOf(userValue);
+
+        // Apply one-hot encoding with weights
+        categories.forEach((_, index) => {
+          features.push((index === categoryIndex ? 1 : 0) * weight);
+        });
       });
+
+      return features;
     };
 
+    // Prepare training dataset
+    const trainingSet = [];
+    const trainingLabels = [];
+    const userData = {};
+
+    // Process all users except current user
+    results.forEach((user) => {
+      const encodedFeatures = encodeUserTraits(user);
+
+      if (user.user_id !== user_id) {
+        trainingSet.push(encodedFeatures);
+        trainingLabels.push(user.user_id); // Use user_id as the label
+        userData[user.user_id] = user; // Store full user data for later
+      }
+    });
+
+    // Encode current user
+    const currentUserFeatures = encodeUserTraits(currentUser);
+
+    // Train KNN model - use all neighbors (equivalent to the original approach)
+    const k = trainingSet.length; // Use all available users as potential neighbors
+    const model = new KNN(trainingSet, trainingLabels, { k });
+
+    // Predict neighbors (really just computing distances)
+    const { neighbors, distances } =
+      model.nearestKNeighbors(currentUserFeatures);
+
+    // Calculate theoretical maximum distance for similarity conversion
     const calculateMaxTheoreticalDistance = () => {
-      // ระยะห่างสูงสุดจะเกิดขึ้นเมื่อมีความแตกต่างในทุกคุณลักษณะ
       let maxDistanceSquared = 0;
 
       Object.keys(traitCategories).forEach((trait) => {
         const weight = weights[trait] || 1;
         const categories = traitCategories[trait];
 
-        // กรณีแย่ที่สุดคือเมื่อคนหนึ่งเป็น [1,0,0] และอีกคนเป็น [0,0,1]
-        // ระยะห่างจึงเท่ากับรากที่สองของผลรวมของกำลังสองของความแตกต่าง
-        // สำหรับหมวดหมู่ที่มี 2 ตัวเลือก: (weight*1 - weight*0)^2 + (weight*0 - weight*1)^2 = 2*weight^2
-        // สำหรับหมวดหมู่ที่มี 3 ตัวเลือก: (weight*1 - weight*0)^2 + (weight*0 - weight*0)^2 + (weight*0 - weight*1)^2 = 2*weight^2
-        // และอื่นๆ
-
         if (categories.length === 2) {
-          // สำหรับหมวดหมู่ binary เช่น yes/no
           maxDistanceSquared += 2 * Math.pow(weight, 2);
         } else {
-          // สำหรับหมวดหมู่ที่มีมากกว่า 2 ตัวเลือก
-          maxDistanceSquared += 2 * Math.pow(weight, 2); // ยังคงเป็น 2*weight^2 เพราะ one-hot encoding
+          maxDistanceSquared += 2 * Math.pow(weight, 2);
         }
       });
 
       return Math.sqrt(maxDistanceSquared);
     };
 
-    // คำนวณค่าทางทฤษฎีสูงสุดเพียงครั้งเดียว
     const THEORETICAL_MAX_DISTANCE = calculateMaxTheoreticalDistance();
     console.log("Theoretical maximum distance:", THEORETICAL_MAX_DISTANCE);
 
-    // แปลงข้อมูลผู้ใช้ปัจจุบัน
-    const currentUserTraits = encodeUserTraits(currentUser);
-    console.log("Encoded current user traits:", currentUserTraits);
-
-    // ฟังก์ชันคำนวณระยะห่าง Euclidean
-    const calculateDistance = (vectorA, vectorB) => {
-      let sum = 0;
-      for (let i = 0; i < vectorA.length; i++) {
-        sum += Math.pow(vectorA[i] - vectorB[i], 2);
-      }
-      return Math.sqrt(sum);
-    };
-
-    // ฟังก์ชันแปลงระยะห่างเป็นเปอร์เซ็นต์ความเหมือน (ใช้ค่าทางทฤษฎีสูงสุด)
+    // Convert distances to similarity percentage
     const distanceToSimilarity = (distance) => {
       return parseFloat(
         (100 * (1 - distance / THEORETICAL_MAX_DISTANCE)).toFixed(2)
       );
     };
 
-    // กรองผู้ใช้อื่นๆ
-    const otherUsers = results.filter((user) => user.user_id !== user_id);
-    console.log("Total other users for comparison:", otherUsers.length);
-
-    // คำนวณระยะห่างสำหรับแต่ละผู้ใช้
-    const distances = otherUsers.map((user) => {
-      const userTraits = encodeUserTraits(user);
-      const distance = calculateDistance(userTraits, currentUserTraits);
-
-      console.log(
-        `Distance from user ${user.user_id} to ${user_id}:`,
-        distance
-      );
-      console.log(`Similarity: ${distanceToSimilarity(distance)}%`);
+    // Format results
+    const formattedResults = neighbors.map((neighbor, index) => {
+      const userId = neighbor; // In our case, the neighbor is the user_id
+      const distance = distances[index];
+      const similarity = distanceToSimilarity(distance);
 
       return {
-        user_id: user.user_id,
+        user_id: userId,
         distance,
-        similarity: distanceToSimilarity(distance),
-        traits: user,
+        similarity,
+        traits: userData[userId],
       };
     });
 
-    // เรียงลำดับผู้ใช้ตามความเหมือนจากมากไปน้อย
-    const neighbors = distances.sort((a, b) => b.similarity - a.similarity);
+    // Sort by similarity (highest first)
+    const sortedNeighbors = formattedResults.sort(
+      (a, b) => b.similarity - a.similarity
+    );
 
-    console.log("Final sorted neighbors:", neighbors);
+    console.log("Final sorted neighbors:", sortedNeighbors);
 
-    // ส่งผลลัพธ์กลับไป
+    // Send back the results
     res.status(200).json({
-      neighbors: neighbors,
-      total_matches: neighbors.length,
+      neighbors: sortedNeighbors,
+      total_matches: sortedNeighbors.length,
     });
   } catch (err) {
     console.error("Error in KNN algorithm:", err);
     res.status(500).json({ error: "Database error" });
   }
 });
-
-// KNN Route 2
-// app.post("/knn", async (req, res) => {
-//   const { user_id } = req.body;
-
-//   try {
-//     const [results] = await promisePool.query(`
-//       SELECT pt.*, pi.*, u.profile_picture
-//       FROM personality_traits pt
-//       JOIN personality_infomation pi ON pt.user_id = pi.user_id
-//       JOIN users u ON pt.user_id = u.id
-//       WHERE u.role = 'user' AND u.is_suspended = 0
-//     `);
-
-//     const currentUser = results.find((user) => user.user_id === user_id);
-//     if (!currentUser) return res.status(404).json({ error: "User not found" });
-
-//     // One-hot encoding function
-//     const encodeTrait = (trait, categories) => {
-//       const index = categories.indexOf(trait);
-//       if (index === -1) return new Array(categories.length).fill(0);
-//       return categories.map((_, i) => (i === index ? 1 : 0));
-//     };
-
-//     // Define categories and weightings for each trait
-//     const traitCategories = {
-//       type: ["type_introvert", "type_ambivert", "type_extrovert"],
-//       sleep: ["sleep_before_midnight", "sleep_after_midnight"],
-//       wake: ["wake_morning", "wake_noon", "wake_evening"],
-//       clean: [
-//         "clean_every_day",
-//         "clean_every_other_day",
-//         "clean_once_a_week",
-//         "clean_dont_really",
-//       ],
-//       air_conditioner: [
-//         "ac_never",
-//         "ac_only_sleep",
-//         "ac_only_hot",
-//         "ac_all_day",
-//       ],
-//       drink: ["drink_never", "drink_spacial", "drink_weekend", "drink_always"],
-//       smoke: ["smoke_never", "smoke_spacial", "smoke_always"],
-//       money: ["money_on_time", "money_late"],
-//       expense: ["money_half", "money_ratio"],
-//       pet: ["pet_dont_have", "pet_have"],
-//       cook: ["cook_ok", "cook_tell_first", "cook_no"],
-//       loud: ["loud_low", "loud_medium", "loud_high"],
-//       friend: ["friend_ok", "friend_tell_first", "friend_no"],
-//       religion: ["religion_ok", "religion_no_affect", "religion_no"],
-//       period: ["period_long", "period_sometime", "period_no_need"],
-//     };
-
-//     const weights = {
-//       smoke: 2.0,
-//       drink: 1.8,
-//       sleep: 1.5,
-//       money: 1.5,
-//       expense: 1.5,
-//       pet: 1.2,
-//       religion: 1.2,
-//       loud: 1.2,
-//       friend: 1.1,
-//       cook: 1.0,
-//       clean: 0.8,
-//     };
-
-//     // Encode user traits and apply weights
-//     const encodeUserTraits = (user) => {
-//       return Object.keys(traitCategories).flatMap((trait) => {
-//         const encoded = encodeTrait(user[trait], traitCategories[trait]);
-//         return encoded.map((value) => value * (weights[trait] || 1)); // Apply weight
-//       });
-//     };
-
-//     const currentUserTraits = encodeUserTraits(currentUser);
-
-//     // Calculate Euclidean distance between vectors (true KNN approach)
-//     const calculateDistance = (vectorA, vectorB) => {
-//       let sumOfSquares = 0;
-//       for (let i = 0; i < vectorA.length; i++) {
-//         sumOfSquares += Math.pow(vectorA[i] - vectorB[i], 2);
-//       }
-//       return Math.sqrt(sumOfSquares);
-//     };
-
-//     // Convert distance to similarity percentage (closer = higher percentage)
-//     const distanceToSimilarity = (distance, maxDistance) => {
-//       // Invert the distance and scale to percentage
-//       return parseFloat((100 * (1 - distance / maxDistance)).toFixed(2));
-//     };
-
-//     // Compute distances with all other users
-//     const otherUsers = results.filter((user) => user.user_id !== user_id);
-//     const distances = otherUsers.map((user) => {
-//       return {
-//         user_id: user.user_id,
-//         distance: calculateDistance(encodeUserTraits(user), currentUserTraits),
-//         traits: user,
-//       };
-//     });
-
-//     // Find maximum distance to normalize percentages
-//     const maxDistance = Math.max(...distances.map((item) => item.distance));
-
-//     // Convert distances to similarity percentages and sort
-//     const neighbors = distances
-//       .map((item) => ({
-//         user_id: item.user_id,
-//         similarity: distanceToSimilarity(item.distance, maxDistance),
-//         distance: item.distance,
-//         traits: item.traits,
-//       }))
-//       .sort((a, b) => b.similarity - a.similarity); // Sort by highest similarity
-
-//     res.status(200).json({ neighbors });
-//   } catch (err) {
-//     console.error("Error in KNN algorithm:", err);
-//     res.status(500).json({ error: "Database error" });
-//   }
-// });
 
 // Multer configuration for file uploads
 const storage = multer.diskStorage({
