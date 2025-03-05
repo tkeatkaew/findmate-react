@@ -902,9 +902,31 @@ app.post("/knn", async (req, res) => {
     const k = trainingSet.length; // Use all available users as potential neighbors
     const model = new KNN(trainingSet, trainingLabels, { k });
 
-    // Predict neighbors (really just computing distances)
-    const { neighbors, distances } =
-      model.nearestKNeighbors(currentUserFeatures);
+    // Find nearest neighbors using predict method
+    // This returns indices of nearest neighbors in order of proximity
+    const predictions = model.predict(currentUserFeatures);
+
+    // Get distances for each training example
+    const distances = [];
+    trainingSet.forEach((features) => {
+      // Calculate Euclidean distance manually
+      let sum = 0;
+      for (let i = 0; i < features.length; i++) {
+        sum += Math.pow(features[i] - currentUserFeatures[i], 2);
+      }
+      distances.push(Math.sqrt(sum));
+    });
+
+    // Create a combined array of user_ids and distances
+    const userDistances = trainingLabels.map((userId, index) => ({
+      userId,
+      distance: distances[index],
+    }));
+
+    // Sort by distance (ascending)
+    const sortedNeighbors = userDistances.sort(
+      (a, b) => a.distance - b.distance
+    );
 
     // Calculate theoretical maximum distance for similarity conversion
     const calculateMaxTheoreticalDistance = () => {
@@ -935,30 +957,28 @@ app.post("/knn", async (req, res) => {
     };
 
     // Format results
-    const formattedResults = neighbors.map((neighbor, index) => {
-      const userId = neighbor; // In our case, the neighbor is the user_id
-      const distance = distances[index];
-      const similarity = distanceToSimilarity(distance);
+    const formattedResults = sortedNeighbors.map((item) => {
+      const similarity = distanceToSimilarity(item.distance);
 
       return {
-        user_id: userId,
-        distance,
+        user_id: item.userId,
+        distance: item.distance,
         similarity,
-        traits: userData[userId],
+        traits: userData[item.userId],
       };
     });
 
     // Sort by similarity (highest first)
-    const sortedNeighbors = formattedResults.sort(
+    const finalResults = formattedResults.sort(
       (a, b) => b.similarity - a.similarity
     );
 
-    console.log("Final sorted neighbors:", sortedNeighbors);
+    console.log("Final sorted neighbors:", finalResults);
 
     // Send back the results
     res.status(200).json({
-      neighbors: sortedNeighbors,
-      total_matches: sortedNeighbors.length,
+      neighbors: finalResults,
+      total_matches: finalResults.length,
     });
   } catch (err) {
     console.error("Error in KNN algorithm:", err);
