@@ -902,13 +902,13 @@ app.post("/knn", async (req, res) => {
     // console.log("Training Set:", trainingSet);
     // console.log("=====================================");
     // console.log("Training Label:", trainingLabels);
-    console.log("=====================================");
-    console.log("User Data:", userData);
+    // console.log("=====================================");
+    // console.log("User Data:", userData);
 
     // Encode current user
     const currentUserFeatures = encodeUserTraits(currentUser);
-    console.log("=====================================");
-    console.log("Current User Features:", currentUserFeatures);
+    // console.log("=====================================");
+    // console.log("Current User Features:", currentUserFeatures);
 
     // Train KNN model - use all neighbors (equivalent to the original approach)
     // ======== ไม่ถูกใช้ เพราะ predict ไม่คืนค่าระยะห่าง =========
@@ -917,16 +917,16 @@ app.post("/knn", async (req, res) => {
     const k = 1;
     const model = new KNN(trainingSet, trainingLabels, { k });
 
-    console.log("=====================================");
-    console.log("Model:", model);
+    // console.log("=====================================");
+    // console.log("Model:", model);
 
     // Find nearest neighbors using predict method
     // This returns indices of nearest neighbors in order of proximity
 
     // ======== ไม่คืนค่าระยะห่าง ไม่ตรงโจทย์ของโปรเจ็ค =========
     const predictions = model.predict(currentUserFeatures);
-    console.log("=====================================");
-    console.log("Prediction:", predictions);
+    // console.log("=====================================");
+    // console.log("Prediction:", predictions);
 
     // Get distances for each training example
     const distances = [];
@@ -938,17 +938,23 @@ app.post("/knn", async (req, res) => {
       }
       distances.push(Math.sqrt(sum));
     });
+    console.log("=====================================");
+    console.log("Distances:", distances);
 
     // Create a combined array of user_ids and distances
     const userDistances = trainingLabels.map((userId, index) => ({
       userId,
       distance: distances[index],
     }));
+    console.log("=====================================");
+    console.log("User Distances:", userDistances);
 
     // Sort by distance (ascending)
     const sortedNeighbors = userDistances.sort(
       (a, b) => a.distance - b.distance
     );
+    console.log("=====================================");
+    console.log("Sorted Neighbors:", sortedNeighbors);
 
     // Calculate theoretical maximum distance for similarity conversion
     const calculateMaxTheoreticalDistance = () => {
