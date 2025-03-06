@@ -806,8 +806,11 @@ app.post("/knn", async (req, res) => {
       JOIN users u ON pt.user_id = u.id
       WHERE u.role = 'user' AND u.is_suspended = 0
     `);
+    console.log("=====================================");
+    console.log("Fetch All:", results);
 
     const currentUser = results.find((user) => user.user_id === user_id);
+    console.log("=====================================");
     console.log("Current user data:", currentUser);
 
     if (!currentUser) return res.status(404).json({ error: "User not found" });
@@ -894,6 +897,13 @@ app.post("/knn", async (req, res) => {
         userData[user.user_id] = user; // Store full user data for later
       }
     });
+
+    console.log("=====================================");
+    console.log("Training Set:", trainingSet);
+    console.log("=====================================");
+    console.log("Training Label:", trainingLabels);
+    console.log("=====================================");
+    console.log("User Data:", trainingLabels);
 
     // Encode current user
     const currentUserFeatures = encodeUserTraits(currentUser);
