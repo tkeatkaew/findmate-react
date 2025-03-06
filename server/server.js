@@ -911,6 +911,7 @@ app.post("/knn", async (req, res) => {
     console.log("Current User Features:", currentUserFeatures);
 
     // Train KNN model - use all neighbors (equivalent to the original approach)
+    // ======== ไม่ถูกใช้ เพราะ predict ไม่คืนค่าระยะห่าง =========
     const k = trainingSet.length; // Use all available users as potential neighbors
     const model = new KNN(trainingSet, trainingLabels, { k });
 
@@ -919,7 +920,11 @@ app.post("/knn", async (req, res) => {
 
     // Find nearest neighbors using predict method
     // This returns indices of nearest neighbors in order of proximity
+
+    // ======== ไม่คืนค่าระยะห่าง ไม่ตรงโจทย์ของโปรเจ็ค =========
     const predictions = model.predict(currentUserFeatures);
+    console.log("=====================================");
+    console.log("Prediction:", predictions);
 
     // Get distances for each training example
     const distances = [];
