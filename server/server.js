@@ -912,7 +912,9 @@ app.post("/knn", async (req, res) => {
 
     // Train KNN model - use all neighbors (equivalent to the original approach)
     // ======== ไม่ถูกใช้ เพราะ predict ไม่คืนค่าระยะห่าง =========
-    const k = trainingSet.length; // Use all available users as potential neighbors
+    // const k = trainingSet.length; // Use all available users as potential neighbors
+
+    const k = 1;
     const model = new KNN(trainingSet, trainingLabels, { k });
 
     console.log("=====================================");
