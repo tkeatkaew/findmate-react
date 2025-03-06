@@ -728,8 +728,8 @@ app.get("/home", (req, res) => {
 //     };
 
 //     // คำนวณค่าทางทฤษฎีสูงสุดเพียงครั้งเดียว
-//     const THEORETICAL_MAX_DISTANCE = calculateMaxTheoreticalDistance();
-//     console.log("Theoretical maximum distance:", THEORETICAL_MAX_DISTANCE);
+//     const TheoreticalMaxDistance = calculateMaxTheoreticalDistance();
+//     console.log("Theoretical maximum distance:", TheoreticalMaxDistance);
 
 //     // แปลงข้อมูลผู้ใช้ปัจจุบัน
 //     const currentUserTraits = encodeUserTraits(currentUser);
@@ -747,7 +747,7 @@ app.get("/home", (req, res) => {
 //     // ฟังก์ชันแปลงระยะห่างเป็นเปอร์เซ็นต์ความเหมือน (ใช้ค่าทางทฤษฎีสูงสุด)
 //     const distanceToSimilarity = (distance) => {
 //       return parseFloat(
-//         (100 * (1 - distance / THEORETICAL_MAX_DISTANCE)).toFixed(2)
+//         (100 * (1 - distance / TheoreticalMaxDistance)).toFixed(2)
 //       );
 //     };
 
@@ -938,23 +938,23 @@ app.post("/knn", async (req, res) => {
       }
       distances.push(Math.sqrt(sum));
     });
-    console.log("=====================================");
-    console.log("Distances:", distances);
+    // console.log("=====================================");
+    // console.log("Distances:", distances);
 
     // Create a combined array of user_ids and distances
     const userDistances = trainingLabels.map((userId, index) => ({
       userId,
       distance: distances[index],
     }));
-    console.log("=====================================");
-    console.log("User Distances:", userDistances);
+    // console.log("=====================================");
+    // console.log("User Distances:", userDistances);
 
     // Sort by distance (ascending)
     const sortedNeighbors = userDistances.sort(
       (a, b) => a.distance - b.distance
     );
-    console.log("=====================================");
-    console.log("Sorted Neighbors:", sortedNeighbors);
+    // console.log("=====================================");
+    // console.log("Sorted Neighbors:", sortedNeighbors);
 
     // Calculate theoretical maximum distance for similarity conversion
     const calculateMaxTheoreticalDistance = () => {
@@ -974,19 +974,22 @@ app.post("/knn", async (req, res) => {
       return Math.sqrt(maxDistanceSquared);
     };
 
-    const THEORETICAL_MAX_DISTANCE = calculateMaxTheoreticalDistance();
-    console.log("Theoretical maximum distance:", THEORETICAL_MAX_DISTANCE);
+    const TheoreticalMaxDistance = calculateMaxTheoreticalDistance();
+    console.log("=====================================");
+    console.log("Theoretical maximum distance:", TheoreticalMaxDistance);
 
     // Convert distances to similarity percentage
     const distanceToSimilarity = (distance) => {
       return parseFloat(
-        (100 * (1 - distance / THEORETICAL_MAX_DISTANCE)).toFixed(2)
+        (100 * (1 - distance / TheoreticalMaxDistance)).toFixed(2)
       );
     };
 
     // Format results
     const formattedResults = sortedNeighbors.map((item) => {
       const similarity = distanceToSimilarity(item.distance);
+      console.log("=====================================");
+      console.log("Each User Similarity:", similarity);
 
       return {
         user_id: item.userId,
@@ -996,11 +999,15 @@ app.post("/knn", async (req, res) => {
       };
     });
 
+    console.log("=====================================");
+    console.log("Format Results:", formattedResults);
+
     // Sort by similarity (highest first)
     const finalResults = formattedResults.sort(
       (a, b) => b.similarity - a.similarity
     );
 
+    console.log("=====================================");
     console.log("Final sorted neighbors:", finalResults);
 
     // Send back the results
