@@ -1080,20 +1080,23 @@ const Discovery = () => {
             <Grid container spacing={2} sx={{ mb: 3 }}>
               <Grid item xs={12} sm={6}>
                 <Typography>
-                  <strong>Facebook:</strong>{" "}
-                  {selectedUser.traits.facebook || "ไม่ระบุ"}
+                  <strong>Facebook:</strong> แสดงเมื่อจับคู่สำเร็จ
+                  {/* <strong>Facebook:</strong>{" "}
+                  {selectedUser.traits.facebook || "ไม่ระบุ"} */}
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Typography>
-                  <strong>Instagram:</strong>{" "}
-                  {selectedUser.traits.instagram || "ไม่ระบุ"}
+                  <strong>Instagram:</strong> แสดงเมื่อจับคู่สำเร็จ
+                  {/* <strong>Instagram:</strong>{" "}
+                  {selectedUser.traits.instagram || "ไม่ระบุ"} */}
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Typography>
-                  <strong>Line ID:</strong>{" "}
-                  {selectedUser.traits.line_id || "ไม่ระบุ"}
+                  <strong>Line ID:</strong> แสดงเมื่อจับคู่สำเร็จ
+                  {/* <strong>Line ID:</strong>{" "}
+                  {selectedUser.traits.line_id || "ไม่ระบุ"} */}
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={6}>
