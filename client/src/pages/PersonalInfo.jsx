@@ -703,14 +703,14 @@ const PersonalInfo = () => {
 
               <Typography
                 variant="h6"
-                sx={{ mt: 2, mb: 1 }}
+                sx={{ mt: 2 }}
                 id="social-contact-section"
               >
                 โซเชียลมีเดียและข้อมูลติดต่อ
               </Typography>
               <Typography
                 variant="p"
-                sx={{ mt: 2, mb: 1 }}
+                sx={{ mt: 2 }}
                 id="social-contact-section"
               >
                 ข้อมูลการติดต่อจะแสดงให้อีกฝ่ายเห็นเมื่อจับคู่สำเร็จเท่านั้น
