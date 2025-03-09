@@ -39,7 +39,7 @@ const InfoModal = ({ open, onClose }) => {
     >
       <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>
         <Box display="flex" alignItems="center" gap={1}>
-          <Info size={24} color="var(--mui-palette-primary-main)" />
+          <Info size={24} color="black" />
           <Typography variant="h6" component="span">
             ข้อมูลสำคัญ
           </Typography>
