@@ -355,7 +355,7 @@ const Register = () => {
             component="div"
           >
             <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 2 }}>
-              วันที่มีผลบังคับใช้: 10 มีนาคม 2567
+              วันที่มีผลบังคับใช้: 10 มีนาคม 2568
             </Typography>
 
             <Typography variant="h6" sx={{ fontWeight: "bold", mt: 2 }}>

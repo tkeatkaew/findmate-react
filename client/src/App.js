@@ -14,6 +14,7 @@ import EditProfile from "./pages/EditProfile";
 import AdminDashboard from "./pages/AdminDashboard";
 import OTPVerification from "./pages/OTPVerification";
 import ProfileChecker from "./components/ProfileChecker";
+import TermsOfService from "./pages/TermsOfService";
 
 const App = () => {
   return (
@@ -33,6 +34,7 @@ const App = () => {
           <Route path="/edit-profile" element={<EditProfile />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/verify-otp" element={<OTPVerification />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
         </Routes>
       </ProfileChecker>
     </Router>
