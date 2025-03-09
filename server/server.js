@@ -624,6 +624,9 @@ app.post("/knn", async (req, res) => {
   const { user_id } = req.body;
   console.log("Received user_id:", user_id);
 
+  // Import ml-knn library
+  const KNN = require("ml-knn");
+
   try {
     const [results] = await promisePool.query(`
       SELECT pt.*, pi.*, u.profile_picture
