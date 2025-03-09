@@ -1710,82 +1710,79 @@ app.post("/app-reviews", async (req, res) => {
   }
 });
 
-// This function will send emails to users who have been active for a while but haven't left a review
-const sendReviewRequests = async () => {
-  try {
-    // Get users who:
-    // 1. Have been active for at least 2 weeks
-    // 2. Have made a successful match
-    // 3. Haven't already submitted an app review
-    const [users] = await promisePool.query(
-      `SELECT u.id, u.name, u.email
-       FROM users u
-       JOIN matches m ON (u.id = m.user1_id OR u.id = m.user2_id)
-       WHERE u.id NOT IN (SELECT user_id FROM app_reviews WHERE user_id IS NOT NULL)
-       AND DATEDIFF(NOW(), u.created_at) >= 14
-       GROUP BY u.id`
-    );
+// // Review
+// const sendReviewRequests = async () => {
+//   try {
+//     // Get users who:
+//     // 1. Have been active for at least 2 weeks
+//     // 2. Have made a successful match
+//     // 3. Haven't already submitted an app review
+//     const [users] = await promisePool.query(
+//       `SELECT u.id, u.name, u.email
+//        FROM users u
+//        JOIN matches m ON (u.id = m.user1_id OR u.id = m.user2_id)
+//        WHERE u.id NOT IN (SELECT user_id FROM app_reviews WHERE user_id IS NOT NULL)
+//        AND DATEDIFF(NOW(), u.created_at) >= 14
+//        GROUP BY u.id`
+//     );
 
-    for (const user of users) {
-      // Check if this user has been sent a review request in the last 30 days
-      // You'd need to add a "review_requests" table for this
+//     for (const user of users) {
+//       // Send email asking for a review
+//       const mailOptions = {
+//         from: '"Find Mate" <findmate.official@gmail.com>',
+//         to: user.email,
+//         subject: "ช่วยให้คะแนนแอปพลิเคชัน Find Mate",
+//         html: `
+//           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+//             <h2 style="color: #27272a; text-align: center;">คุณคิดอย่างไรเกี่ยวกับแอปพลิเคชัน Find Mate?</h2>
+//             <p style="font-size: 16px; line-height: 1.5; color: #333;">สวัสดี ${user.name}!</p>
+//             <p style="font-size: 16px; line-height: 1.5; color: #333;">เราหวังว่าคุณจะชอบใช้งานแอปพลิเคชัน Find Mate ในการหาและจับคู่กับรูมเมทที่เหมาะสมกับคุณ</p>
+//             <p style="font-size: 16px; line-height: 1.5; color: #333;">ความคิดเห็นของคุณสำคัญมากสำหรับเราในการปรับปรุงแอปพลิเคชันให้ดียิ่งขึ้น โปรดสละเวลาสักครู่เพื่อให้คะแนนและความคิดเห็น</p>
 
-      // Send email asking for a review
-      const mailOptions = {
-        from: '"Find Mate" <findmate.official@gmail.com>',
-        to: user.email,
-        subject: "ช่วยให้คะแนนแอปพลิเคชัน Find Mate",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
-            <h2 style="color: #27272a; text-align: center;">คุณคิดอย่างไรเกี่ยวกับแอปพลิเคชัน Find Mate?</h2>
-            <p style="font-size: 16px; line-height: 1.5; color: #333;">สวัสดี ${user.name}!</p>
-            <p style="font-size: 16px; line-height: 1.5; color: #333;">เราหวังว่าคุณจะชอบใช้งานแอปพลิเคชัน Find Mate ในการหาและจับคู่กับรูมเมทที่เหมาะสมกับคุณ</p>
-            <p style="font-size: 16px; line-height: 1.5; color: #333;">ความคิดเห็นของคุณสำคัญมากสำหรับเราในการปรับปรุงแอปพลิเคชันให้ดียิ่งขึ้น โปรดสละเวลาสักครู่เพื่อให้คะแนนและความคิดเห็น</p>
+//             <div style="text-align: center; margin: 30px 0;">
+//               <a href="https://findmate-react.vercel.app/matched"
+//                  style="background-color: #27272a;
+//                         color: white;
+//                         padding: 12px 24px;
+//                         text-decoration: none;
+//                         border-radius: 8px;
+//                         font-weight: bold;
+//                         display: inline-block;">
+//                 ให้คะแนน Find Mate
+//               </a>
+//             </div>
 
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="https://findmate-react.vercel.app/matched"
-                 style="background-color: #27272a;
-                        color: white;
-                        padding: 12px 24px;
-                        text-decoration: none;
-                        border-radius: 8px;
-                        font-weight: bold;
-                        display: inline-block;">
-                ให้คะแนน Find Mate
-              </a>
-            </div>
+//             <p style="font-size: 16px; line-height: 1.5; color: #333;">ขอบคุณสำหรับการสนับสนุน!</p>
+//             <p style="font-size: 16px; line-height: 1.5; color: #333;">ทีมงาน Find Mate</p>
+//           </div>
+//         `,
+//       };
 
-            <p style="font-size: 16px; line-height: 1.5; color: #333;">ขอบคุณสำหรับการสนับสนุน!</p>
-            <p style="font-size: 16px; line-height: 1.5; color: #333;">ทีมงาน Find Mate</p>
-          </div>
-        `,
-      };
+//       try {
+//         await transporter.sendMail(mailOptions);
+//         console.log(`Review request email sent to ${user.email}`);
 
-      try {
-        await transporter.sendMail(mailOptions);
-        console.log(`Review request email sent to ${user.email}`);
+//         // Record that we sent a review request
+//         // await promisePool.query(
+//         //   "INSERT INTO review_requests (user_id, sent_at) VALUES (?, NOW())",
+//         //   [user.id]
+//         // );
+//       } catch (emailErr) {
+//         console.error(
+//           `Error sending review request email to ${user.email}:`,
+//           emailErr
+//         );
+//       }
+//     }
+//   } catch (err) {
+//     console.error("Error in sendReviewRequests:", err);
+//   }
+// };
 
-        // Record that we sent a review request
-        // await promisePool.query(
-        //   "INSERT INTO review_requests (user_id, sent_at) VALUES (?, NOW())",
-        //   [user.id]
-        // );
-      } catch (emailErr) {
-        console.error(
-          `Error sending review request email to ${user.email}:`,
-          emailErr
-        );
-      }
-    }
-  } catch (err) {
-    console.error("Error in sendReviewRequests:", err);
-  }
-};
-
-// Schedule the function to run once a week (every Sunday at midnight)
-const cron = require("node-cron");
-// cron.schedule("* * * * *", sendReviewRequests); //every 1 min
-cron.schedule("0 0 * * 0", sendReviewRequests);
+// // Schedule the function to run once a week (every Sunday at midnight)
+// const cron = require("node-cron");
+// // cron.schedule("* * * * *", sendReviewRequests); //every 1 min
+// cron.schedule("0 0 * * 0", sendReviewRequests);
 
 // 4. Admin route to get all app reviews
 app.get("/admin/app-reviews", async (req, res) => {
