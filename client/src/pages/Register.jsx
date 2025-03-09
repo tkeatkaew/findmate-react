@@ -189,7 +189,7 @@ const Register = () => {
                     error={!!passwordError}
                     sx={{ marginLeft: "14px", marginTop: "4px" }}
                   >
-                    {passwordError || "รหัสผ่านถูกต้องตามเงื่อนไข"}
+                    {passwordError}
                   </FormHelperText>
                 )}
               </Box>
