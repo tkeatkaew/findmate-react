@@ -41,7 +41,7 @@ const InfoModal = ({ open, onClose }) => {
         <Box display="flex" alignItems="center" gap={1}>
           <Info size={24} color="black" />
           <Typography variant="h6" component="span">
-            ข้อมูลสำคัญ
+            สำคัญ
           </Typography>
         </Box>
       </DialogTitle>
