@@ -48,7 +48,7 @@ const InfoModal = ({ open, onClose }) => {
       <DialogContent>
         <DialogContentText id="alert-dialog-description" sx={{ mb: 2 }}>
           กรุณากรอกข้อมูลตามความเป็นจริง
-          เพื่อที่ระบบจะสามารถคำนวณและแนะนำรูมเมทที่เหมาะสมกับคุณได้อย่างแม่นยำ
+          เพื่อที่ระบบจะสามารถคำนวณและแนะนำรูมเมทที่เหมาะสมกับคุณ
         </DialogContentText>
         <Typography
           variant="caption"
