@@ -1804,5 +1804,5 @@ app.get("/admin/app-reviews", async (req, res) => {
 // Start the Server
 const PORT = 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port:${PORT}`);
 });
