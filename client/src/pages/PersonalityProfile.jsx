@@ -18,7 +18,7 @@ import {
   DialogContentText,
   DialogActions,
 } from "@mui/material";
-import { CheckCircle, InfoCircle } from "lucide-react";
+import { CheckCircle, Info } from "lucide-react";
 import CircularProgress from "@mui/material/CircularProgress";
 
 // Modal component for information disclosure
@@ -39,7 +39,7 @@ const InfoModal = ({ open, onClose }) => {
     >
       <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>
         <Box display="flex" alignItems="center" gap={1}>
-          <InfoCircle size={24} color="var(--mui-palette-primary-main)" />
+          <Info size={24} color="var(--mui-palette-primary-main)" />
           <Typography variant="h6" component="span">
             ข้อมูลสำคัญ
           </Typography>
