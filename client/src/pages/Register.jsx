@@ -192,16 +192,6 @@ const Register = () => {
                     {passwordError || "รหัสผ่านถูกต้องตามเงื่อนไข"}
                   </FormHelperText>
                 )}
-                <FormHelperText
-                  sx={{
-                    marginLeft: "14px",
-                    marginTop: "4px",
-                    color: "text.secondary",
-                  }}
-                >
-                  รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร,
-                  ประกอบด้วยตัวอักษรพิมพ์ใหญ่, พิมพ์เล็ก, ตัวเลข และอักขระพิเศษ
-                </FormHelperText>
               </Box>
               <TextField
                 required
@@ -220,6 +210,16 @@ const Register = () => {
                     : ""
                 }
               />
+              <FormHelperText
+                sx={{
+                  marginLeft: "14px",
+                  marginTop: "4px",
+                  color: "text.secondary",
+                }}
+              >
+                รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร,
+                ประกอบด้วยตัวอักษรพิมพ์ใหญ่, พิมพ์เล็ก, ตัวเลข และอักขระพิเศษ
+              </FormHelperText>
               <Button
                 type="submit"
                 variant="contained"
