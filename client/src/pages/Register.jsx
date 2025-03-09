@@ -13,6 +13,7 @@ import SvgIcon from "@mui/material/SvgIcon";
 import Divider from "@mui/material/Divider";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
+import FormHelperText from "@mui/material/FormHelperText";
 
 import AppTheme from "../AppTheme";
 
@@ -24,6 +25,7 @@ const Register = () => {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [alertSeverity, setAlertSeverity] = useState("error");
+  const [passwordError, setPasswordError] = useState("");
   const navigate = useNavigate();
   const role = "user";
 
@@ -34,8 +36,59 @@ const Register = () => {
     }
   }, [navigate]);
 
+  // Password validation function
+  const validatePassword = (password) => {
+    // Check password length
+    if (password.length < 8) {
+      return "รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร";
+    }
+
+    // Check for at least one uppercase letter
+    if (!/[A-Z]/.test(password)) {
+      return "รหัสผ่านต้องมีตัวอักษรพิมพ์ใหญ่อย่างน้อย 1 ตัว";
+    }
+
+    // Check for at least one lowercase letter
+    if (!/[a-z]/.test(password)) {
+      return "รหัสผ่านต้องมีตัวอักษรพิมพ์เล็กอย่างน้อย 1 ตัว";
+    }
+
+    // Check for at least one number
+    if (!/\d/.test(password)) {
+      return "รหัสผ่านต้องมีตัวเลขอย่างน้อย 1 ตัว";
+    }
+
+    // Check for at least one special character
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      return "รหัสผ่านต้องมีอักขระพิเศษอย่างน้อย 1 ตัว";
+    }
+
+    return "";
+  };
+
+  // Handle password change with validation
+  const handlePasswordChange = (e) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+
+    if (newPassword) {
+      const error = validatePassword(newPassword);
+      setPasswordError(error);
+    } else {
+      setPasswordError("");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate password
+    const passwordValidationError = validatePassword(password);
+    if (passwordValidationError) {
+      setMessage(passwordValidationError);
+      setAlertSeverity("error");
+      return;
+    }
 
     if (password !== confirmPassword) {
       setMessage("รหัสผ่านไม่ตรงกัน");
@@ -118,17 +171,38 @@ const Register = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
               />
-              <TextField
-                required
-                type="password"
-                label="รหัสผ่าน"
-                placeholder="••••••••"
-                variant="outlined"
-                fullWidth
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
-              />
+              <Box>
+                <TextField
+                  required
+                  type="password"
+                  label="รหัสผ่าน"
+                  placeholder="••••••••"
+                  variant="outlined"
+                  fullWidth
+                  value={password}
+                  onChange={handlePasswordChange}
+                  disabled={isLoading}
+                  error={!!passwordError}
+                />
+                {password && (
+                  <FormHelperText
+                    error={!!passwordError}
+                    sx={{ marginLeft: "14px", marginTop: "4px" }}
+                  >
+                    {passwordError || "รหัสผ่านถูกต้องตามเงื่อนไข"}
+                  </FormHelperText>
+                )}
+                <FormHelperText
+                  sx={{
+                    marginLeft: "14px",
+                    marginTop: "4px",
+                    color: "text.secondary",
+                  }}
+                >
+                  รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร,
+                  ประกอบด้วยตัวอักษรพิมพ์ใหญ่, พิมพ์เล็ก, ตัวเลข และอักขระพิเศษ
+                </FormHelperText>
+              </Box>
               <TextField
                 required
                 type="password"
@@ -139,6 +213,12 @@ const Register = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={isLoading}
+                error={confirmPassword && password !== confirmPassword}
+                helperText={
+                  confirmPassword && password !== confirmPassword
+                    ? "รหัสผ่านไม่ตรงกัน"
+                    : ""
+                }
               />
               <Button
                 type="submit"
