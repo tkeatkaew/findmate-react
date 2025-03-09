@@ -57,7 +57,7 @@ const TermsOfService = () => {
             align="center"
             sx={{ mb: 4 }}
           >
-            วันที่มีผลบังคับใช้: 10 มีนาคม 2567
+            วันที่มีผลบังคับใช้: 10 มีนาคม 2568
           </Typography>
 
           <Divider sx={{ mb: 4 }} />
@@ -930,7 +930,7 @@ const TermsOfService = () => {
           <Box sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 2 }}>
             <Button
               variant="contained"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate("/register")}
               sx={{ mx: 1 }}
             >
               กลับ
