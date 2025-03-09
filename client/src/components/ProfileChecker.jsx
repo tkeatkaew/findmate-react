@@ -73,7 +73,7 @@ const ProfileChecker = ({ children }) => {
             } else if (hasIncompleteTraits) {
               navigate("/personalityprofile", { state: { user_id: user.id } });
             }
-          }, 250);
+          }, 50);
         }
       } catch (error) {
         console.error("Error checking profile:", error);
