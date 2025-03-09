@@ -393,11 +393,69 @@ const TermsOfService = () => {
               </Typography>
             </Box>
           </Box>
-
-          {/* Continue with sections 3.4 through 14 following the same pattern */}
-          {/* For brevity, I'm showing just the main sections and a few subsections as examples */}
-          {/* In a real implementation, you would include all sections from the terms document */}
-
+          <Typography
+            variant="h6"
+            component="h3"
+            gutterBottom
+            sx={{ fontWeight: "bold", mt: 2 }}
+          >
+            3.4 การประมวลผลและการจัดเก็บข้อมูล
+          </Typography>
+          <Box sx={{ ml: 2 }}>
+            <Typography paragraph>
+              3.4.1
+              บริษัทจะประมวลผลและจัดเก็บข้อมูลของผู้ใช้บริการตามมาตรฐานอุตสาหกรรมที่เหมาะสมและเป็นไปตามกฎหมายคุ้มครองข้อมูลส่วนบุคคลที่เกี่ยวข้อง
+            </Typography>
+            <Typography paragraph>
+              3.4.2
+              บริษัทจะเก็บรักษาข้อมูลของผู้ใช้บริการตราบเท่าที่จำเป็นสำหรับวัตถุประสงค์ที่ระบุไว้ในข้อตกลงนี้
+              หรือตามที่กฎหมายกำหนด
+            </Typography>
+            <Typography paragraph>
+              3.4.3 เมื่อผู้ใช้บริการลบบัญชี
+              ข้อมูลส่วนบุคคลและเนื้อหาผู้ใช้จะถูกลบออกจากระบบภายในระยะเวลาที่เหมาะสม
+              เว้นแต่เป็นกรณีที่บริษัทมีหน้าที่ตามกฎหมายในการเก็บรักษาข้อมูลดังกล่าว
+            </Typography>
+          </Box>
+          <Typography
+            variant="h6"
+            component="h3"
+            gutterBottom
+            sx={{ fontWeight: "bold", mt: 2 }}
+          >
+            3.5 สิทธิของผู้ใช้บริการเกี่ยวกับข้อมูลส่วนบุคคล
+          </Typography>
+          <Typography paragraph>
+            ผู้ใช้บริการมีสิทธิดังต่อไปนี้เกี่ยวกับข้อมูลส่วนบุคคลของตน:
+          </Typography>
+          <Box sx={{ ml: 2 }}>
+            <Typography paragraph>
+              3.5.1 สิทธิในการเข้าถึงและขอรับสำเนาข้อมูลส่วนบุคคล
+            </Typography>
+            <Typography paragraph>
+              3.5.2 สิทธิในการแก้ไขข้อมูลส่วนบุคคลให้ถูกต้อง
+            </Typography>
+            <Typography paragraph>
+              3.5.3 สิทธิในการลบหรือทำลายข้อมูลส่วนบุคคล
+              ภายใต้เงื่อนไขที่กฎหมายกำหนด
+            </Typography>
+            <Typography paragraph>
+              3.5.4 สิทธิในการคัดค้านการเก็บรวบรวม ใช้
+              หรือเปิดเผยข้อมูลส่วนบุคคล ภายใต้เงื่อนไขที่กฎหมายกำหนด
+            </Typography>
+            <Typography paragraph>
+              3.5.5 สิทธิในการจำกัดการใช้ข้อมูลส่วนบุคคล
+              ภายใต้เงื่อนไขที่กฎหมายกำหนด
+            </Typography>
+            <Typography paragraph>3.5.6 สิทธิในการเพิกถอนความยินยอม</Typography>
+            <Typography paragraph>
+              3.5.7 สิทธิในการร้องเรียนต่อหน่วยงานกำกับดูแลที่เกี่ยวข้อง
+            </Typography>
+          </Box>
+          <Typography paragraph>
+            ผู้ใช้บริการสามารถใช้สิทธิดังกล่าวโดยติดต่อบริษัทตามช่องทางที่ระบุไว้ในข้อ
+            14 "การติดต่อ"
+          </Typography>
           <Typography
             variant="h6"
             component="h3"
@@ -434,6 +492,93 @@ const TermsOfService = () => {
           >
             4. การใช้แพลตฟอร์ม
           </Typography>
+          <Typography
+            variant="h6"
+            component="h3"
+            gutterBottom
+            sx={{ fontWeight: "bold", mt: 2 }}
+          >
+            4.1 ข้อกำหนดในการใช้งาน
+          </Typography>
+          <Typography paragraph>
+            เพื่อให้บริการอย่างมีประสิทธิภาพ
+            บริษัทจำเป็นต้องเก็บรวบรวมและประมวลผลข้อมูลต่อไปนี้จากผู้ใช้บริการ:
+          </Typography>
+          <Box sx={{ ml: 2 }}>
+            <Typography paragraph>
+              4.1.1
+              ผู้ใช้บริการตกลงที่จะใช้แพลตฟอร์มเฉพาะเพื่อวัตถุประสงค์ที่ชอบด้วยกฎหมายและสอดคล้องกับข้อตกลงนี้
+            </Typography>
+            <Typography paragraph>
+              4.1.2
+              ผู้ใช้บริการต้องกรอกข้อมูลส่วนบุคคลและลักษณะนิสัยให้ครบถ้วนก่อนจึงจะสามารถเข้าถึงคุณสมบัติการค้นหาและจับคู่รูมเมทได้
+            </Typography>
+            <Typography paragraph>
+              4.1.3 ผู้ใช้บริการต้องให้ข้อมูลการติดต่ออย่างน้อยหนึ่งช่องทาง
+              ซึ่งจะถูกเปิดเผยเฉพาะเมื่อเกิดการจับคู่เท่านั้น
+            </Typography>
+            <Typography paragraph>
+              4.1.4
+              ผู้ใช้บริการสามารถแสดงความสนใจผู้ใช้บริการรายอื่นผ่านฟังก์ชันการถูกใจ
+              การจับคู่จะเกิดขึ้นเมื่อผู้ใช้บริการทั้งสองฝ่ายกดถูกใจซึ่งกันและกัน
+            </Typography>
+            <Typography paragraph>
+              4.1.5 เมื่อเกิดการจับคู่
+              ผู้ใช้บริการทั้งสองฝ่ายจะได้รับการแจ้งเตือนทางอีเมล
+              และสามารถเข้าถึงข้อมูลการติดต่อของอีกฝ่ายได้
+            </Typography>
+          </Box>
+          <Typography
+            variant="h6"
+            component="h3"
+            gutterBottom
+            sx={{ fontWeight: "bold", mt: 2 }}
+          >
+            4.2 ข้อจำกัดในการใช้งาน
+          </Typography>
+          <Typography paragraph>ผู้ใช้บริการตกลงที่จะไม่:</Typography>
+          <Typography paragraph>
+            เพื่อให้บริการอย่างมีประสิทธิภาพ
+            บริษัทจำเป็นต้องเก็บรวบรวมและประมวลผลข้อมูลต่อไปนี้จากผู้ใช้บริการ:
+          </Typography>
+          <Box sx={{ ml: 2 }}>
+            <Typography paragraph>
+              4.2.1 ใช้แพลตฟอร์มเพื่อวัตถุประสงค์ที่ผิดกฎหมาย ไม่เหมาะสม
+              หรือละเมิดข้อตกลงนี้
+            </Typography>
+            <Typography paragraph>
+              4.2.2 สร้างบัญชีปลอม ให้ข้อมูลเท็จ หรือปลอมแปลงตัวตน
+            </Typography>
+            <Typography paragraph>
+              4.2.3 ล่วงละเมิด คุกคาม ข่มขู่ หรือรบกวนผู้ใช้บริการรายอื่น
+            </Typography>
+            <Typography paragraph>
+              4.2.4 รวบรวม เก็บ
+              หรือเผยแพร่ข้อมูลส่วนบุคคลของผู้ใช้บริการรายอื่นโดยไม่ได้รับอนุญาต
+            </Typography>
+            <Typography paragraph>
+              4.2.5 เผยแพร่เนื้อหาที่ผิดกฎหมาย ลามกอนาจาร รุนแรง เป็นเท็จ
+              หลอกลวง หรือละเมิดสิทธิของบุคคลอื่น
+            </Typography>
+            <Typography paragraph>
+              4.2.6 ใช้โปรแกรมอัตโนมัติ สคริปต์ บอท
+              หรือวิธีการอื่นใดเพื่อเข้าถึงแพลตฟอร์มโดยไม่ได้รับอนุญาต
+            </Typography>
+            <Typography paragraph>
+              4.2.7 แทรกแซง รบกวน เปลี่ยนแปลง หรือทำลายการทำงานปกติของแพลตฟอร์ม
+            </Typography>
+            <Typography paragraph>
+              4.2.8 ละเมิดทรัพย์สินทางปัญญาของบริษัทหรือบุคคลที่สาม
+            </Typography>
+            <Typography paragraph>
+              4.2.9
+              ใช้แพลตฟอร์มในเชิงพาณิชย์หรือเพื่อวัตถุประสงค์อื่นนอกเหนือจากการค้นหารูมเมท
+            </Typography>
+            <Typography paragraph>
+              4.2.10
+              ใช้บริการในลักษณะที่ก่อให้เกิดความเสียหายหรือเสื่อมเสียต่อบริษัทหรือบุคคลอื่น
+            </Typography>
+          </Box>
 
           <Typography
             variant="h5"
