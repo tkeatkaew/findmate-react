@@ -7,7 +7,7 @@ const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
 const app = express();
-const knn = require("ml-knn");
+const KNN = require("ml-knn");
 const nodemailer = require("nodemailer");
 
 // MySQL Connection Pool
@@ -625,7 +625,7 @@ app.post("/knn", async (req, res) => {
   console.log("Received user_id:", user_id);
 
   // Import ml-knn library
-  const KNN = require("ml-knn");
+  // const KNN = require("ml-knn");
 
   try {
     const [results] = await promisePool.query(`
