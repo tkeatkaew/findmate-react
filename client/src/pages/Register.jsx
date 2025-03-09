@@ -9,11 +9,19 @@ import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
-import SvgIcon from "@mui/material/SvgIcon";
 import Divider from "@mui/material/Divider";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import FormHelperText from "@mui/material/FormHelperText";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 
 import AppTheme from "../AppTheme";
 
@@ -26,6 +34,9 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [alertSeverity, setAlertSeverity] = useState("error");
   const [passwordError, setPasswordError] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [termsError, setTermsError] = useState(false);
+  const [openTermsDialog, setOpenTermsDialog] = useState(false);
   const navigate = useNavigate();
   const role = "user";
 
@@ -79,6 +90,21 @@ const Register = () => {
     }
   };
 
+  const handleTermsAcceptedChange = (e) => {
+    setTermsAccepted(e.target.checked);
+    if (e.target.checked) {
+      setTermsError(false);
+    }
+  };
+
+  const handleOpenTermsDialog = () => {
+    setOpenTermsDialog(true);
+  };
+
+  const handleCloseTermsDialog = () => {
+    setOpenTermsDialog(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -96,6 +122,14 @@ const Register = () => {
       return;
     }
 
+    // Validate terms accepted
+    if (!termsAccepted) {
+      setTermsError(true);
+      setMessage("กรุณายอมรับข้อตกลงและเงื่อนไขการใช้บริการ");
+      setAlertSeverity("error");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -104,6 +138,7 @@ const Register = () => {
         email,
         password,
         role,
+        terms_accepted: termsAccepted,
       });
 
       setMessage("กรุณาตรวจสอบรหัส OTP ในอีเมลของคุณ");
@@ -220,6 +255,40 @@ const Register = () => {
                 รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร,
                 ประกอบด้วยตัวอักษรพิมพ์ใหญ่, พิมพ์เล็ก, ตัวเลข และอักขระพิเศษ
               </FormHelperText>
+
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={termsAccepted}
+                    onChange={handleTermsAcceptedChange}
+                    color="primary"
+                    disabled={isLoading}
+                  />
+                }
+                label={
+                  <Typography variant="body2">
+                    ฉันได้อ่านและยอมรับ{" "}
+                    <Link
+                      component="button"
+                      variant="body2"
+                      onClick={handleOpenTermsDialog}
+                      type="button"
+                    >
+                      ข้อตกลงและเงื่อนไขการใช้บริการ
+                    </Link>
+                  </Typography>
+                }
+                sx={{ marginTop: "8px" }}
+              />
+              {termsError && (
+                <FormHelperText
+                  error
+                  sx={{ marginLeft: "14px", marginTop: "-8px" }}
+                >
+                  กรุณายอมรับข้อตกลงและเงื่อนไขการใช้บริการก่อนดำเนินการต่อ
+                </FormHelperText>
+              )}
+
               <Button
                 type="submit"
                 variant="contained"
@@ -228,6 +297,7 @@ const Register = () => {
                 sx={{
                   textTransform: "none",
                   height: "42px", // Fixed height to prevent button size change
+                  marginTop: "16px",
                 }}
               >
                 {isLoading ? (
@@ -253,37 +323,173 @@ const Register = () => {
           </form>
         </Stack>
       </Box>
+
+      {/* Terms of Service Dialog */}
+      <Dialog
+        open={openTermsDialog}
+        onClose={handleCloseTermsDialog}
+        scroll="paper"
+        aria-labelledby="terms-dialog-title"
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle id="terms-dialog-title">
+          ข้อตกลงและเงื่อนไขการใช้บริการแพลตฟอร์ม Find Mate
+          <IconButton
+            aria-label="close"
+            onClick={handleCloseTermsDialog}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <DialogContentText
+            id="terms-dialog-description"
+            tabIndex={-1}
+            component="div"
+          >
+            <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 2 }}>
+              วันที่มีผลบังคับใช้: 10 มีนาคม 2567
+            </Typography>
+
+            <Typography variant="h6" sx={{ fontWeight: "bold", mt: 2 }}>
+              บทนำ
+            </Typography>
+            <Typography paragraph>
+              ข้อตกลงและเงื่อนไขการใช้บริการฉบับนี้ ("ข้อตกลง")
+              กำหนดเงื่อนไขที่ผูกพันทางกฎหมายระหว่างบริษัท Find Mate ("บริษัท"
+              หรือ "ผู้ให้บริการ") และบุคคลที่เข้าถึงหรือใช้งานแพลตฟอร์ม Find
+              Mate ("ผู้ใช้บริการ" หรือ "ท่าน")
+              ข้อตกลงนี้ควบคุมการเข้าถึงและการใช้งานแพลตฟอร์ม Find Mate
+              รวมถึงเว็บไซต์ แอปพลิเคชัน และบริการทั้งหมดที่เกี่ยวข้อง
+              (รวมเรียกว่า "แพลตฟอร์ม")
+              ซึ่งเป็นแพลตฟอร์มที่ออกแบบมาเพื่อช่วยในการค้นหาและจับคู่รูมเมทสำหรับนักศึกษา
+            </Typography>
+            <Typography paragraph>
+              โปรดอ่านข้อตกลงนี้โดยละเอียดก่อนการเข้าถึงหรือใช้งานแพลตฟอร์ม
+              การเข้าถึงหรือใช้งานแพลตฟอร์มไม่ว่าในลักษณะใดถือเป็นการยอมรับและตกลงที่จะผูกพันตามข้อกำหนดและเงื่อนไขทั้งหมดที่ระบุในข้อตกลงนี้
+              หากท่านไม่เห็นด้วยกับข้อกำหนดและเงื่อนไขใดๆ ของข้อตกลงนี้
+              ท่านไม่มีสิทธิ์ในการเข้าถึงหรือใช้งานแพลตฟอร์ม
+            </Typography>
+
+            <Typography variant="h6" sx={{ fontWeight: "bold", mt: 3 }}>
+              1. นิยามและคำจำกัดความ
+            </Typography>
+            <Typography component="div" paragraph>
+              <Box sx={{ ml: 2 }}>
+                <Typography paragraph>
+                  1.1 "ผู้ใช้บริการ" หมายถึง
+                  บุคคลธรรมดาที่ได้ลงทะเบียนและสร้างบัญชีผู้ใช้บนแพลตฟอร์ม Find
+                  Mate
+                </Typography>
+                <Typography paragraph>
+                  1.2 "บัญชีผู้ใช้" หมายถึง
+                  บัญชีส่วนบุคคลที่ผู้ใช้บริการสร้างขึ้นบนแพลตฟอร์ม Find Mate
+                  โดยให้ข้อมูลที่จำเป็นและได้รับการยืนยันตัวตนผ่านกระบวนการที่กำหนด
+                </Typography>
+                <Typography paragraph>
+                  1.3 "เนื้อหาผู้ใช้" หมายถึง ข้อมูล ข้อความ รูปภาพ หรือสื่อใดๆ
+                  ที่ผู้ใช้บริการอัปโหลด โพสต์ ส่ง หรือจัดเตรียมผ่านแพลตฟอร์ม
+                  รวมถึงแต่ไม่จำกัดเพียงข้อมูลส่วนบุคคล ลักษณะนิสัย
+                  และข้อมูลการติดต่อ
+                </Typography>
+                <Typography paragraph>
+                  1.4 "ข้อมูลส่วนบุคคล" หมายถึง
+                  ข้อมูลเกี่ยวกับบุคคลซึ่งทำให้สามารถระบุตัวบุคคลนั้นได้ไม่ว่าทางตรงหรือทางอ้อม
+                  ตามที่นิยามไว้ในพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562
+                </Typography>
+                <Typography paragraph>
+                  1.5 "การจับคู่" หมายถึง
+                  เหตุการณ์ที่เกิดขึ้นเมื่อผู้ใช้บริการสองรายแสดงความสนใจซึ่งกันและกันผ่านฟังก์ชันการถูกใจบนแพลตฟอร์ม
+                </Typography>
+                <Typography paragraph>
+                  1.6 "ข้อมูลการติดต่อ" หมายถึง
+                  ข้อมูลที่ใช้ในการติดต่อผู้ใช้บริการ
+                  ซึ่งรวมถึงแต่ไม่จำกัดเพียงชื่อบัญชีโซเชียลมีเดีย ไอดีไลน์
+                  และหมายเลขโทรศัพท์
+                </Typography>
+              </Box>
+            </Typography>
+
+            <Typography variant="h6" sx={{ fontWeight: "bold", mt: 2 }}>
+              2. การลงทะเบียนและบัญชีผู้ใช้
+            </Typography>
+            <Typography sx={{ fontWeight: "bold", mt: 1 }}>
+              2.1 คุณสมบัติของผู้ใช้บริการ
+            </Typography>
+            <Typography paragraph>
+              ในการลงทะเบียนและใช้งานแพลตฟอร์ม ผู้ใช้บริการต้อง:
+            </Typography>
+            <Typography component="div">
+              <Box sx={{ ml: 2 }}>
+                <Typography paragraph>
+                  (ก) มีอายุไม่ต่ำกว่า 15 ปีบริบูรณ์
+                  <br />
+                  (ข) มีความสามารถทางกฎหมายในการเข้าทำสัญญาที่มีผลผูกพัน
+                  <br />
+                  (ค)
+                  ไม่เคยถูกระงับหรือเพิกถอนสิทธิ์การใช้งานแพลตฟอร์มก่อนหน้านี้
+                  <br />
+                  (ง) ปฏิบัติตามข้อกำหนดและเงื่อนไขทั้งหมดในข้อตกลงนี้
+                </Typography>
+              </Box>
+            </Typography>
+
+            <Typography variant="body2" sx={{ fontStyle: "italic", mt: 2 }}>
+              [ข้อตกลงนี้มีเนื้อหาต่อเนื่องอีกหลายส่วน
+              ซึ่งท่านสามารถอ่านฉบับเต็มได้โดยคลิกที่ลิงก์
+              "ข้อตกลงและเงื่อนไขการใช้บริการฉบับเต็ม" ด้านล่าง]
+            </Typography>
+
+            <Box sx={{ mt: 3, bgcolor: "#f5f5f5", p: 2, borderRadius: 1 }}>
+              <Typography variant="body1" sx={{ fontWeight: "bold", mb: 1 }}>
+                สรุปสาระสำคัญ:
+              </Typography>
+              <Typography component="div">
+                <ul>
+                  <li>ผู้ใช้บริการต้องมีอายุ 15 ปีบริบูรณ์ขึ้นไป</li>
+                  <li>ข้อมูลส่วนบุคคลจะถูกเก็บรวบรวมเพื่อการจับคู่รูมเมท</li>
+                  <li>
+                    ข้อมูลการติดต่อจะเปิดเผยเฉพาะเมื่อเกิดการจับคู่แล้วเท่านั้น
+                  </li>
+                  <li>ผู้ใช้บริการสามารถลบบัญชีได้ตลอดเวลา</li>
+                  <li>การใช้งานแพลตฟอร์มต้องเป็นไปตามกฎหมายและข้อตกลงนี้</li>
+                </ul>
+              </Typography>
+            </Box>
+
+            <Button
+              variant="outlined"
+              href="/terms-of-service"
+              target="_blank"
+              sx={{ mt: 3 }}
+            >
+              ข้อตกลงและเงื่อนไขการใช้บริการฉบับเต็ม
+            </Button>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseTermsDialog}>ปิด</Button>
+          <Button
+            onClick={() => {
+              setTermsAccepted(true);
+              setTermsError(false);
+              handleCloseTermsDialog();
+            }}
+            variant="contained"
+          >
+            ยอมรับข้อตกลง
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AppTheme>
   );
 };
-
-function GoogleIcon() {
-  return (
-    <SvgIcon>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="-3 0 262 262"
-        preserveAspectRatio="xMidYMid"
-      >
-        <path
-          d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027"
-          fill="#4285F4"
-        />
-        <path
-          d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055-34.523 0-63.824-22.773-74.269-54.25l-1.531.13-40.298 31.187-.527 1.465C35.393 231.798 79.49 261.1 130.55 261.1"
-          fill="#34A853"
-        />
-        <path
-          d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82 0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.335.635C5.077 89.644 0 109.517 0 130.55s5.077 40.905 13.925 58.602l42.356-32.782"
-          fill="#FBBC05"
-        />
-        <path
-          d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"
-          fill="#EB4335"
-        />
-      </svg>
-    </SvgIcon>
-  );
-}
 
 export default Register;
