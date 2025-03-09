@@ -187,7 +187,7 @@ const AboutPage = () => {
       role: "Full Stack Developer",
       image: James,
       bio: "Hello! I am a Full Stack Developer with a strong focus on crafting seamless user experiences and robust backend systems. I love building applications that solve real-world problems.",
-      education: "Rajamangala University of Technology Lanna Chiang Mai",
+      education: "RMUTL",
       links: [
         {
           icon: Github,
@@ -213,10 +213,10 @@ const AboutPage = () => {
     },
     {
       name: "Jittapong Jongjai",
-      role: "Frontend Developer",
+      role: "Data Analyst",
       image: Toon,
       bio: "An enthusiastic Frontend Developer passionate about creating beautiful and intuitive user interfaces. I specialize in React and modern web technologies.",
-      education: "Rajamangala University of Technology Lanna Chiang Mai",
+      education: "RMUTL",
       links: [
         {
           icon: Github,
@@ -287,8 +287,7 @@ const AboutPage = () => {
                   เทคโนโลยีที่ใช้
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  React, Node.js, Express, MySQL และ Machine Learning (KNN
-                  Algorithm)
+                  React, Node.js, Express, MySQL และการประยุกต์ใช้ KNN Algorithm
                 </Typography>
               </Paper>
             </Grid>

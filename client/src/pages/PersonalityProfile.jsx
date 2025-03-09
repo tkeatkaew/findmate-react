@@ -12,9 +12,65 @@ import {
   Container,
   CssBaseline,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, InfoCircle } from "lucide-react";
 import CircularProgress from "@mui/material/CircularProgress";
+
+// Modal component for information disclosure
+const InfoModal = ({ open, onClose }) => {
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+      PaperProps={{
+        sx: {
+          borderRadius: "15px",
+          maxWidth: "500px",
+          p: 1,
+        },
+      }}
+    >
+      <DialogTitle id="alert-dialog-title" sx={{ pb: 1 }}>
+        <Box display="flex" alignItems="center" gap={1}>
+          <InfoCircle size={24} color="var(--mui-palette-primary-main)" />
+          <Typography variant="h6" component="span">
+            ข้อมูลสำคัญ
+          </Typography>
+        </Box>
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description" sx={{ mb: 2 }}>
+          กรุณากรอกข้อมูลตามความเป็นจริง
+          เพื่อที่ระบบจะสามารถคำนวณและแนะนำรูมเมทที่เหมาะสมกับคุณได้อย่างแม่นยำ
+        </DialogContentText>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: "block" }}
+        >
+          ข้อมูลนี้จะถูกแสดงให้ผู้ใช้งานอื่นเห็นเพื่อประกอบการตัดสินใจในการเลือกรูมเมท
+        </Typography>
+      </DialogContent>
+      <DialogActions sx={{ p: 2, pt: 1 }}>
+        <Button
+          onClick={onClose}
+          variant="contained"
+          fullWidth
+          sx={{ textTransform: "none" }}
+        >
+          เข้าใจแล้ว
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
 
 // Radio Card component for selection options
 const RadioCard = ({ option, selected, onSelect }) => (
@@ -90,6 +146,11 @@ const PersonalityProfile = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showModal, setShowModal] = useState(true);
+
+  const handleModalClose = () => {
+    setShowModal(false);
+  };
 
   // First determine the user ID
   useEffect(() => {
@@ -484,6 +545,9 @@ const PersonalityProfile = () => {
           </Paper>
         </Container>
       </Box>
+
+      {/* Information Modal */}
+      <InfoModal open={showModal} onClose={handleModalClose} />
     </AppTheme>
   );
 };
