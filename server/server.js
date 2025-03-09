@@ -624,9 +624,6 @@ app.post("/knn", async (req, res) => {
   const { user_id } = req.body;
   console.log("Received user_id:", user_id);
 
-  // Import ml-knn library
-  // const KNN = require("ml-knn");
-
   try {
     const [results] = await promisePool.query(`
       SELECT pt.*, pi.*, u.profile_picture
@@ -635,12 +632,8 @@ app.post("/knn", async (req, res) => {
       JOIN users u ON pt.user_id = u.id
       WHERE u.role = 'user' AND u.is_suspended = 0
     `);
-    // console.log("=====================================");
-    // console.log("Fetch All:", results);
 
     const currentUser = results.find((user) => user.user_id === user_id);
-    // console.log("=====================================");
-    // console.log("Current user data:", currentUser);
 
     if (!currentUser) return res.status(404).json({ error: "User not found" });
 
@@ -690,7 +683,7 @@ app.post("/knn", async (req, res) => {
       period: 1,
     };
 
-    // Function to encode user traits with weights applied
+    // Encode user traits with weights
     const encodeUserTraits = (user) => {
       const features = [];
 
@@ -711,7 +704,7 @@ app.post("/knn", async (req, res) => {
       return features;
     };
 
-    // Prepare training dataset
+    // Prepare Dataset
     const trainingSet = [];
     const trainingLabels = [];
     const userData = {};
@@ -722,71 +715,48 @@ app.post("/knn", async (req, res) => {
 
       if (user.user_id !== user_id) {
         trainingSet.push(encodedFeatures);
-        trainingLabels.push(user.user_id); // Use user_id as the label
-        userData[user.user_id] = user; // Store full user data for later
+        trainingLabels.push(user.user_id);
+        userData[user.user_id] = user;
       }
     });
 
-    // console.log("=====================================");
-    // console.log("Training Set:", trainingSet);
-    // console.log("=====================================");
-    // console.log("Training Label:", trainingLabels);
-    // console.log("=====================================");
-    // console.log("User Data:", userData);
-
     // Encode current user
     const currentUserFeatures = encodeUserTraits(currentUser);
-    // console.log("=====================================");
-    // console.log("Current User Features:", currentUserFeatures);
 
-    // Train KNN model - use all neighbors (equivalent to the original approach)
-    // ======== ไม่ถูกใช้ เพราะ predict ไม่คืนค่าระยะห่าง =========
-    // const k = trainingSet.length; // Use all available users as potential neighbors
+    // ======== Not use because predict function not return distanct =========
+    // const k = trainingSet.length;
+    // const k = 1;
+    // const model = new KNN(trainingSet, trainingLabels, { k });
 
-    const k = 1;
-    const model = new KNN(trainingSet, trainingLabels, { k });
-
-    // console.log("=====================================");
-    // console.log("Model:", model);
-
-    // Find nearest neighbors using predict method
-    // This returns indices of nearest neighbors in order of proximity
-
-    // ======== ไม่คืนค่าระยะห่าง ไม่ตรงโจทย์ของโปรเจ็ค =========
-    const predictions = model.predict(currentUserFeatures);
+    // Find nearest neighbors using predict
+    // const predictions = model.predict(currentUserFeatures);
     // console.log("=====================================");
     // console.log("Prediction:", predictions);
 
     // Get distances for each training example
     const distances = [];
     trainingSet.forEach((features) => {
-      // Calculate Euclidean distance manually
+      // Calculate Euclidean distance
       let sum = 0;
       for (let i = 0; i < features.length; i++) {
         sum += Math.pow(features[i] - currentUserFeatures[i], 2);
       }
       distances.push(Math.sqrt(sum));
     });
-    // console.log("=====================================");
-    // console.log("Distances:", distances);
 
-    // Create a combined array of user_ids and distances
+    // combined array of user and distances
     const userDistances = trainingLabels.map((userId, index) => ({
       userId,
       distance: distances[index],
     }));
-    // console.log("=====================================");
-    // console.log("User Distances:", userDistances);
 
-    // Sort by distance (ascending)
+    // Sort by distance
     const sortedNeighbors = userDistances.sort(
       (a, b) => a.distance - b.distance
     );
-    // console.log("=====================================");
-    // console.log("Sorted Neighbors:", sortedNeighbors);
 
-    // Calculate theoretical maximum distance for similarity conversion
-    const calculateMaxTheoreticalDistance = () => {
+    // Calculate maximum distance
+    const calculateMaxDistance = () => {
       let maxDistanceSquared = 0;
 
       Object.keys(traitCategories).forEach((trait) => {
@@ -803,22 +773,16 @@ app.post("/knn", async (req, res) => {
       return Math.sqrt(maxDistanceSquared);
     };
 
-    const TheoreticalMaxDistance = calculateMaxTheoreticalDistance();
-    console.log("=====================================");
-    console.log("Theoretical maximum distance:", TheoreticalMaxDistance);
+    const MaxDistance = calculateMaxDistance();
 
-    // Convert distances to similarity percentage
+    // Convert distances to percentage
     const distanceToSimilarity = (distance) => {
-      return parseFloat(
-        (100 * (1 - distance / TheoreticalMaxDistance)).toFixed(2)
-      );
+      return parseFloat((100 * (1 - distance / MaxDistance)).toFixed(2));
     };
 
     // Format results
     const formattedResults = sortedNeighbors.map((item) => {
       const similarity = distanceToSimilarity(item.distance);
-      console.log("=====================================");
-      console.log("Each User Similarity:", similarity);
 
       return {
         user_id: item.userId,
@@ -828,21 +792,10 @@ app.post("/knn", async (req, res) => {
       };
     });
 
-    console.log("=====================================");
-    console.log("Format Results:", formattedResults);
-
-    // Sort by similarity (highest first)
-    const finalResults = formattedResults.sort(
-      (a, b) => b.similarity - a.similarity
-    );
-
-    console.log("=====================================");
-    console.log("Final sorted neighbors:", finalResults);
-
     // Send back the results
     res.status(200).json({
-      neighbors: finalResults,
-      total_matches: finalResults.length,
+      neighbors: formattedResults,
+      total_matches: formattedResults.length,
     });
   } catch (err) {
     console.error("Error in KNN algorithm:", err);
