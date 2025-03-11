@@ -620,6 +620,190 @@ app.get("/home", (req, res) => {
 // });
 
 // KNN Lib Route
+// app.post("/knn", async (req, res) => {
+//   const { user_id } = req.body;
+//   console.log("Received user_id:", user_id);
+
+//   try {
+//     const [results] = await promisePool.query(`
+//       SELECT pt.*, pi.*, u.profile_picture
+//       FROM personality_traits pt
+//       JOIN personality_infomation pi ON pt.user_id = pi.user_id
+//       JOIN users u ON pt.user_id = u.id
+//       WHERE u.role = 'user' AND u.is_suspended = 0
+//     `);
+
+//     const currentUser = results.find((user) => user.user_id === user_id);
+
+//     if (!currentUser) return res.status(404).json({ error: "User not found" });
+
+//     const traitCategories = {
+//       type: ["type_introvert", "type_ambivert", "type_extrovert"],
+//       sleep: ["sleep_before_midnight", "sleep_after_midnight"],
+//       wake: ["wake_morning", "wake_noon", "wake_evening"],
+//       clean: [
+//         "clean_every_day",
+//         "clean_every_other_day",
+//         "clean_once_a_week",
+//         "clean_dont_really",
+//       ],
+//       air_conditioner: [
+//         "ac_never",
+//         "ac_only_sleep",
+//         "ac_only_hot",
+//         "ac_all_day",
+//       ],
+//       drink: ["drink_never", "drink_spacial", "drink_weekend", "drink_always"],
+//       smoke: ["smoke_never", "smoke_spacial", "smoke_always"],
+//       money: ["money_on_time", "money_late"],
+//       expense: ["money_half", "money_ratio"],
+//       pet: ["pet_dont_have", "pet_have"],
+//       cook: ["cook_ok", "cook_tell_first", "cook_no"],
+//       loud: ["loud_low", "loud_medium", "loud_high"],
+//       friend: ["friend_ok", "friend_tell_first", "friend_no"],
+//       religion: ["religion_ok", "religion_no_affect", "religion_no"],
+//       period: ["period_long", "period_sometime", "period_no_need"],
+//     };
+
+//     const weights = {
+//       type: 1.0,
+//       sleep: 1.0,
+//       wake: 1.0,
+//       clean: 2.0,
+//       air_conditioner: 1.5,
+//       drink: 1.8,
+//       smoke: 2.5,
+//       money: 2,
+//       expense: 1.5,
+//       pet: 1.3,
+//       cook: 1.0,
+//       loud: 1.8,
+//       friend: 1.5,
+//       religion: 1.2,
+//       period: 1,
+//     };
+
+//     // Encode user traits with weights
+//     const encodeUserTraits = (user) => {
+//       const features = [];
+
+//       Object.keys(traitCategories).forEach((trait) => {
+//         const categories = traitCategories[trait];
+//         const weight = weights[trait] || 1;
+
+//         // Find which category applies to this user
+//         const userValue = user[trait];
+//         const categoryIndex = categories.indexOf(userValue);
+
+//         // Apply one-hot encoding with weights
+//         categories.forEach((_, index) => {
+//           features.push((index === categoryIndex ? 1 : 0) * weight);
+//         });
+//       });
+
+//       return features;
+//     };
+
+//     // Prepare Dataset
+//     const trainingSet = [];
+//     const trainingLabels = [];
+//     const userData = {};
+
+//     // Process all users except current user
+//     results.forEach((user) => {
+//       const encodedFeatures = encodeUserTraits(user);
+
+//       if (user.user_id !== user_id) {
+//         trainingSet.push(encodedFeatures);
+//         trainingLabels.push(user.user_id);
+//         userData[user.user_id] = user;
+//       }
+//     });
+
+//     // Encode current user
+//     const currentUserFeatures = encodeUserTraits(currentUser);
+
+//     // ======== Not use because predict function not return distanct =========
+//     // const k = trainingSet.length;
+//     // const k = 1;
+//     // const model = new KNN(trainingSet, trainingLabels, { k });
+
+//     // Find nearest neighbors using predict
+//     // const predictions = model.predict(currentUserFeatures);
+//     // console.log("=====================================");
+//     // console.log("Prediction:", predictions);
+
+//     // Get distances for each training example
+//     const distances = [];
+//     trainingSet.forEach((features) => {
+//       // Calculate Euclidean distance
+//       let sum = 0;
+//       for (let i = 0; i < features.length; i++) {
+//         sum += Math.pow(features[i] - currentUserFeatures[i], 2);
+//       }
+//       distances.push(Math.sqrt(sum));
+//     });
+
+//     // combined array of user and distances
+//     const userDistances = trainingLabels.map((userId, index) => ({
+//       userId,
+//       distance: distances[index],
+//     }));
+
+//     // Sort by distance
+//     const sortedNeighbors = userDistances.sort(
+//       (a, b) => a.distance - b.distance
+//     );
+
+//     // Calculate maximum distance
+//     const calculateMaxDistance = () => {
+//       let maxDistanceSquared = 0;
+
+//       Object.keys(traitCategories).forEach((trait) => {
+//         const weight = weights[trait] || 1;
+//         const categories = traitCategories[trait];
+
+//         if (categories.length === 2) {
+//           maxDistanceSquared += 2 * Math.pow(weight, 2);
+//         } else {
+//           maxDistanceSquared += 2 * Math.pow(weight, 2);
+//         }
+//       });
+
+//       return Math.sqrt(maxDistanceSquared);
+//     };
+
+//     const MaxDistance = calculateMaxDistance();
+
+//     // Convert distances to percentage
+//     const distanceToSimilarity = (distance) => {
+//       return parseFloat((100 * (1 - distance / MaxDistance)).toFixed(2));
+//     };
+
+//     // Format results
+//     const formattedResults = sortedNeighbors.map((item) => {
+//       const similarity = distanceToSimilarity(item.distance);
+
+//       return {
+//         user_id: item.userId,
+//         distance: item.distance,
+//         similarity,
+//         traits: userData[item.userId],
+//       };
+//     });
+
+//     // Send back the results
+//     res.status(200).json({
+//       neighbors: formattedResults,
+//       total_matches: formattedResults.length,
+//     });
+//   } catch (err) {
+//     console.error("Error in KNN algorithm:", err);
+//     res.status(500).json({ error: "Database error" });
+//   }
+// });
+
+// Ordinal Encoding
 app.post("/knn", async (req, res) => {
   const { user_id } = req.body;
   console.log("Received user_id:", user_id);
@@ -637,6 +821,8 @@ app.post("/knn", async (req, res) => {
 
     if (!currentUser) return res.status(404).json({ error: "User not found" });
 
+    // Define trait categories with ordinal values
+    // The order in the array represents the ordinal value (index = value)
     const traitCategories = {
       type: ["type_introvert", "type_ambivert", "type_extrovert"],
       sleep: ["sleep_before_midnight", "sleep_after_midnight"],
@@ -665,6 +851,7 @@ app.post("/knn", async (req, res) => {
       period: ["period_long", "period_sometime", "period_no_need"],
     };
 
+    // Importance weights for each category
     const weights = {
       type: 1.0,
       sleep: 1.0,
@@ -673,32 +860,43 @@ app.post("/knn", async (req, res) => {
       air_conditioner: 1.5,
       drink: 1.8,
       smoke: 2.5,
-      money: 2,
+      money: 2.0,
       expense: 1.5,
       pet: 1.3,
       cook: 1.0,
       loud: 1.8,
       friend: 1.5,
       religion: 1.2,
-      period: 1,
+      period: 1.0,
     };
 
-    // Encode user traits with weights
+    // Encode user traits with ordinal encoding and adjusted weights
     const encodeUserTraits = (user) => {
       const features = [];
 
       Object.keys(traitCategories).forEach((trait) => {
         const categories = traitCategories[trait];
-        const weight = weights[trait] || 1;
+        // ปรับน้ำหนักตามจำนวนตัวเลือก - หมวดที่มีตัวเลือกมากจะมีผลของความแตกต่างต่อระยะทางที่เท่ากัน
+        // ทำให้ความแตกต่าง 1 ขั้นมีผลเท่ากันในทุกหมวด
+        const categoryFactor =
+          categories.length > 1 ? categories.length - 1 : 1;
+        const adjustedWeight = (weights[trait] || 1) * categoryFactor;
 
-        // Find which category applies to this user
+        // Get user's value for this trait
         const userValue = user[trait];
-        const categoryIndex = categories.indexOf(userValue);
 
-        // Apply one-hot encoding with weights
-        categories.forEach((_, index) => {
-          features.push((index === categoryIndex ? 1 : 0) * weight);
-        });
+        // Find the ordinal position of the value in the category array
+        const ordinalValue = categories.indexOf(userValue);
+
+        // If the value exists, add the weighted ordinal value
+        // Normalize by dividing by (categories.length - 1) to get values between 0 and 1
+        if (ordinalValue !== -1 && categories.length > 1) {
+          const normalizedValue = ordinalValue / (categories.length - 1);
+          features.push(normalizedValue * adjustedWeight);
+        } else {
+          // Handle missing or invalid values
+          features.push(0); // Default to 0 if value not found
+        }
       });
 
       return features;
@@ -723,17 +921,7 @@ app.post("/knn", async (req, res) => {
     // Encode current user
     const currentUserFeatures = encodeUserTraits(currentUser);
 
-    // ======== Not use because predict function not return distanct =========
-    // const k = trainingSet.length;
-    // const k = 1;
-    // const model = new KNN(trainingSet, trainingLabels, { k });
-
-    // Find nearest neighbors using predict
-    // const predictions = model.predict(currentUserFeatures);
-    // console.log("=====================================");
-    // console.log("Prediction:", predictions);
-
-    // Get distances for each training example
+    // Calculate distances for each training example
     const distances = [];
     trainingSet.forEach((features) => {
       // Calculate Euclidean distance
@@ -744,7 +932,7 @@ app.post("/knn", async (req, res) => {
       distances.push(Math.sqrt(sum));
     });
 
-    // combined array of user and distances
+    // Combine array of user and distances
     const userDistances = trainingLabels.map((userId, index) => ({
       userId,
       distance: distances[index],
@@ -755,19 +943,18 @@ app.post("/knn", async (req, res) => {
       (a, b) => a.distance - b.distance
     );
 
-    // Calculate maximum distance
+    // Calculate theoretical maximum distance with adjusted weights
     const calculateMaxDistance = () => {
       let maxDistanceSquared = 0;
 
       Object.keys(traitCategories).forEach((trait) => {
-        const weight = weights[trait] || 1;
         const categories = traitCategories[trait];
+        const categoryFactor =
+          categories.length > 1 ? categories.length - 1 : 1;
+        const adjustedWeight = (weights[trait] || 1) * categoryFactor;
 
-        if (categories.length === 2) {
-          maxDistanceSquared += 2 * Math.pow(weight, 2);
-        } else {
-          maxDistanceSquared += 2 * Math.pow(weight, 2);
-        }
+        // Maximum possible distance is adjustedWeight (when one value is 0 and another is 1)
+        maxDistanceSquared += Math.pow(adjustedWeight, 2);
       });
 
       return Math.sqrt(maxDistanceSquared);
@@ -775,7 +962,7 @@ app.post("/knn", async (req, res) => {
 
     const MaxDistance = calculateMaxDistance();
 
-    // Convert distances to percentage
+    // Convert distances to similarity percentage
     const distanceToSimilarity = (distance) => {
       return parseFloat((100 * (1 - distance / MaxDistance)).toFixed(2));
     };
