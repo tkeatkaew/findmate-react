@@ -1288,13 +1288,11 @@ const Discovery = () => {
                 mt: 1,
                 maxHeight: "80vh",
                 width: "300px",
-                overflow: "hidden", // Prevent the button from being inside the scroll
-                display: "flex",
-                flexDirection: "column",
+                overflow: "auto",
               },
             }}
           >
-            <Box sx={{ p: 2, flex: 1, overflowY: "auto" }}>
+            <Box sx={{ p: 2 }}>
               <Typography variant="h6" gutterBottom>
                 ตัวกรอง
               </Typography>
@@ -1344,6 +1342,7 @@ const Discovery = () => {
               {Object.entries(traitOptions).map(([category, options]) => (
                 <Box key={category} sx={{ mb: 2 }}>
                   <Typography variant="subtitle2" gutterBottom>
+                    {/* Customize each category's display name */}
                     {category === "gender"
                       ? "เพศ"
                       : category === "type"
@@ -1380,17 +1379,13 @@ const Discovery = () => {
                   <Divider sx={{ my: 2 }} />
                 </Box>
               ))}
-            </Box>
 
-            {/* Sticky Apply Filters Button */}
-            <Box
-              sx={{
-                p: 2,
-                borderTop: "1px solid #ddd",
-                backgroundColor: "white",
-              }}
-            >
-              <Button fullWidth variant="contained" onClick={applyFilters}>
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={applyFilters}
+                sx={{ mt: 2 }}
+              >
                 นำไปใช้
               </Button>
             </Box>
