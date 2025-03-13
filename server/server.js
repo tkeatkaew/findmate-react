@@ -803,7 +803,7 @@ app.get("/home", (req, res) => {
 //   }
 // });
 
-// Ordinal Encoding
+// K-NN Route Ordinal Encoding
 app.post("/knn", async (req, res) => {
   const { user_id } = req.body;
   console.log("Received user_id:", user_id);
@@ -870,17 +870,13 @@ app.post("/knn", async (req, res) => {
       period: 1.0,
     };
 
-    // Encode user traits with ordinal encoding and adjusted weights
+    // Encode user traits with ordinal encoding and weights only
     const encodeUserTraits = (user) => {
       const features = [];
 
       Object.keys(traitCategories).forEach((trait) => {
         const categories = traitCategories[trait];
-        // ปรับน้ำหนักตามจำนวนตัวเลือก - หมวดที่มีตัวเลือกมากจะมีผลของความแตกต่างต่อระยะทางที่เท่ากัน
-        // ทำให้ความแตกต่าง 1 ขั้นมีผลเท่ากันในทุกหมวด
-        const categoryFactor =
-          categories.length > 1 ? categories.length - 1 : 1;
-        const adjustedWeight = (weights[trait] || 1) * categoryFactor;
+        const weight = weights[trait] || 1;
 
         // Get user's value for this trait
         const userValue = user[trait];
@@ -888,11 +884,9 @@ app.post("/knn", async (req, res) => {
         // Find the ordinal position of the value in the category array
         const ordinalValue = categories.indexOf(userValue);
 
-        // If the value exists, add the weighted ordinal value
-        // Normalize by dividing by (categories.length - 1) to get values between 0 and 1
-        if (ordinalValue !== -1 && categories.length > 1) {
-          const normalizedValue = ordinalValue / (categories.length - 1);
-          features.push(normalizedValue * adjustedWeight);
+        // If the value exists, use the ordinal value multiplied by weight
+        if (ordinalValue !== -1) {
+          features.push(ordinalValue * weight);
         } else {
           // Handle missing or invalid values
           features.push(0); // Default to 0 if value not found
@@ -943,18 +937,17 @@ app.post("/knn", async (req, res) => {
       (a, b) => a.distance - b.distance
     );
 
-    // Calculate theoretical maximum distance with adjusted weights
+    // Calculate theoretical maximum distance with weights only
     const calculateMaxDistance = () => {
       let maxDistanceSquared = 0;
 
       Object.keys(traitCategories).forEach((trait) => {
         const categories = traitCategories[trait];
-        const categoryFactor =
-          categories.length > 1 ? categories.length - 1 : 1;
-        const adjustedWeight = (weights[trait] || 1) * categoryFactor;
+        const weight = weights[trait] || 1;
 
-        // Maximum possible distance is adjustedWeight (when one value is 0 and another is 1)
-        maxDistanceSquared += Math.pow(adjustedWeight, 2);
+        // Maximum possible difference is (categories.length - 1) * weight
+        const maxCategoryDifference = (categories.length - 1) * weight;
+        maxDistanceSquared += Math.pow(maxCategoryDifference, 2);
       });
 
       return Math.sqrt(maxDistanceSquared);
