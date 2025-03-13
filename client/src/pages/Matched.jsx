@@ -318,43 +318,51 @@ const Matched = () => {
   }, [user, navigate, dataFetched]);
 
   // Updated similarity calculation based on KNN algorithm
+  // Updated calculateSimilarity function for Liked.jsx
   const calculateSimilarity = (userTraits, currentTraits) => {
-    // Function to encode trait as one-hot vector
-    const encodeTrait = (trait, categories) => {
-      const index = categories.indexOf(trait);
-      if (index === -1) return new Array(categories.length).fill(0);
-      return categories.map((_, i) => (i === index ? 1 : 0));
-    };
-
-    // Function to encode all traits for a user with weights
+    // Function to encode user traits using ordinal encoding and weights
     const encodeUserTraits = (traits) => {
-      return Object.keys(traitCategories).flatMap((trait) => {
-        const encoded = encodeTrait(traits[trait], traitCategories[trait]);
-        return encoded.map((value) => value * (weights[trait] || 1));
+      const features = [];
+
+      Object.keys(traitCategories).forEach((trait) => {
+        const categories = traitCategories[trait];
+        const weight = weights[trait] || 1;
+
+        // Get user's value for this trait
+        const userValue = traits[trait];
+
+        // Find the ordinal position of the value in the category array
+        const ordinalValue = categories.indexOf(userValue);
+
+        // If the value exists, use the ordinal value multiplied by weight
+        if (ordinalValue !== -1) {
+          features.push(ordinalValue * weight);
+        } else {
+          // Handle missing or invalid values
+          features.push(0); // Default to 0 if value not found
+        }
       });
+
+      return features;
     };
 
-    // Calculate maximum theoretical distance (reused from KNN algorithm)
-    const calculateMaxTheoreticalDistance = () => {
+    // Calculate theoretical maximum distance with weights only
+    const calculateMaxDistance = () => {
       let maxDistanceSquared = 0;
 
       Object.keys(traitCategories).forEach((trait) => {
-        const weight = weights[trait] || 1;
         const categories = traitCategories[trait];
+        const weight = weights[trait] || 1;
 
-        if (categories.length === 2) {
-          // For binary categories
-          maxDistanceSquared += 2 * Math.pow(weight, 2);
-        } else {
-          // For categories with more than 2 options
-          maxDistanceSquared += 2 * Math.pow(weight, 2);
-        }
+        // Maximum possible difference is (categories.length - 1) * weight
+        const maxCategoryDifference = (categories.length - 1) * weight;
+        maxDistanceSquared += Math.pow(maxCategoryDifference, 2);
       });
 
       return Math.sqrt(maxDistanceSquared);
     };
 
-    // Calculate Euclidean distance between vectors
+    // Calculate Euclidean distance between feature vectors
     const calculateDistance = (vectorA, vectorB) => {
       let sum = 0;
       for (let i = 0; i < vectorA.length; i++) {
@@ -373,7 +381,7 @@ const Matched = () => {
     const encodedCurrentTraits = encodeUserTraits(currentTraits);
 
     // Calculate theoretical maximum distance
-    const maxDistance = calculateMaxTheoreticalDistance();
+    const maxDistance = calculateMaxDistance();
 
     // Calculate actual distance
     const distance = calculateDistance(encodedUserTraits, encodedCurrentTraits);
