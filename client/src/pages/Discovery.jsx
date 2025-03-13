@@ -1292,54 +1292,72 @@ const Discovery = () => {
               },
             }}
           >
-            <Box sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
-                ตัวกรอง
-              </Typography>
-
-              {/* Province Filter */}
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>จังหวัด</InputLabel>
-                <Select
-                  value={selectedProvince}
-                  onChange={handleProvinceChange}
-                  label="จังหวัด"
-                >
-                  <MenuItem value="">ทั้งหมด</MenuItem>
-                  {Object.keys(universitiesByProvince).map((province) => (
-                    <MenuItem key={province} value={province}>
-                      {province}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              {/* University Filter */}
-              <FormControl
-                fullWidth
-                sx={{ mb: 2 }}
-                disabled={!selectedProvince}
+            <Box>
+              {/* Header - Fixed at top */}
+              <Box
+                sx={{
+                  p: 2,
+                  position: "sticky",
+                  top: 0,
+                  backgroundColor: "white",
+                  zIndex: 1,
+                }}
               >
-                <InputLabel>มหาวิทยาลัย</InputLabel>
-                <Select
-                  value={selectedUniversity}
-                  onChange={handleUniversityChange}
-                  label="มหาวิทยาลัย"
-                >
-                  <MenuItem value="">ทั้งหมด</MenuItem>
-                  {selectedProvince &&
-                    universitiesByProvince[selectedProvince]?.map((uni) => (
-                      <MenuItem key={uni} value={uni}>
-                        {uni}
+                <Typography variant="h6" gutterBottom>
+                  ตัวกรอง
+                </Typography>
+              </Box>
+
+              {/* Scrollable content area */}
+              <Box
+                sx={{
+                  px: 2,
+                  pb: 7,
+                  maxHeight: "calc(80vh - 110px)",
+                  overflowY: "auto",
+                }}
+              >
+                {/* Province Filter */}
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <InputLabel>จังหวัด</InputLabel>
+                  <Select
+                    value={selectedProvince}
+                    onChange={handleProvinceChange}
+                    label="จังหวัด"
+                  >
+                    <MenuItem value="">ทั้งหมด</MenuItem>
+                    {Object.keys(universitiesByProvince).map((province) => (
+                      <MenuItem key={province} value={province}>
+                        {province}
                       </MenuItem>
                     ))}
-                </Select>
-              </FormControl>
+                  </Select>
+                </FormControl>
 
-              <Divider sx={{ my: 2 }} />
+                {/* University Filter */}
+                <FormControl
+                  fullWidth
+                  sx={{ mb: 2 }}
+                  disabled={!selectedProvince}
+                >
+                  <InputLabel>มหาวิทยาลัย</InputLabel>
+                  <Select
+                    value={selectedUniversity}
+                    onChange={handleUniversityChange}
+                    label="มหาวิทยาลัย"
+                  >
+                    <MenuItem value="">ทั้งหมด</MenuItem>
+                    {selectedProvince &&
+                      universitiesByProvince[selectedProvince]?.map((uni) => (
+                        <MenuItem key={uni} value={uni}>
+                          {uni}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
 
-              {/* Create a scrollable container for trait filters */}
-              <Box sx={{ maxHeight: "50vh", overflowY: "auto", pb: 8 }}>
+                <Divider sx={{ my: 2 }} />
+
                 {/* Trait Filters */}
                 {Object.entries(traitOptions).map(([category, options]) => (
                   <Box key={category} sx={{ mb: 2 }}>
@@ -1382,25 +1400,28 @@ const Discovery = () => {
                   </Box>
                 ))}
               </Box>
-            </Box>
 
-            {/* Fixed position Apply button */}
-            <Box
-              sx={{
-                position: "sticky",
-                bottom: 0,
-                p: 2,
-                backgroundColor: "white",
-                borderTop: "1px solid rgba(0, 0, 0, 0.12)",
-                width: "100%",
-                zIndex: 1,
-              }}
-            >
-              <Button fullWidth variant="contained" onClick={applyFilters}>
-                นำไปใช้
-              </Button>
+              {/* Fixed position Apply button */}
+              <Box
+                sx={{
+                  position: "sticky",
+                  bottom: 0,
+                  py: 1.5,
+                  px: 2,
+                  backgroundColor: "white",
+                  borderTop: "1px solid rgba(0, 0, 0, 0.12)",
+                  width: "100%",
+                  zIndex: 1,
+                  boxSizing: "border-box",
+                }}
+              >
+                <Button fullWidth variant="contained" onClick={applyFilters}>
+                  นำไปใช้
+                </Button>
+              </Box>
             </Box>
           </Menu>
+
           {/* User List */}
           {filteredUsers.length > 0 ? (
             <Box
