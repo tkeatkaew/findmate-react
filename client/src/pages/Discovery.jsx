@@ -1288,7 +1288,7 @@ const Discovery = () => {
                 mt: 1,
                 maxHeight: "80vh",
                 width: "300px",
-                overflow: "auto",
+                position: "relative", // Added to support absolute positioning inside
               },
             }}
           >
@@ -1338,59 +1338,69 @@ const Discovery = () => {
 
               <Divider sx={{ my: 2 }} />
 
-              {/* Trait Filters */}
-              {Object.entries(traitOptions).map(([category, options]) => (
-                <Box key={category} sx={{ mb: 2 }}>
-                  <Typography variant="subtitle2" gutterBottom>
-                    {/* Customize each category's display name */}
-                    {category === "gender"
-                      ? "เพศ"
-                      : category === "type"
-                      ? "บุคลิกภาพ"
-                      : category === "sleep"
-                      ? "เวลานอน"
-                      : category === "clean"
-                      ? "ความสะอาด"
-                      : category === "smoke"
-                      ? "บุหรี่"
-                      : category === "drink"
-                      ? "แอลกอฮอล์"
-                      : "ระยะเวลา"}
-                  </Typography>
-                  <FormGroup>
-                    {options.map((option) => (
-                      <FormControlLabel
-                        key={option.value}
-                        control={
-                          <Checkbox
-                            size="small"
-                            checked={selectedTraits[category].includes(
-                              option.value
-                            )}
-                            onChange={() =>
-                              handleTraitChange(category, option.value)
-                            }
-                          />
-                        }
-                        label={option.label}
-                      />
-                    ))}
-                  </FormGroup>
-                  <Divider sx={{ my: 2 }} />
-                </Box>
-              ))}
+              {/* Create a scrollable container for trait filters */}
+              <Box sx={{ maxHeight: "50vh", overflowY: "auto", pb: 8 }}>
+                {/* Trait Filters */}
+                {Object.entries(traitOptions).map(([category, options]) => (
+                  <Box key={category} sx={{ mb: 2 }}>
+                    <Typography variant="subtitle2" gutterBottom>
+                      {/* Customize each category's display name */}
+                      {category === "gender"
+                        ? "เพศ"
+                        : category === "type"
+                        ? "บุคลิกภาพ"
+                        : category === "sleep"
+                        ? "เวลานอน"
+                        : category === "clean"
+                        ? "ความสะอาด"
+                        : category === "smoke"
+                        ? "บุหรี่"
+                        : category === "drink"
+                        ? "แอลกอฮอล์"
+                        : "ระยะเวลา"}
+                    </Typography>
+                    <FormGroup>
+                      {options.map((option) => (
+                        <FormControlLabel
+                          key={option.value}
+                          control={
+                            <Checkbox
+                              size="small"
+                              checked={selectedTraits[category].includes(
+                                option.value
+                              )}
+                              onChange={() =>
+                                handleTraitChange(category, option.value)
+                              }
+                            />
+                          }
+                          label={option.label}
+                        />
+                      ))}
+                    </FormGroup>
+                    <Divider sx={{ my: 2 }} />
+                  </Box>
+                ))}
+              </Box>
+            </Box>
 
-              <Button
-                fullWidth
-                variant="contained"
-                onClick={applyFilters}
-                sx={{ mt: 2 }}
-              >
+            {/* Fixed position Apply button */}
+            <Box
+              sx={{
+                position: "sticky",
+                bottom: 0,
+                p: 2,
+                backgroundColor: "white",
+                borderTop: "1px solid rgba(0, 0, 0, 0.12)",
+                width: "100%",
+                zIndex: 1,
+              }}
+            >
+              <Button fullWidth variant="contained" onClick={applyFilters}>
                 นำไปใช้
               </Button>
             </Box>
           </Menu>
-
           {/* User List */}
           {filteredUsers.length > 0 ? (
             <Box
