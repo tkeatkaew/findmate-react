@@ -934,21 +934,7 @@ app.post("/knn", async (req, res) => {
 
     //Find nearest neighbors using predict
     const predictions = model.predict(currentUserFeatures);
-    console.log("Prediction k=1:", predictions);
-
-    k = 2;
-    model = new KNN(trainingSet, trainingLabels, { k });
-
-    //Find nearest neighbors using predict
-    predictions = model.predict(currentUserFeatures);
-    console.log("Prediction k=2:", predictions);
-
-    k = 3;
-    model = new KNN(trainingSet, trainingLabels, { k });
-
-    //Find nearest neighbors using predict
-    predictions = model.predict(currentUserFeatures);
-    console.log("Prediction k=3:", predictions);
+    console.log("Prediction:", predictions);
     // =======================================================================
 
     // Combine array of user and distances
