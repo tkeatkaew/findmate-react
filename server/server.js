@@ -926,6 +926,17 @@ app.post("/knn", async (req, res) => {
       distances.push(Math.sqrt(sum));
     });
 
+    // ======== Not use because predict function not return distanct =========
+    //const k = trainingSet.length;
+    const k = 1;
+    const model = new KNN(trainingSet, trainingLabels, { k });
+
+    //Find nearest neighbors using predict
+    const predictions = model.predict(currentUserFeatures);
+    console.log("=====================================");
+    console.log("Prediction:", predictions);
+    // =======================================================================
+
     // Combine array of user and distances
     const userDistances = trainingLabels.map((userId, index) => ({
       userId,
