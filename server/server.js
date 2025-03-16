@@ -822,8 +822,6 @@ app.post("/knn", async (req, res) => {
 
     if (!currentUser) return res.status(404).json({ error: "User not found" });
 
-    // Define trait categories with ordinal values
-    // The order in the array represents the ordinal value (index = value)
     const traitCategories = {
       type: ["type_introvert", "type_ambivert", "type_extrovert"],
       sleep: ["sleep_before_midnight", "sleep_after_midnight"],
@@ -852,7 +850,7 @@ app.post("/knn", async (req, res) => {
       period: ["period_long", "period_sometime", "period_no_need"],
     };
 
-    // Importance weights for each category
+    // Weights
     const weights = {
       type: 1.0,
       sleep: 1.0,
@@ -871,7 +869,7 @@ app.post("/knn", async (req, res) => {
       period: 1.0,
     };
 
-    // Encode user traits with ordinal encoding and weights only
+    // Ordinal encoding and weights
     const encodeUserTraits = (user) => {
       const features = [];
 
@@ -879,17 +877,16 @@ app.post("/knn", async (req, res) => {
         const categories = traitCategories[trait];
         const weight = weights[trait] || 1;
 
-        // Get user's value for this trait
+        // Get user value
         const userValue = user[trait];
 
-        // Find the ordinal position of the value in the category array
+        // Find the ordinal position
         const ordinalValue = categories.indexOf(userValue);
 
-        // If the value exists, use the ordinal value multiplied by weight
+        // Value * Weight
         if (ordinalValue !== -1) {
           features.push(ordinalValue * weight);
         } else {
-          // Handle missing or invalid values
           features.push(0); // Default to 0 if value not found
         }
       });
@@ -916,10 +913,13 @@ app.post("/knn", async (req, res) => {
     // Encode current user
     const currentUserFeatures = encodeUserTraits(currentUser);
 
+    console.log("Training Set:", trainingSet);
+    console.log("Training Label:", trainingLabels);
+    console.log("Current User:", currentUserFeatures);
+
     // Calculate distances
     const distances = [];
     trainingSet.forEach((features) => {
-      // Calculate Euclidean distance
       let sum = 0;
       for (let i = 0; i < features.length; i++) {
         sum += Math.pow(features[i] - currentUserFeatures[i], 2);
