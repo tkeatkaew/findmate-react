@@ -1,9 +1,9 @@
-FROM --platform=linux/amd64 node:22-alpine3.16 as base
+FROM --platform=linux/amd64 node:22-alpine as base
 
 WORKDIR /runner
 
-COPY ./package.json /app/builder/package.json
-COPY ./pnpm-lock.yaml /app/builder/package-lock.json
+COPY ./package.json /runner/package.json
+COPY ./package-lock.json /runner/package-lock.json
 
 # Install dependencies
 RUN npm install
@@ -13,4 +13,4 @@ COPY . .
 EXPOSE 3000
 
 # CMD
-CMD [ "node", "./dist/app"]
+CMD [ "node", "./runner/server.js"]
