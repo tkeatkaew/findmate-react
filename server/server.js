@@ -10,14 +10,32 @@ const app = express();
 const KNN = require("ml-knn");
 const nodemailer = require("nodemailer");
 
+const {
+  // Database config
+  DB_HOST = "localhost",
+  DB_USER = "root",
+  DB_PASSWORD = "",
+  DB_NAME = "findmatev3",
+  DB_CONNECTION_LIMIT = "100",
+  // CORS Config
+  CLIENT_URL = "http://localhost:3000",
+  // Session config
+  SESSION_SECRET = "#FM2024",
+  // STMP Config
+  SMTP_EMAIL = "",
+  SMTP_PASSWORD = "",
+  // Server config
+  PORT = "3000"
+} = process.env ?? {}
+
 // MySQL Connection Pool
 const pool = mysql.createPool({
-  host: "mysql.railway.internal",
-  user: "root",
-  password: "hAGSisGocpxGJpFQzPDLxdyZxOlaJGsG",
-  database: "railway",
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASSWORD,
+  database: DB_NAME,
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: Number(DB_CONNECTION_LIMIT),
   queueLimit: 0,
 });
 
@@ -38,7 +56,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(
   cors({
-    origin: "https://findmate-react.vercel.app",
+    origin: CLIENT_URL,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -46,7 +64,7 @@ app.use(
 );
 app.use(
   session({
-    secret: "#FM2024",
+    secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
   })
@@ -56,8 +74,8 @@ app.use(
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "findmate.official@gmail.com",
-    pass: "buky yekv rhsp pyta",
+    user: SMTP_EMAIL,
+    pass: SMTP_PASSWORD,
   },
 });
 
@@ -1876,8 +1894,8 @@ app.post("/app-reviews", async (req, res) => {
               ${feedback.replace(/\n/g, "<br>")}
             </div>
             <p style="font-size: 16px; line-height: 1.5; color: #333;">ส่งเมื่อ: ${new Date().toLocaleString(
-              "th-TH"
-            )}</p>
+          "th-TH"
+        )}</p>
           </div>
         `,
       };
@@ -1921,7 +1939,6 @@ app.get("/admin/app-reviews", async (req, res) => {
 });
 
 // Start the Server
-const PORT = 3000;
-app.listen(PORT, () => {
+app.listen(Number(PORT), () => {
   console.log(`Server running on port: ${PORT}`);
 });
